@@ -10,8 +10,8 @@
 	<classpathentry kind="lib" path="lib/org.eclipse.osgi_3.9.1.v20130814-1242.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.ui.workbench_3.105.1.v20130821-1411.jar"/>
 	<classpathentry kind="lib" path="lib/swt.jar"/>
-	<classpathentry kind="lib" path="lib/bcpg-jdk15on-150.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk15on-150.jar"/>
+	<classpathentry kind="lib" path="lib/bcpg-jdk15on-150.jar" sourcepath="lib/src/bcpg-jdk15on-150/src.zip"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15on-150.jar" sourcepath="lib/src/bcprov-jdk15on-150/src.zip"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/javamail"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
