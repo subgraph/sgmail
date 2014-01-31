@@ -7,13 +7,13 @@ import java.util.List;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 
-public class LocalPublicKey implements PublicKey {
+public class GnuPGPublicIdentity implements PublicIdentity {
 
 	private final PGPPublicKeyRing publicKeyRing;
 	
 	private List<String> cachedUserIds;
 	
-	LocalPublicKey(PGPPublicKeyRing pkr) {
+	GnuPGPublicIdentity(PGPPublicKeyRing pkr) {
 		this.publicKeyRing = pkr;
 	}
 

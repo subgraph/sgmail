@@ -19,23 +19,23 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 
-public class LocalPublicKeys {
-	private final static Logger logger = Logger.getLogger(LocalPublicKeys.class.getName());
+public class GnuPGKeyringLoader {
+	private final static Logger logger = Logger.getLogger(GnuPGKeyringLoader.class.getName());
 	
 	private final File keyringPath;
-	private final List<PublicKey> localKeys = new ArrayList<>();
+	private final List<PublicIdentity> localIdentities = new ArrayList<>();
 	
 	private boolean isLoaded;
 	
-	public LocalPublicKeys() {
+	public GnuPGKeyringLoader() {
 		this(getDefaultKeyringPath());
 	}
 	
-	public LocalPublicKeys(File keyringPath) {
+	public GnuPGKeyringLoader(File keyringPath) {
 		this.keyringPath = keyringPath;
 	}
 	
-	public List<PublicKey> getLocalKeys() {
+	public List<PublicIdentity> getLocalKeys() {
 		if(!isLoaded) {
 			try {
 				reloadKeyring();
@@ -44,7 +44,7 @@ public class LocalPublicKeys {
 				e.printStackTrace();
 			}
 		}
-		return ImmutableList.copyOf(localKeys);
+		return ImmutableList.copyOf(localIdentities);
 	}
 	
 	public void reloadKeyring() throws IOException, PGPException {
@@ -52,14 +52,14 @@ public class LocalPublicKeys {
 		final ByteSource byteSource = Files.asByteSource(keyringPath);
 		final PGPPublicKeyRingCollection keyrings = new PGPPublicKeyRingCollection(byteSource.read());
 		final Iterator<?> it = keyrings.getKeyRings("com", true);
-		final List<LocalPublicKey> keys = new ArrayList<>();
+		final List<GnuPGPublicIdentity> keys = new ArrayList<>();
 		while(it.hasNext()) {
 			PGPPublicKeyRing pkr = (PGPPublicKeyRing) it.next();
 			verifyPublicKeyRing(pkr);
-			keys.add(new LocalPublicKey(pkr));
+			keys.add(new GnuPGPublicIdentity(pkr));
 		}
-		localKeys.clear();
-		localKeys.addAll(keys);
+		localIdentities.clear();
+		localIdentities.addAll(keys);
 		isLoaded = true;
 	}
 	
