@@ -160,7 +160,7 @@ public class PublicKeyValidator {
 	
 	private List<PGPUserAttributeSubpacketVector> getUserAttributes() throws KeyValidationException {
 		final List<PGPUserAttributeSubpacketVector> attribs = new ArrayList<>();
-		final Iterator<?> it = getMasterKey().getUserIDs();
+		final Iterator<?> it = getMasterKey().getUserAttributes();
 		while(it.hasNext()) {
 			attribs.add((PGPUserAttributeSubpacketVector) it.next());
 		}
@@ -193,7 +193,7 @@ public class PublicKeyValidator {
 		try {
 			signature.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), signingKey);
 		} catch (PGPException e) {
-			throw new KeyValidationException("Error initializing signature verification");
+			throw new KeyValidationException("Error initializing signature verification "+ e, e);
 		}
 	}
 	
