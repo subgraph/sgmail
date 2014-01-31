@@ -1,7 +1,9 @@
 package com.subgraph.sgmail.ui;
 
 import java.io.File;
+import java.security.Security;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.ToolBarManager;
@@ -153,6 +155,7 @@ public class MainWindow extends ApplicationWindow {
 	}
 
 	public static void main(String[] args) {
+		Security.addProvider(new BouncyCastleProvider());
 		Display.setAppName("Mail");
 
 		final MainWindow w = new MainWindow(createModel());
