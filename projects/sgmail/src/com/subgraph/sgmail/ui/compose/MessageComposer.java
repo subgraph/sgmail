@@ -1,10 +1,21 @@
 package com.subgraph.sgmail.ui.compose;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
+import org.bouncycastle.openpgp.PGPException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.DND;
@@ -21,11 +32,15 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
 
+import com.subgraph.sgmail.identity.EncryptedMultipart;
+import com.subgraph.sgmail.identity.MessageEncrypter;
+import com.subgraph.sgmail.identity.PublicIdentity;
 import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.ui.MessageBodyUtils;
 
 public class MessageComposer extends Composite {
 
+	private final Model model;
 	
 	private final ComposeCloseListener closeListener;
 	private final ComposerButtons buttonSection;
@@ -39,6 +54,7 @@ public class MessageComposer extends Composite {
 	
 	MessageComposer(Composite parent, Model model, Message replyMessage, boolean isReplyAll, ComposeCloseListener closeListener) {
 		super(parent, SWT.NONE);
+		this.model = model;
 		this.closeListener = closeListener;
 		
 		setLayout(createLayout());
@@ -123,10 +139,59 @@ public class MessageComposer extends Composite {
 	
 	private void sendMessage() throws MessagingException {
 		final Message msg = headerSection.createNewMessage(headerSection.getSelectedAccount());
+		sendEncryptedMessage((MimeMessage) msg);
+		/*
 		msg.setText(bodyText.getText());
 		buttonSection.setProgressVisible(true);
 		buttonSection.setProgressMessage("Sending...");
 		new Thread(new SendMailTask(this, msg, headerSection.getSelectedAccount())).start();
+		*/
+	}
+	
+	
+	private void sendEncryptedMessage(MimeMessage msg) throws MessagingException {
+		List<PublicIdentity> ids = new ArrayList<>();
+		for(Address a: msg.getAllRecipients()) {
+			if(a instanceof InternetAddress) {
+				InternetAddress ia = (InternetAddress) a;
+				ids.addAll(model.findIdentitiesFor(ia.getAddress()));
+			}
+		}
+		if(ids.isEmpty()) {
+			System.out.println("No keys :(");
+		} else {
+			sendEncryptedMessage(msg, ids);
+		}
+	}
+	
+	private void sendEncryptedMessage(MimeMessage msg, List<PublicIdentity> identities) throws MessagingException {
+		final EncryptedMultipart emp = new EncryptedMultipart();
+		MessageEncrypter me = new MessageEncrypter();
+		try {
+			String body = bodyText.getText();
+			emp.setBody(me.encryptMessageBody(body, identities));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (PGPException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		msg.setContent(emp);
+		
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		try {
+			msg.writeTo(out);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String s = new String(out.toByteArray());
+		System.out.println("final message\n"+s);
+		
+		
+		
 	}
 	
 	void onMailSendProgress(final String message) {

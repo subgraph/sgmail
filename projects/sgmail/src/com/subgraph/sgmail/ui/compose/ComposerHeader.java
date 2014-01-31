@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Text;
 
 import com.google.common.base.Strings;
+import com.subgraph.sgmail.identity.PublicIdentity;
 import com.subgraph.sgmail.model.Account;
 import com.subgraph.sgmail.model.IMAPAccount;
 import com.subgraph.sgmail.model.Model;
@@ -36,17 +37,19 @@ import com.subgraph.sgmail.model.Model;
 public class ComposerHeader extends Composite {
 
 	private final Map<Integer, RecipientSection> recipientSectionMap = new HashMap<>();
+	private final Model model;
 	private final HeaderValidityListener validityListener;
-	
 	private final List<IMAPAccount> accounts;
 	private final Text subjectText;
 	private final Combo fromCombo;
+	
 	
 	private Message replyMessage;
 	
 	ComposerHeader(Composite parent, Model model, HeaderValidityListener validityListener) {
 		super(parent, SWT.NONE);
 		setLayout(createLayout());
+		this.model = model;
 		this.validityListener = validityListener;
 		accounts = getAccountList(model);
 		createSeparator();
@@ -245,7 +248,17 @@ public class ComposerHeader extends Composite {
 			if(!r.isValid()) {
 				return false;
 			}
+			findKeys(r);
 		}
 		return true;
+	}
+	
+	private void findKeys(RecipientSection r) {
+		for(InternetAddress a: r.getAddresses()) {
+			List<PublicIdentity> is = model.findIdentitiesFor(a.getAddress());
+			if(!is.isEmpty()) {
+				System.out.println("Found "+ is.size() + " identities for address "+ a.getAddress());
+			}
+		}
 	}
 }
