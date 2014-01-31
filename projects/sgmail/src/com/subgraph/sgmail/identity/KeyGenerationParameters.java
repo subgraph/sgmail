@@ -1,4 +1,4 @@
-package com.subgraph.sgmail.ui.identity;
+package com.subgraph.sgmail.identity;
 
 
 public class KeyGenerationParameters {
@@ -6,9 +6,9 @@ public class KeyGenerationParameters {
 	private final static KeyLength DEFAULT_ENCRYPTION_KEY_LENGTH = KeyLength.KEY_2048;
 	private final static KeyType DEFAULT_KEY_TYPE = KeyType.RSA_AND_RSA;
 	
-	enum KeyType { RSA_AND_RSA, DSA_AND_ELGAMAL, DSA_SIGN_ONLY, RSA_SIGN_ONLY }
-	enum ExpiryPeriod { DAYS, WEEKS, MONTHS, YEARS }
-	enum KeyLength { KEY_1024, KEY_2048, KEY_4096, KEY_8192 };
+	public enum KeyType { RSA_AND_RSA, DSA_AND_ELGAMAL, DSA_SIGN_ONLY, RSA_SIGN_ONLY }
+	public enum ExpiryPeriod { DAYS, WEEKS, MONTHS, YEARS }
+	public enum KeyLength { KEY_1024, KEY_2048, KEY_4096, KEY_8192 };
 	
 	
 	
@@ -66,9 +66,4 @@ public class KeyGenerationParameters {
 	public KeyType getKeyType() {
 		return keyType;
 	}
-	
-	
-	
-	
-
 }

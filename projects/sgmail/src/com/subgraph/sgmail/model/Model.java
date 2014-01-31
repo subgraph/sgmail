@@ -22,6 +22,8 @@ import com.db4o.ta.DeactivatingRollbackStrategy;
 import com.db4o.ta.TransparentPersistenceSupport;
 import com.google.common.eventbus.EventBus;
 import com.subgraph.sgmail.events.AccountAddedEvent;
+import com.subgraph.sgmail.identity.PublicIdentity;
+import com.subgraph.sgmail.identity.PublicIdentityCache;
 import com.subgraph.sgmail.sync.SynchronizationManager;
 
 public class Model {
@@ -33,6 +35,7 @@ public class Model {
 	private final File databaseDirectory;
 	private final Session session;
 	private final EventBus eventBus;
+	private final PublicIdentityCache publicIdentityCache;
 	private final Object dbLock = new Object();
 	
 	private SynchronizationManager synchronizationManager;
@@ -49,6 +52,7 @@ public class Model {
 		this.databaseDirectory = checkNotNull(databaseDirectory);
 		this.session = Session.getInstance(sessionProperties);
 		this.eventBus = new EventBus();
+		this.publicIdentityCache = new PublicIdentityCache(this);
 	}
 
 	public synchronized SynchronizationManager getSynchronizationManager() {
@@ -151,6 +155,19 @@ public class Model {
 		return db.query(Account.class);
 	}
 	
+	public List<PublicIdentity> findIdentitiesFor(String emailAddress) {
+		return publicIdentityCache.findKeysFor(emailAddress);
+	}
+	
+	public List<PublicIdentity> findBestIdentitiesFor(String emailAddress) {
+		return publicIdentityCache.findBestKeysFor(emailAddress);
+	}
+
+	public List<StoredPublicIdentity> getStoredPublicIdentities() {
+		checkOpened();
+		return db.query(StoredPublicIdentity.class);
+	}
+
 	public StoredUserInterfaceState getStoredUserInterfaceState() {
 		checkOpened();
 		final ObjectSet<StoredUserInterfaceState> result = db.query(StoredUserInterfaceState.class);

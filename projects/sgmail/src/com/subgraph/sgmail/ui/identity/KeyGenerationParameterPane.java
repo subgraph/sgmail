@@ -6,6 +6,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
+import com.subgraph.sgmail.identity.KeyGenerationParameters;
+
 public class KeyGenerationParameterPane extends Composite {
 
 	private final KeyGenerationParameters parameters;

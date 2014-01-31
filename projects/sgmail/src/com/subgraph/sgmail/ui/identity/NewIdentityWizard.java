@@ -1,6 +1,5 @@
 package com.subgraph.sgmail.ui.identity;
 
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.eclipse.jface.wizard.IWizardPage;
@@ -11,6 +10,9 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.subgraph.sgmail.identity.KeyGenerationParameters;
+import com.subgraph.sgmail.identity.KeyGenerationResult;
+import com.subgraph.sgmail.identity.KeyGenerationTask;
 
 public class NewIdentityWizard extends Wizard {
 

@@ -12,5 +12,4 @@ public interface PublicIdentity {
 	int getKeySource();
 	PGPPublicKeyRing getPGPPublicKeyRing();
 	List<String> getUserIds();
-
 }

@@ -15,9 +15,14 @@ public class PublicIdentityCache {
 		this.model = model;
 	}
 
-	List<PublicIdentity> findKeysFor(String emailAddress) {
+	public List<PublicIdentity> findKeysFor(String emailAddress) {
 		final List<PublicIdentity> result = new ArrayList<>();
 		for(PublicIdentity pk: localKeys.getLocalKeys()) {
+			if(keyMatchesEmail(pk, emailAddress)) {
+				result.add(pk);
+			}
+		}
+		for(PublicIdentity pk: model.getStoredPublicIdentities()) {
 			if(keyMatchesEmail(pk, emailAddress)) {
 				result.add(pk);
 			}
@@ -25,7 +30,7 @@ public class PublicIdentityCache {
 		return result;
 	}
 	
-	List<PublicIdentity> findBestKeysFor(String emailAddress) {
+	public List<PublicIdentity> findBestKeysFor(String emailAddress) {
 		return findKeysFor(emailAddress);
 	}
 	

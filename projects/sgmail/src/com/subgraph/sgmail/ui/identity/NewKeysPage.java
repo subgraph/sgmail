@@ -10,6 +10,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import com.subgraph.sgmail.identity.KeyGenerationParameters;
+
 public class NewKeysPage extends WizardPage {
 
 	private final KeyGenerationParameters parameters;
