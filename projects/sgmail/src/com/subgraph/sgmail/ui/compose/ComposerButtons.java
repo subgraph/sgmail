@@ -14,10 +14,10 @@ public class ComposerButtons extends Composite {
 	private final Button sendButton;
 	private final SendProgressPanel progressPanel;
 	
-	ComposerButtons(Composite parent, SelectionListener sendListerner, SelectionListener cancelListener) {
+	ComposerButtons(Composite parent, SelectionListener sendListener, SelectionListener cancelListener) {
 		super(parent, SWT.NONE);
 		setLayout(createLayout());
-		sendButton = createSendButton(sendListerner);
+		sendButton = createSendButton(sendListener);
 		createCancelButton(cancelListener);
 		progressPanel = createProgressPanel();
 		setProgressVisible(false);

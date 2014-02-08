@@ -13,14 +13,15 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.subgraph.sgmail.identity.KeyGenerationParameters;
 import com.subgraph.sgmail.identity.KeyGenerationResult;
 import com.subgraph.sgmail.identity.KeyGenerationTask;
+import com.subgraph.sgmail.model.IMAPAccount;
+import com.subgraph.sgmail.model.Model;
 
 public class NewIdentityWizard extends Wizard {
 
 	private final ListeningExecutorService executor = createExecutor();
 	
 	private final KeyGenerationParameters parameters = new KeyGenerationParameters(); 
-	
-	private final FirstPage page1 = new FirstPage();
+	private final FirstPage page1;
 	private final NewKeysPage newKeysPage = new NewKeysPage(parameters);
 	
 	
@@ -29,8 +30,10 @@ public class NewIdentityWizard extends Wizard {
 		return MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
 	}
 	
-	public NewIdentityWizard(String email) {
-		parameters.setEmailAddress(email);
+	public NewIdentityWizard(Model model, IMAPAccount account) {
+		this.page1 = new FirstPage(model);
+		parameters.setEmailAddress(account.getEmailAddress());
+		parameters.setRealName(account.getRealname());
 	}
 
 	@Override

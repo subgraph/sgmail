@@ -110,7 +110,7 @@ public class MessageUtils {
 		return address.getAddress();
 	}
 
-	private static InternetAddress getSenderAddress(Message message) {
+	public static InternetAddress getSenderAddress(Message message) {
 		try {
 			final Address[] as = message.getFrom();
 			if(as == null || as.length == 0) {

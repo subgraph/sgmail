@@ -11,6 +11,8 @@ import java.util.logging.Logger;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
+import org.bouncycastle.openpgp.PGPSecretKeyRing;
+import org.bouncycastle.openpgp.PGPSecretKeyRingCollection;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteSource;
@@ -18,52 +20,89 @@ import com.google.common.io.Files;
 
 public class GnuPGKeyringLoader {
 	private final static Logger logger = Logger.getLogger(GnuPGKeyringLoader.class.getName());
+
+	private final static String DEFAULT_PUBLIC_KEYRING_NAME = "pubring.gpg";
+	private final static String DEFAULT_SECRET_KEYRING_NAME = "secring.gpg";
+	private final static File DEFAULT_GNUPG_DIRECTORY = 
+			new File(System.getProperty("user.home") + File.separator + ".gnupg");
 	
-	private final File keyringPath;
-	private final List<PublicIdentity> localIdentities = new ArrayList<>();
+	private final File gpgDirectory;
+	private final String publicKeyringFilename;
+	private final String secretKeyringFilename;
+	
+	private final List<PublicIdentity> publicIdentities = new ArrayList<>();
+	private final List<PrivateIdentity> privateIdentities = new ArrayList<>();
 	
 	private boolean isLoaded;
+	private boolean validateLoadedKeys = false;
 	
 	public GnuPGKeyringLoader() {
-		this(getDefaultKeyringPath());
+		this(DEFAULT_GNUPG_DIRECTORY);
 	}
 	
-	public GnuPGKeyringLoader(File keyringPath) {
-		this.keyringPath = keyringPath;
+	public GnuPGKeyringLoader(File gpgDirectory) {
+		this(gpgDirectory, DEFAULT_PUBLIC_KEYRING_NAME, DEFAULT_SECRET_KEYRING_NAME);
 	}
 	
-	public List<PublicIdentity> getLocalKeys() {
+	public GnuPGKeyringLoader(File gpgDirectory, String publicKeyringFilename, String secretKeyringFilename) {
+		this.gpgDirectory = gpgDirectory;
+		this.publicKeyringFilename = publicKeyringFilename;
+		this.secretKeyringFilename = secretKeyringFilename;
+	}
+	
+	public synchronized List<PublicIdentity> getPublicIdentities() {
 		if(!isLoaded) {
 			reloadKeyring();
 		}
-		return ImmutableList.copyOf(localIdentities);
+		return ImmutableList.copyOf(publicIdentities);
 	}
 	
-	public void reloadKeyring() {
-		final List<PublicIdentity> identities = new ArrayList<>();
-		
+	public synchronized List<PrivateIdentity> getPrivateIdentities() {
+		if(!isLoaded) {
+			reloadKeyring();
+		}
+		return ImmutableList.copyOf(privateIdentities);
+	}
+	
+	public synchronized void reloadKeyring() {
+		reloadPublicIdentities();
+		reloadPrivateIdentities();
+		isLoaded = true;
+	}
+	
+	private void reloadPublicIdentities() {
+		final List<PublicIdentity> ids = new ArrayList<>();
 		for(PGPPublicKeyRing pkr: loadPublicKeys()) {
-			if(PublicKeyValidator.validate(pkr)) {
-				identities.add(new GnuPGPublicIdentity(pkr));
+			if(!validateLoadedKeys || PublicKeyValidator.validate(pkr)) {
+				ids.add(new GnuPGPublicIdentity(pkr));
 			}
 		}
-		
-		localIdentities.clear();
-		localIdentities.addAll(identities);
-		isLoaded = true;
-		
+		publicIdentities.clear();
+		publicIdentities.addAll(ids);
+	}
+	
+	private void reloadPrivateIdentities() {
+		final List<PrivateIdentity> ids = new ArrayList<>();
+		for(PGPSecretKeyRing skr: loadSecretKeys()) {
+			ids.add(new GnuPGPrivateIdentity(skr));
+		}
+		privateIdentities.clear();
+		privateIdentities.addAll(ids);
 	}
 	
 	private List<PGPPublicKeyRing> loadPublicKeys() {
+		final File publicKeyringPath = new File(gpgDirectory, publicKeyringFilename);
 		try {
-			return getKeysFromKeyRingCollection( loadPublicKeyCollection() );
+			return getKeysFromKeyRingCollection( loadPublicKeyCollection(publicKeyringPath) );
 		} catch (IOException e) {
-			logger.warning("IOException loading keyring "+ keyringPath + ": "+ e.getMessage());
+			logger.warning("IOException loading public keyring "+ publicKeyringPath + ": "+ e.getMessage());
 		} catch (PGPException e) {
-			logger.warning("PGPException parsing keyring "+ keyringPath + " : "+ e.getMessage());
+			logger.warning("PGPException parsing public keyring "+ publicKeyringPath + " : "+ e.getMessage());
 		}
 		return Collections.emptyList();
 	}
+	
+	
 	
 	private List<PGPPublicKeyRing> getKeysFromKeyRingCollection(PGPPublicKeyRingCollection collection) {
 		final List<PGPPublicKeyRing> keys = new ArrayList<>();
@@ -74,13 +113,34 @@ public class GnuPGKeyringLoader {
 		return keys;
 	}
 	
-	private PGPPublicKeyRingCollection loadPublicKeyCollection() throws IOException, PGPException {
-		final ByteSource byteSource = Files.asByteSource(keyringPath);
+	private PGPPublicKeyRingCollection loadPublicKeyCollection(File publicKeyringPath) throws IOException, PGPException {
+		final ByteSource byteSource = Files.asByteSource(publicKeyringPath);
 		return new PGPPublicKeyRingCollection(byteSource.read());
 	}
+	
+	private List<PGPSecretKeyRing> loadSecretKeys() {
+		final File secretKeyringPath = new File(gpgDirectory, secretKeyringFilename);
+		try {
+			return loadSecretKeysFromKeyRingCollection( loadSecretKeyCollection(secretKeyringPath));
+		} catch (IOException e) {
+			logger.warning("IOException loading secret keyring "+ secretKeyringPath + ": "+ e.getMessage());
+		} catch (PGPException e) {
+			logger.warning("PGPException parsing secret keyring "+ secretKeyringPath + ": "+ e.getMessage());
+		}
+		return Collections.emptyList();
+	}
 
-	private static File getDefaultKeyringPath() {
-		final File home = new File(System.getProperty("user.home"));
-		return new File(home, ".gnupg/pubring.gpg");
+	private List<PGPSecretKeyRing> loadSecretKeysFromKeyRingCollection(PGPSecretKeyRingCollection collection) {
+		final List<PGPSecretKeyRing> keys = new ArrayList<>();
+		final Iterator<?> it = collection.getKeyRings();
+		while(it.hasNext()) {
+			keys.add(((PGPSecretKeyRing) it.next()));
+		}
+		return keys;
+	}
+
+	private PGPSecretKeyRingCollection loadSecretKeyCollection(File secretKeyringPath) throws IOException, PGPException  {
+		final ByteSource byteSource = Files.asByteSource(secretKeyringPath);
+		return new PGPSecretKeyRingCollection(byteSource.read());
 	}
 }

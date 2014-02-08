@@ -68,4 +68,10 @@ public class StoredPublicIdentity extends AbstractActivatable implements PublicI
 		}
 		return uids;
 	}
+
+	@Override
+	public byte[] getImageBytes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

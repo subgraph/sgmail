@@ -32,7 +32,7 @@ public class NewAccountAction extends Action {
 	private void processNewAccount(ServerInformation incoming, ServerInformation outgoing, String username, String domain, String realname, String password) {
 		SMTPAccount smtp = createSMTPAccount(outgoing, username, password);
 		model.store(smtp);
-		GmailIMAPAccount account = new GmailIMAPAccount(username + "@" + domain, username, domain, realname, password, smtp);
+		GmailIMAPAccount account = new GmailIMAPAccount(model, username + "@" + domain, username, domain, realname, password, smtp);
 		model.addAccount(account);
 	}
 	

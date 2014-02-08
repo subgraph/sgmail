@@ -32,14 +32,18 @@ public class IMAPAccount extends AbstractActivatable implements Account {
 	private boolean isAutomaticSyncEnabled;
 	private List<StoredFolder> folders = new ActivatableArrayList<>();
 	private SMTPAccount smtpAccount;
+	private Identity identity;
+	
+	private final StoredAccountPreferences preferences;
 	
 	private transient Store remoteStore;
 	
-	public IMAPAccount(String label, String username, String domain, String realname, String password, String hostname, SMTPAccount smtpAccount) {
-		this(label, username, domain, realname, password, hostname, DEFAULT_IMAPS_PORT, smtpAccount);
+	public IMAPAccount(Model model, String label, String username, String domain, String realname, String password, String hostname, SMTPAccount smtpAccount) {
+		this(model, label, username, domain, realname, password, hostname, DEFAULT_IMAPS_PORT, smtpAccount);
 	}
 
-	public IMAPAccount(String label, String username, String domain, String realname, String password, String hostname, int port, SMTPAccount smtpAccount) {
+	public IMAPAccount(Model model, String label, String username, String domain, String realname, String password, String hostname, int port, SMTPAccount smtpAccount) {
+		this.model = model;
 		this.label = checkNotNull(label);
 		this.username = checkNotNull(username);
 		this.domain = checkNotNull(domain);
@@ -51,12 +55,18 @@ public class IMAPAccount extends AbstractActivatable implements Account {
 		this.isSecure = true;
 		this.isAutomaticSyncEnabled = true;
 		this.smtpAccount = smtpAccount;
+		this.preferences = new StoredAccountPreferences(this, model);
 	}
 	
 	public Model getModel() {
 		return model;
 	}
 	
+	public StoredAccountPreferences getPreferences() {
+		activate(ActivationPurpose.READ);
+		return preferences;
+	}
+
 	public void setAutomaticSyncEnabled(boolean value) {
 		activate(ActivationPurpose.WRITE);
 		isAutomaticSyncEnabled = value;
@@ -194,5 +204,17 @@ public class IMAPAccount extends AbstractActivatable implements Account {
 			logger.warning("Could not create store for "+ urlname + " : "+ e);
 			return null;
 		}
+	}
+
+	@Override
+	public void setIdentity(Identity identity) {
+		activate(ActivationPurpose.WRITE);
+		this.identity = identity;
+	}
+
+	@Override
+	public Identity getIdentity() {
+		activate(ActivationPurpose.READ);
+		return identity;
 	}
 }

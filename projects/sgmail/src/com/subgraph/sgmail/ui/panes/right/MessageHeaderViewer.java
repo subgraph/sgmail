@@ -2,11 +2,13 @@ package com.subgraph.sgmail.ui.panes.right;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -22,7 +24,7 @@ public class MessageHeaderViewer extends Composite {
 	private static Font BOLD_FONT;
 	private final Message message;
 	private final Label newMessageIndicator;
-	
+
 	public MessageHeaderViewer(Composite parent, Message message) {
 		super(parent, SWT.NONE);
 		this.message = message;
@@ -39,6 +41,7 @@ public class MessageHeaderViewer extends Composite {
 		}
 	}
 
+	
 	public void renderMessageHeader() throws MessagingException {
 		
 		Composite middle = new Composite(this, SWT.NONE);
@@ -53,7 +56,7 @@ public class MessageHeaderViewer extends Composite {
 		Label right = new Label(this, SWT.NONE);
 		right.setBackground(white);
 		right.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
-		right.setImage(ImageCache.getInstance().getImage(ImageCache.USER_IMAGE));
+		right.setImage(getAvatarImage());
 		
 		Label fromLabel = new Label(middle, SWT.LEFT);
 		fromLabel.setBackground(white);
@@ -83,6 +86,14 @@ public class MessageHeaderViewer extends Composite {
 	
 	}
 
+	private Image getAvatarImage() {
+		final InternetAddress address = MessageUtils.getSenderAddress(message);
+		if(address != null) {
+			return ImageCache.getInstance().getAvatarImage(address.getAddress());
+		}
+		return ImageCache.getInstance().getDisabledImage(ImageCache.USER_IMAGE);
+	}
+	
 	void updateNewMessageIndicator() {
 		if(message instanceof LocalMimeMessage) {
 			final LocalMimeMessage msg = (LocalMimeMessage) message;

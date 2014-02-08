@@ -22,10 +22,12 @@ import org.eclipse.swt.widgets.Shell;
 
 import com.google.common.primitives.Ints;
 import com.subgraph.sgmail.model.Model;
+import com.subgraph.sgmail.model.Preferences;
 import com.subgraph.sgmail.model.StoredUserInterfaceState;
 import com.subgraph.sgmail.ui.actions.ComposeMessageAction;
 import com.subgraph.sgmail.ui.actions.NewAccountAction;
 import com.subgraph.sgmail.ui.actions.NewIdentityAction;
+import com.subgraph.sgmail.ui.actions.OpenPreferencesAction;
 import com.subgraph.sgmail.ui.actions.RunSynchronizeAction;
 import com.subgraph.sgmail.ui.panes.left.LeftPane;
 import com.subgraph.sgmail.ui.panes.middle.MiddlePane;
@@ -49,7 +51,7 @@ public class MainWindow extends ApplicationWindow {
 		addToolBar( SWT.WRAP | SWT.FLAT);
 		addMenuBar();
 		
-		setDefaultImage(ImageCache.getInstance().getImage(ImageCache.USER_IMAGE));
+		setDefaultImage(ImageCache.getInstance().getDisabledImage(ImageCache.USER_IMAGE));
 	}
 	
 	private Action createExitAction() {
@@ -120,7 +122,7 @@ public class MainWindow extends ApplicationWindow {
 	protected ToolBarManager createToolBarManager(int style) { 		
 		ToolBarManager toolBarManager = new ToolBarManager(style);
 		toolBarManager.add(new ComposeMessageAction(model));
-		toolBarManager.add(new NewIdentityAction());
+		toolBarManager.add(new NewIdentityAction(model));
 		return toolBarManager; 	
 	}
 
@@ -146,8 +148,9 @@ public class MainWindow extends ApplicationWindow {
 		final MenuManager fileMenu = new MenuManager("File");
 		menuManager.add(fileMenu);
 		
-		fileMenu.add(new NewIdentityAction());
+		fileMenu.add(new NewIdentityAction(model));
 		fileMenu.add(new NewAccountAction(model));
+		fileMenu.add(new OpenPreferencesAction(model));
 		fileMenu.add(createSyncAction());
 		fileMenu.add(createExitAction());
 		
@@ -175,8 +178,11 @@ public class MainWindow extends ApplicationWindow {
 	private static Model createModel() {
 		final File home = new File(System.getProperty("user.home"));
 		final Model model = new Model(new File(home, ".sgos"));
-		model.enableSessionDebug();
 		model.open();
+		if(model.getRootStoredPreferences().getBoolean(Preferences.IMAP_DEBUG_OUTPUT)) {
+			model.enableSessionDebug();
+		}
+		ImageCache.getInstance().setModel(model);
 		return model;
 	}
 

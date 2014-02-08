@@ -1,5 +1,6 @@
 package com.subgraph.sgmail.ui.panes.right;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -10,6 +11,7 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.bouncycastle.openpgp.PGPException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ControlAdapter;
@@ -30,15 +32,18 @@ import com.subgraph.sgmail.events.NextConversationEvent;
 import com.subgraph.sgmail.events.NextMessageEvent;
 import com.subgraph.sgmail.events.PreviousMessageEvent;
 import com.subgraph.sgmail.events.ReplyMessageEvent;
+import com.subgraph.sgmail.identity.OpenPGPException;
+import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.model.Conversation;
 import com.subgraph.sgmail.model.LocalMimeMessage;
 import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.model.StoredMessage;
+import com.subgraph.sgmail.openpgp.MessageProcessor;
 import com.subgraph.sgmail.ui.compose.ComposeWindow;
 
 public class RightPane extends Composite {
 	private final static Logger logger = Logger.getLogger(RightPane.class.getName());
-	
+	private final MessageProcessor messageProcessor = new MessageProcessor();
 	private final Model model;
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 	private Composite composite;
@@ -239,7 +244,8 @@ public class RightPane extends Composite {
 					return;
 				}
 				if(!m.isFlagSet(StoredMessage.FLAG_DELETED)) {
-					addMessageViewer(getMimeMessage(m), idx);
+					MimeMessage mm = getMimeMessage(m);
+					addMessageViewer(mm, idx);
 					idx += 1;
 				}
 			}
@@ -252,15 +258,54 @@ public class RightPane extends Composite {
 			});
 		}
 
+		private PrivateIdentity findDecryptIdentity(List<Long> keyIds) {
+			for(PrivateIdentity p: model.getLocalPrivateIdentities()) {
+				for(long id: keyIds) {
+					if(p.containsKeyId(id)) {
+						return p;
+					}
+				}
+			}
+			return null;
+		}
+		
 		private MimeMessage getMimeMessage(StoredMessage sm) {
 			try {
-				return sm.toMimeMessage();
+				return maybeDecryptMessage(sm.toMimeMessage());
 			} catch (MessagingException e) {
 				logger.warning("Error converting to MimeMessage: "+ e);
 				return null;
 			}
 		}
 	
+		private MimeMessage maybeDecryptMessage(MimeMessage message) {
+			if(!messageProcessor.isEncrypted(message)) {
+				return message;
+			}
+			try {
+				final PrivateIdentity decryptIdentity = findDecryptIdentity(messageProcessor.getDecryptionKeyIds(message));
+				if(decryptIdentity == null) {
+					return message;
+				} else {
+					if(decryptIdentity.getPassphrase() == null) {
+						decryptIdentity.setPassphrase("");
+					}
+					return messageProcessor.decryptMessage(message, decryptIdentity);
+				}
+			} catch (IOException | MessagingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (PGPException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (OpenPGPException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return message;
+			
+		}
+		
 		private void addMessageViewer(final MimeMessage m, final int idx) {
 			if(m == null) {
 				return;

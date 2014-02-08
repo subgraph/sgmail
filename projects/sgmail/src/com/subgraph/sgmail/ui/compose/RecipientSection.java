@@ -90,7 +90,7 @@ public class RecipientSection {
 	
 	private Text createTextField(Composite composite, ModifyListener modifyListener) {
 		final Text text = new Text(composite, SWT.SINGLE | SWT.BORDER);
-		final GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+		final GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
 		text.setLayoutData(gd);
 		text.addModifyListener(modifyListener);
 		return text;

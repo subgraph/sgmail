@@ -21,7 +21,10 @@ import com.db4o.events.ObjectInfoEventArgs;
 import com.db4o.ta.DeactivatingRollbackStrategy;
 import com.db4o.ta.TransparentPersistenceSupport;
 import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import com.subgraph.sgmail.events.AccountAddedEvent;
+import com.subgraph.sgmail.events.PreferenceChangedEvent;
+import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.identity.PublicIdentity;
 import com.subgraph.sgmail.identity.PublicIdentityCache;
 import com.subgraph.sgmail.sync.SynchronizationManager;
@@ -43,7 +46,6 @@ public class Model {
 	private boolean isOpened;
 	private ObjectContainer db;
 	
-	
 	public Model(File databaseDirectory) {
 		this(databaseDirectory, new Properties());
 	}
@@ -52,6 +54,7 @@ public class Model {
 		this.databaseDirectory = checkNotNull(databaseDirectory);
 		this.session = Session.getInstance(sessionProperties);
 		this.eventBus = new EventBus();
+		eventBus.register(this);
 		this.publicIdentityCache = new PublicIdentityCache(this);
 	}
 
@@ -60,6 +63,14 @@ public class Model {
 			synchronizationManager = new SynchronizationManager(this);
 		}
 		return synchronizationManager;
+	}
+
+	@Subscribe
+	public void onPreferenceChanged(PreferenceChangedEvent event) {
+		if(event.isPreferenceName(Preferences.IMAP_DEBUG_OUTPUT)) {
+			boolean flag = event.getPreferences().getBoolean(Preferences.IMAP_DEBUG_OUTPUT);
+			session.setDebug(flag);
+		}
 	}
 
 	public void enableSessionDebug() {
@@ -167,23 +178,52 @@ public class Model {
 		checkOpened();
 		return db.query(StoredPublicIdentity.class);
 	}
-
-	public StoredUserInterfaceState getStoredUserInterfaceState() {
-		checkOpened();
-		final ObjectSet<StoredUserInterfaceState> result = db.query(StoredUserInterfaceState.class);
-		if(result.size() == 0) {
-			return createNewStoredUserInterfaceState();
-		} else if(result.size() > 1) {
-			logger.warning("Found multiple StoredUserInterfaceState instances, ignoring duplicates");
-		}
-		return result.get(0);
+	
+	public PrivateIdentity findPrivateIdentity(String email) {
+		return publicIdentityCache.findPrivateKey(email);
 	}
 
-	private StoredUserInterfaceState createNewStoredUserInterfaceState() {
-		final StoredUserInterfaceState state = new StoredUserInterfaceState();
-		state.onActivate(this);
-		db.store(state);
-		return state;
+	public List<PrivateIdentity> getLocalPrivateIdentities() {
+		return publicIdentityCache.getLocalPrivateIdentities();
+	}
+
+	public StoredUserInterfaceState getStoredUserInterfaceState() {
+		final StoredUserInterfaceState result = getModelSingleton(StoredUserInterfaceState.class);
+		return (result != null) ? (result) 
+				: (storeNewObject(new StoredUserInterfaceState()));
+	}
+	
+	public StoredPreferences getRootStoredPreferences() {
+		final StoredPreferences result = getModelSingleton(StoredRootPreferences.class);
+		return (result != null) ? (result) 
+				: (storeNewObject(new StoredRootPreferences()));
+	}
+
+	public byte[] findAvatarImageDataForEmail(String emailAddress) {
+		for(PublicIdentity pk: findIdentitiesFor(emailAddress)) {
+			byte[] imageBytes = pk.getImageBytes();
+			if(imageBytes != null) {
+				return imageBytes;
+			}
+		}
+		return null;
+	}
+
+	private <T extends AbstractActivatable> T storeNewObject(T newObject) {
+		newObject.onActivate(this);
+		db.store(newObject);
+		return newObject;
+	}
+
+	private <T> T getModelSingleton(Class<T> klass) {
+		checkOpened();
+		final ObjectSet<T> result = db.query(klass);
+		if(result.size() == 0) {
+			return null;
+		} else if(result.size() > 1) {
+			logger.warning("Found multiple instances of singleton class: "+ klass.getName() +" ignoring duplicates");
+		}
+		return result.get(0);
 	}
 
 	private void checkClosed() {

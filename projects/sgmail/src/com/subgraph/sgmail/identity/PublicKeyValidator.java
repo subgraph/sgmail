@@ -84,41 +84,44 @@ public class PublicKeyValidator {
 	}
 
 	private void verifySelfSignatures(PGPPublicKey master, String id) throws KeyValidationException, SignatureException, PGPException {
-		boolean atLeastOne = false;
-		for(PGPSignature signature: getIdSignatures(master, id, master.getKeyID())) {
-			verifySelfSignature(master, id, signature);
-			atLeastOne = true;
-		}
-		if(!atLeastOne) {
-			throw new KeyValidationException("No self-signature found for id "+ id);
-		}
+		final List<PGPSignature> allSignatures = getIdSignatures(master, id, master.getKeyID());
+		final PGPSignature signature = getMostRecentSelfSignature(allSignatures);
+		verifySelfSignature(master, id, signature);
 	}
 	
 	private void verifySelfSignatures(PGPPublicKey master, PGPUserAttributeSubpacketVector attributes) throws KeyValidationException, SignatureException, PGPException {
-		boolean atLeastOne = false;
-		for(PGPSignature signature: getAttributeSignatures(master, attributes, master.getKeyID())) {
-			verifySelfSignature(master, attributes, signature);
-			atLeastOne = true;
-		}
-		if(!atLeastOne) {
-			throw new KeyValidationException("No self-signature found for user attributes");
-		}
+		final List<PGPSignature> allSignatures = getAttributeSignatures(master, attributes, master.getKeyID());
+		final PGPSignature signature = getMostRecentSelfSignature(allSignatures);
+		verifySelfSignature(master, attributes, signature);
 	}
 
 	private void verifySelfSignature(PGPPublicKey master, String id, PGPSignature signature) throws KeyValidationException, SignatureException, PGPException {
 		initializeSignature(signature, master);
 		if(!signature.verifyCertification(id, master)) {
-			throw new KeyValidationException("Signature verification failed.");
+			throw new KeyValidationException("Signature verification failed on userid: "+ id + " signature created at "+ signature.getCreationTime());
 		}
 	}
 
 	private void verifySelfSignature(PGPPublicKey master, PGPUserAttributeSubpacketVector attributes, PGPSignature signature) throws KeyValidationException, SignatureException, PGPException {
 		initializeSignature(signature, master);
 		if(!signature.verifyCertification(attributes, master)) {
-			throw new KeyValidationException("Signature verification failed.");
+			throw new KeyValidationException("Signature verification failed on attributes.");
 		}
 	}
 	
+	private PGPSignature getMostRecentSelfSignature(List<PGPSignature> signatures) throws KeyValidationException {
+		if(signatures.isEmpty()) {
+			throw new KeyValidationException("No self-signature found.");
+		}
+		PGPSignature best = signatures.get(0);
+		for(int i = 1; i < signatures.size(); i++) {
+			if(signatures.get(i).getCreationTime().getTime() < best.getCreationTime().getTime()) {
+				best = signatures.get(i);
+			}
+		}
+		return best;
+	}
+
 	private List<PGPSignature> getIdSignatures(PGPPublicKey master, String id, long keyId) {
 		return getSignaturesMatchingKeyId(master.getSignaturesForID(id), keyId);
 	}
@@ -185,7 +188,7 @@ public class PublicKeyValidator {
 	private void verifyCertification(PGPPublicKey signingKey, PGPPublicKey targetKey, PGPSignature signature) throws KeyValidationException, SignatureException, PGPException {
 		initializeSignature(signature, signingKey);
 		if(!signature.verifyCertification(signingKey, targetKey)) {
-			throw new KeyValidationException("Signature verification failed.");
+			throw new KeyValidationException("Signature verification failed for subkey certification.");
 		}
 	}
 

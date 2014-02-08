@@ -1,6 +1,11 @@
 package com.subgraph.sgmail.ui.panes.right;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
+
 import javax.mail.Message;
+import javax.mail.MessagingException;
 
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
@@ -18,14 +23,16 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
+import com.google.common.base.Charsets;
 import com.google.common.eventbus.Subscribe;
 import com.subgraph.sgmail.events.MessageStateChangedEvent;
 import com.subgraph.sgmail.model.LocalMimeMessage;
 import com.subgraph.sgmail.model.Model;
+import com.subgraph.sgmail.model.Preferences;
 import com.subgraph.sgmail.model.StoredMessage;
 
 public class MessageViewer extends Composite {
-
+	private final static Logger logger = Logger.getLogger(MessageViewer.class.getName());
 	private final static int MARGIN_SIZE = 4;
 	private final static int[] alphaValues = createAlphaValues();
 	
@@ -115,11 +122,24 @@ public class MessageViewer extends Composite {
 	public void setHighlighted(boolean value) {
 		if(value) {
 			markMessageSeen();
+			maybeDumpMessage();
 		}
 		isHighlighted = value;
 		redraw();
 	}
-	
+
+	private void maybeDumpMessage() {
+		if(!model.getRootStoredPreferences().getBoolean(Preferences.DUMP_SELECTED_MESSAGE)) {
+			return;
+		}
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		try {
+			message.writeTo(out);
+			System.out.println(new String(out.toByteArray(), Charsets.UTF_8));
+		} catch (IOException | MessagingException e) {
+			logger.warning("exception dumping message: "+ e);
+		}
+	}
 	private void markMessageSeen() {
 		if(!(message instanceof LocalMimeMessage)) {
 			return;
