@@ -5,6 +5,8 @@ import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -31,6 +33,7 @@ public class NewAccountDialog extends TitleAreaDialog {
 
 	private String previousAddress;
 	
+	private Label errorMessageLabel;
 	private IMapServerInfoPanel serverInfoPanel;
 	private ServerInformation serverInfo;
 
@@ -65,13 +68,44 @@ public class NewAccountDialog extends TitleAreaDialog {
 		return serverInfo;
 	}
 
+	public void accountVerificationSucceeded() {
+		getShell().getDisplay().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				setReturnCode(OK);
+				close();
+			}
+		});
+	}
+	
+	public void accountVerificationFailed(final String message, final boolean isLoginFailure) {
+		getShell().getDisplay().asyncExec(new Runnable() {
+
+			@Override
+			public void run() {
+				getButton(IDialogConstants.OK_ID).setEnabled(true);
+				errorMessageLabel.setText(message);
+				if(isLoginFailure) {
+					passwordText.setText("");
+					passwordText.setFocus();
+				}
+			}
+		});
+		
+	}
+	
 	protected void okPressed() {
 		username = getAddressUsername(addressText.getText());
 		domain = getAddressDomain(addressText.getText());
 		realname = realnameText.getText();
 		password = passwordText.getText();
-		super.okPressed();
+		errorMessageLabel.setText("");
+		getButton(IDialogConstants.OK_ID).setEnabled(false);
+		
+		final Runnable r = new AccountTestLoginTask(this, serverInfoPanel.getIncomingServer(), username, password);
+		new Thread(r).start();
 	}
+
 	protected Control createContents(Composite parent) {
 		final Control contents = super.createContents(parent);
 		setMessage("Create a new account");
@@ -112,7 +146,11 @@ public class NewAccountDialog extends TitleAreaDialog {
 		});
 		passwordText = createTextWithLabel(g, "Password:",
 				"enter password", SWT.PASSWORD);
-
+		
+		errorMessageLabel = new Label(composite, SWT.NONE);
+		errorMessageLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		errorMessageLabel.setForeground(composite.getDisplay().getSystemColor(SWT.COLOR_RED));
+		
 		serverInfoPanel = new IMapServerInfoPanel(composite);
 		final GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
 		gd.heightHint = 200;
