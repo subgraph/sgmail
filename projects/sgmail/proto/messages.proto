@@ -1,0 +1,43 @@
+package identity;
+
+option java_package = "com.subgraph.identity.protocol";
+option java_outer_classname = "Protocol";
+
+
+message ProtocolMessage {
+  enum Type { 
+    KEY_LOOKUP_REQUEST = 1; 
+    KEY_LOOKUP_RESPONSE = 2; 
+    KEY_PUBLISH_REQUEST = 3; 
+    KEY_PUBLISH_RESPONSE = 4; }
+
+  required Type type = 1;
+
+  optional KeyLookupRequest     lookup_request   = 2;
+  optional KeyLookupResponse    lookup_response  = 3;
+  optional KeyPublishRequest    publish_request  = 4;
+  optional KeyPublishResponse   publish_response = 5;
+}
+
+
+message KeyLookupRequest {
+  optional string email = 1;
+  optional string fingerprint = 2;
+}
+
+message KeyLookupResponse {
+  repeated PublicKey keys = 1; 
+}
+
+message PublicKey {
+  optional bytes key_data = 1;
+}
+
+message KeyPublishRequest {
+  optional PublicKey key = 1;
+}
+
+message KeyPublishResponse {
+  optional bool is_success = 1;
+  optional string error_message = 2;
+}

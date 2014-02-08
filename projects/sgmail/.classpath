@@ -12,6 +12,7 @@
 	<classpathentry kind="lib" path="lib/swt.jar"/>
 	<classpathentry kind="lib" path="lib/bcpg-jdk15on-150.jar" sourcepath="lib/src/bcpg-jdk15on-150/src.zip"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk15on-150.jar" sourcepath="lib/src/bcprov-jdk15on-150/src.zip"/>
+	<classpathentry kind="lib" path="lib/protobuf.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/javamail"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
