@@ -2,6 +2,7 @@ package com.subgraph.sgmail.ui.actions;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
@@ -10,6 +11,7 @@ import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.model.SMTPAccount;
 import com.subgraph.sgmail.servers.ServerInformation;
 import com.subgraph.sgmail.ui.dialogs.NewAccountDialog;
+import com.subgraph.sgmail.ui.dialogs.NewAccountWizard;
 
 public class NewAccountAction extends Action {
 	
@@ -22,11 +24,16 @@ public class NewAccountAction extends Action {
 	
 	public void run() {
 		final Shell shell = Display.getCurrent().getActiveShell();
+		final WizardDialog dialog = new WizardDialog(shell, new NewAccountWizard(model));
+		dialog.open();
+
+		/*
 		NewAccountDialog dialog = new NewAccountDialog(shell);
 		
 		if(dialog.open() == Window.OK) {
 			processNewAccount(dialog.getIncomingServer(), dialog.getOutgoingServer(), dialog.getUsername(), dialog.getDomain(), dialog.getRealname(), dialog.getPassword());
 		} 
+		*/
 	}
 	
 	private void processNewAccount(ServerInformation incoming, ServerInformation outgoing, String username, String domain, String realname, String password) {

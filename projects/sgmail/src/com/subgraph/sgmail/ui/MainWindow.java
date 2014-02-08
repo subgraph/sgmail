@@ -48,7 +48,7 @@ public class MainWindow extends ApplicationWindow {
 		this.savedState = model.getStoredUserInterfaceState();
 		
 		setBlockOnOpen(true);
-		addToolBar( SWT.WRAP | SWT.FLAT);
+		//addToolBar( SWT.WRAP | SWT.FLAT);
 		addMenuBar();
 		
 		setDefaultImage(ImageCache.getInstance().getDisabledImage(ImageCache.USER_IMAGE));
@@ -121,8 +121,8 @@ public class MainWindow extends ApplicationWindow {
 	@Override
 	protected ToolBarManager createToolBarManager(int style) { 		
 		ToolBarManager toolBarManager = new ToolBarManager(style);
-		toolBarManager.add(new ComposeMessageAction(model));
-		toolBarManager.add(new NewIdentityAction(model));
+		//toolBarManager.add(new ComposeMessageAction(model));
+		//toolBarManager.add(new NewIdentityAction(model));
 		return toolBarManager; 	
 	}
 

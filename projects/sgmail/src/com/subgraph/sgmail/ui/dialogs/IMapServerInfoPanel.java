@@ -16,19 +16,26 @@ public class IMapServerInfoPanel extends Composite {
 	private ServerInformation incomingServer;
 	private ServerInformation outgoingServer;
 	
-	private Label serverInfoLabel;
+	private Label incomingProtocol;
+	private Label incomingHost;
+	private Label smtpHost;
 	
 	IMapServerInfoPanel(Composite parent) {
 		super(parent, SWT.NONE);
 		setLayout(new FillLayout());
 		final Group g = new Group(this, SWT.NONE);
 		g.setText("Server Information");
-		g.setLayout(new GridLayout());
+		GridLayout layout = new GridLayout(2, false);
+		layout.verticalSpacing = 5;
+		layout.horizontalSpacing = 20;
+		g.setLayout(layout);
 		create(g);
 	}
 
 	public void clearServerInfo() {
-		serverInfoLabel.setText("");
+		incomingProtocol.setText("");
+		incomingHost.setText("");
+		smtpHost.setText("");
 	}
 	
 	public ServerInformation getIncomingServer() {
@@ -42,46 +49,54 @@ public class IMapServerInfoPanel extends Composite {
 	public void setServerInfo(ServerInformation incoming, ServerInformation outgoing) {
 		this.incomingServer = incoming;
 		this.outgoingServer = outgoing;
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("Incoming Server\n\n");
-		addProtocol(sb, incoming.getProtocol());
-		sb.append("Hostname:\t\t"+ incoming.getHostname() + "\n");
-		sb.append("Port:\t\t\t\t"+ incoming.getPort() + "\n");
-		sb.append("\nOutgoing Server\n\n");
-		sb.append("Hostname:\t\t"+ outgoing.getHostname() + "\n");
-		sb.append("Port:\t\t\t\t"+ outgoing.getPort()+"\n");
-		serverInfoLabel.setText(sb.toString());
+		if(incoming != null) {
+			incomingProtocol.setText(getProtocolString(incoming.getProtocol()));
+			incomingHost.setText(getHostString(incoming));
+		}
+		if(outgoing != null) {
+			smtpHost.setText(getHostString(outgoing));
+		}
 	}
 	
-	private void addProtocol(StringBuilder sb, Protocol protocol) {
-		sb.append("Protocol:\t\t\t");
+	private String getHostString(ServerInformation info) {
+		return info.getHostname() + Integer.toString(info.getPort());
+	}
+	
+	private String getProtocolString(Protocol protocol) {
+		
 		switch(protocol) {
 		case IMAP:
-			sb.append("imap");
-			break;
+			return "imap";
 			
 		case POP3:
-			sb.append("pop3");
-			break;
+			return "pop3";
+
 			
 		case UNKNOWN:
-			sb.append("unknown");
-			break;
+			return "unknown";
 			
 		case SMTP:
-			sb.append("smtp");
-			break;
+			return "smtp";
 		
 		default:
-			break;
+			return "";
 		}
-		sb.append("\n");
+	}
+	
+	private Label createLabelPair(Composite parent, String labelText) {
+		final Label labelLabel = new Label(parent, SWT.NONE);
+		labelLabel.setText(labelText);
+		labelLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, false));
+		
+		final Label label = new Label(parent, SWT.NONE);
+		label.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		return label;
 	}
 	
 	private void create(Composite parent) {
-		serverInfoLabel = new Label(parent, SWT.NONE);
-		serverInfoLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		incomingProtocol = createLabelPair(parent, "Incoming protocol:");
+		incomingHost = createLabelPair(parent, "Incoming server:");
+		smtpHost = createLabelPair(parent, "SMTP server:");
+		clearServerInfo();
 	}
-
 }

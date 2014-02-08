@@ -5,8 +5,6 @@ import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -102,8 +100,8 @@ public class NewAccountDialog extends TitleAreaDialog {
 		errorMessageLabel.setText("");
 		getButton(IDialogConstants.OK_ID).setEnabled(false);
 		
-		final Runnable r = new AccountTestLoginTask(this, serverInfoPanel.getIncomingServer(), username, password);
-		new Thread(r).start();
+		//final Runnable r = new AccountTestLoginTask(this, serverInfoPanel.getIncomingServer(), username, password);
+		//new Thread(r).start();
 	}
 
 	protected Control createContents(Composite parent) {
@@ -190,7 +188,7 @@ public class NewAccountDialog extends TitleAreaDialog {
 		enableOkButton(false);
 		if(isValidAddress(address)) {
 			String domain = getAddressDomain(address);
-			new Thread(new AccountLookupTask(this, domain)).start();
+			//new Thread(new AccountLookupTask(this, domain)).start();
 		} else {
 			serverInfoPanel.clearServerInfo();
 		}

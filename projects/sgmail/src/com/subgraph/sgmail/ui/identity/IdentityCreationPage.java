@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Text;
 import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.model.Model;
 
-public class FirstPage extends WizardPage {
+public class IdentityCreationPage extends WizardPage {
 
 	private final Model model;
 	
@@ -28,7 +28,7 @@ public class FirstPage extends WizardPage {
 	private Button loadKeysBrowse;
 	
 	
-	FirstPage(Model model) {
+	public IdentityCreationPage(Model model) {
 		super("first");
 		this.model = model;
 		setTitle("Create an Identity");

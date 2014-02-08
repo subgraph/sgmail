@@ -9,28 +9,44 @@ import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Store;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+
 import com.subgraph.sgmail.servers.ServerInformation;
 import com.subgraph.sgmail.servers.ServerInformation.SocketType;
 
-public class AccountTestLoginTask implements Runnable {
+public class AccountTestLoginTask implements IRunnableWithProgress {
 	private final static Logger logger = Logger.getLogger(AccountTestLoginTask.class.getName());
 	
 	private final Properties sessionProperties;
-	private final NewAccountDialog dialog;
+	//private final NewAccountDialog dialog;
 	private final ServerInformation server;
 	private final String login;
 	private final String password;
 	
+	private boolean isSuccess;
+	private String errorMessage = "";
+	
 	AccountTestLoginTask(NewAccountDialog dialog, ServerInformation server, String login, String password) {
-		this.dialog = dialog;
+		//this.dialog = dialog;
 		this.server = server;
 		this.login = login;
 		this.password = password;
 		this.sessionProperties = new Properties();
 	}
 
+	public boolean isSuccess() {
+		return isSuccess;
+	}
+	
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+	
 	@Override
-	public void run() {
+	public void run(IProgressMonitor monitor) {
+		monitor.beginTask("Test login credentials", IProgressMonitor.UNKNOWN);
+		
 		final String protocol = getProtocolName();
 		setupSessionProperties(protocol);
 		Session session = Session.getInstance(sessionProperties);
@@ -40,14 +56,21 @@ public class AccountTestLoginTask implements Runnable {
 			store = session.getStore(protocol);
 			store.connect(login, password);
 			store.close();
-			dialog.accountVerificationSucceeded();
+			isSuccess = true;
+			//dialog.accountVerificationSucceeded();
 		} catch (AuthenticationFailedException e) {
-			dialog.accountVerificationFailed("Login failed", true);
+			isSuccess = false;
+			errorMessage = "Login failed";
+			//dialog.accountVerificationFailed("Login failed", true);
 		} catch (NoSuchProviderException e) {
-			dialog.accountVerificationFailed(e.getMessage(), false);
+			isSuccess = false;
+			errorMessage = e.getMessage();
+			//dialog.accountVerificationFailed(e.getMessage(), false);
 			logger.warning("Could not test login credentials: "+ e.getMessage());
 		} catch (MessagingException e) {
-			dialog.accountVerificationFailed(e.getMessage(), false);
+			isSuccess = false;
+			errorMessage = e.getMessage();
+			//dialog.accountVerificationFailed(e.getMessage(), false);
 			logger.warning("Error testing login credentials: "+ e.getMessage());
 		}
 	}
@@ -88,4 +111,6 @@ public class AccountTestLoginTask implements Runnable {
 			throw new IllegalArgumentException("Incoming server protocol has invalid value "+ server.getProtocol());
 		}
 	}
+
+
 }

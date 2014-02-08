@@ -21,7 +21,7 @@ public class NewIdentityWizard extends Wizard {
 	private final ListeningExecutorService executor = createExecutor();
 	
 	private final KeyGenerationParameters parameters = new KeyGenerationParameters(); 
-	private final FirstPage page1;
+	private final IdentityCreationPage page1;
 	private final NewKeysPage newKeysPage = new NewKeysPage(parameters);
 	
 	
@@ -31,7 +31,7 @@ public class NewIdentityWizard extends Wizard {
 	}
 	
 	public NewIdentityWizard(Model model, IMAPAccount account) {
-		this.page1 = new FirstPage(model);
+		this.page1 = new IdentityCreationPage(model);
 		parameters.setEmailAddress(account.getEmailAddress());
 		parameters.setRealName(account.getRealname());
 	}
