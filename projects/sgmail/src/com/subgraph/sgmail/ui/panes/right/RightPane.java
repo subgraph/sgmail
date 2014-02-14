@@ -1,17 +1,18 @@
 package com.subgraph.sgmail.ui.panes.right;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Logger;
-
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-
+import com.google.common.eventbus.Subscribe;
+import com.subgraph.sgmail.events.*;
+import com.subgraph.sgmail.identity.OpenPGPException;
+import com.subgraph.sgmail.identity.PrivateIdentity;
+import com.subgraph.sgmail.model.Conversation;
+import com.subgraph.sgmail.model.LocalMimeMessage;
+import com.subgraph.sgmail.model.Model;
+import com.subgraph.sgmail.model.StoredMessage;
+import com.subgraph.sgmail.openpgp.MessageProcessor;
+import com.subgraph.sgmail.ui.compose.ComposeWindow;
+import com.subgraph.sgmail.ui.dialogs.PassphraseDialog;
 import org.bouncycastle.openpgp.PGPException;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ControlAdapter;
@@ -24,22 +25,15 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
-import com.google.common.eventbus.Subscribe;
-import com.subgraph.sgmail.events.ConversationSelectedEvent;
-import com.subgraph.sgmail.events.DeleteMessageEvent;
-import com.subgraph.sgmail.events.MessageStateChangedEvent;
-import com.subgraph.sgmail.events.NextConversationEvent;
-import com.subgraph.sgmail.events.NextMessageEvent;
-import com.subgraph.sgmail.events.PreviousMessageEvent;
-import com.subgraph.sgmail.events.ReplyMessageEvent;
-import com.subgraph.sgmail.identity.OpenPGPException;
-import com.subgraph.sgmail.identity.PrivateIdentity;
-import com.subgraph.sgmail.model.Conversation;
-import com.subgraph.sgmail.model.LocalMimeMessage;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.model.StoredMessage;
-import com.subgraph.sgmail.openpgp.MessageProcessor;
-import com.subgraph.sgmail.ui.compose.ComposeWindow;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Logger;
 
 public class RightPane extends Composite {
 	private final static Logger logger = Logger.getLogger(RightPane.class.getName());
@@ -262,13 +256,32 @@ public class RightPane extends Composite {
 			for(PrivateIdentity p: model.getLocalPrivateIdentities()) {
 				for(long id: keyIds) {
 					if(p.containsKeyId(id)) {
-						return p;
+                        if(p.getPassphrase() == null) {
+                            if(showPassphraseDialog(p)) {
+                                return p;
+                            }
+                        } else {
+                            return p;
+                        }
 					}
 				}
 			}
 			return null;
 		}
-		
+
+        private boolean showPassphraseDialog(final PrivateIdentity identity) {
+            final int[] result = new int[1];
+            getDisplay().syncExec(new Runnable() {
+                @Override
+                public void run() {
+                    PassphraseDialog dialog = new PassphraseDialog(getShell(), identity);
+                    result[0] = dialog.open();
+                }
+            });
+
+            return result[0] == Window.OK;
+        }
+
 		private MimeMessage getMimeMessage(StoredMessage sm) {
 			try {
 				return maybeDecryptMessage(sm.toMimeMessage());
@@ -287,9 +300,6 @@ public class RightPane extends Composite {
 				if(decryptIdentity == null) {
 					return message;
 				} else {
-					if(decryptIdentity.getPassphrase() == null) {
-						decryptIdentity.setPassphrase("");
-					}
 					return messageProcessor.decryptMessage(message, decryptIdentity);
 				}
 			} catch (IOException | MessagingException e) {
@@ -305,7 +315,7 @@ public class RightPane extends Composite {
 			return message;
 			
 		}
-		
+
 		private void addMessageViewer(final MimeMessage m, final int idx) {
 			if(m == null) {
 				return;
