@@ -1,7 +1,11 @@
 package com.subgraph.sgmail.ui.dialogs;
 
-import java.lang.reflect.InvocationTargetException;
-
+import com.google.common.net.InternetDomainName;
+import com.subgraph.sgmail.model.GmailIMAPAccount;
+import com.subgraph.sgmail.model.IMAPAccount;
+import com.subgraph.sgmail.model.Model;
+import com.subgraph.sgmail.model.SMTPAccount;
+import com.subgraph.sgmail.servers.ServerInformation;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -15,20 +19,24 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.google.common.net.InternetDomainName;
-import com.subgraph.sgmail.servers.ServerInformation;
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Logger;
 
 public class AccountDetailsPage extends WizardPage {
+    private final static Logger logger = Logger.getLogger(AccountDetailsPage.class.getName());
 
-	private Text realnameText;
+    private final Model model;
+
+    private Text realnameText;
 	private Text addressText;
 	private Text passwordText;
 	private Label errorMessageLabel;
 	private IMapServerInfoPanel serverInfoPanel;
 	private String previousAddress;
 	
-	AccountDetailsPage() {
+	AccountDetailsPage(Model model) {
 		super("");
+        this.model = model;
 		setPageComplete(false);
 	}
 	
@@ -36,21 +44,45 @@ public class AccountDetailsPage extends WizardPage {
 		setErrorMessage(message);
 	}
 
-	String getUsername() {
+	public String getUsername() {
 		return getAddressUsername(addressText.getText());
 	}
 	
-	String getDomain() {
+	public String getDomain() {
 		return getAddressDomain(addressText.getText());
 	}
 	
-	String getRealname() {
+	public String getRealname() {
 		return realnameText.getText();
 	}
 	
 	String getPassword() {
 		return passwordText.getText();
 	}
+
+    String getIncomingLogin() {
+        return getUsernameByType(getIncomingServer().getUsernameType());
+    }
+
+    String getOutgoingLogin() {
+        return getUsernameByType(getOutgoingServer().getUsernameType());
+    }
+
+    private String getUsernameByType(ServerInformation.UsernameType type) {
+        final String email = addressText.getText();
+        switch (type) {
+            case USERNAME_EMAILADDRESS:
+                return email;
+
+            case USERNAME_LOCALPART:
+                return getAddressUsername(email);
+
+            case UNKNOWN:
+            default:
+                logger.warning("Unknown username type, returning full address");
+                return email;
+        }
+    }
 
 	ServerInformation getIncomingServer() {
 		return serverInfoPanel.getIncomingServer();
@@ -59,7 +91,33 @@ public class AccountDetailsPage extends WizardPage {
 	ServerInformation getOutgoingServer() {
 		return serverInfoPanel.getOutgoingServer();
 	}
-	
+
+    IMAPAccount createIMAPAccount() {
+        final SMTPAccount smtpAccount = createSMTPAccount();
+        final ServerInformation imapServer = getOutgoingServer();
+        final String hostname = imapServer.getHostname();
+        final boolean isGmail = hostname.endsWith(".googlemail.com");
+        final int port = imapServer.getPort();
+        final String login = getIncomingLogin();
+        final String email = addressText.getText();
+        final String domain = getDomain();
+        final String realname = getRealname();
+        final String password = getPassword();
+        if(isGmail) {
+            return new GmailIMAPAccount(model, email, login, domain, realname,  password, smtpAccount);
+        } else {
+            return new IMAPAccount(model, email, login, domain, realname, password, hostname, port, smtpAccount);
+        }
+    }
+
+    private SMTPAccount createSMTPAccount() {
+        final ServerInformation smtpServer = getOutgoingServer();
+        final String hostname = smtpServer.getHostname();
+        final int port = smtpServer.getPort();
+        final String login = getOutgoingLogin();
+        final String password = getPassword();
+        return new SMTPAccount(hostname, port, login, password);
+    }
 	
 	@Override
 	public void createControl(Composite parent) {
@@ -132,12 +190,16 @@ public class AccountDetailsPage extends WizardPage {
 			return;
 		}
 		previousAddress = address;
-		System.out.println("setting false");
 		setPageComplete(false);
 		if(isValidAddress(address)) {
 			String domain = getAddressDomain(address);
 			try {
-				getContainer().run(true, true, new AccountLookupTask(this, domain));
+				final AccountLookupTask task = new AccountLookupTask(this, domain);
+				getContainer().run(false, true, task);
+				if(task.getLookupSucceeded()) {
+					setPageComplete(true);
+				}
+				
 			} catch (InvocationTargetException | InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -153,8 +215,6 @@ public class AccountDetailsPage extends WizardPage {
 			@Override
 			public void run() {
 				serverInfoPanel.setServerInfo(incoming, outgoing);
-				System.out.println("setting true (is current "+ isCurrentPage() + ")");
-				setPageComplete(true);
 			}
 		});
 	}

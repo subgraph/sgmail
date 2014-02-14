@@ -14,6 +14,7 @@ public class AccountLookupTask implements IRunnableWithProgress {
 	private final AccountDetailsPage page;
 	private final NewAccountDialog dialog;
 	private final String domain;
+	private boolean lookupSucceeded;
 	
 	public AccountLookupTask(AccountDetailsPage page, String domain) {
 		this.page = page; this.dialog = null;
@@ -33,12 +34,16 @@ public class AccountLookupTask implements IRunnableWithProgress {
 			final ServerInformation outgoing = getSMTPServer(autoconf);
 			if(dialog != null) dialog.setServerInfo(incoming, outgoing);
 			if(page != null) page.setServerInfo(incoming, outgoing);
+			lookupSucceeded = true;
 		} else {
 			// XXX notify user that autoconf did not complete successfully
 		}
 		monitor.done();
 	}
 	
+	public boolean getLookupSucceeded() {
+		return lookupSucceeded;
+	}
 	private ServerInformation getIMAPServer(MozillaAutoconfiguration autoconf) {
 		for(ServerInformation info: autoconf.getIncomingServers()) {
 			if(info.getProtocol() == Protocol.IMAP) {

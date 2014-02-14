@@ -59,7 +59,7 @@ public class IMapServerInfoPanel extends Composite {
 	}
 	
 	private String getHostString(ServerInformation info) {
-		return info.getHostname() + Integer.toString(info.getPort());
+		return info.getHostname() +":"+ Integer.toString(info.getPort());
 	}
 	
 	private String getProtocolString(Protocol protocol) {

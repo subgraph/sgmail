@@ -26,24 +26,5 @@ public class NewAccountAction extends Action {
 		final Shell shell = Display.getCurrent().getActiveShell();
 		final WizardDialog dialog = new WizardDialog(shell, new NewAccountWizard(model));
 		dialog.open();
-
-		/*
-		NewAccountDialog dialog = new NewAccountDialog(shell);
-		
-		if(dialog.open() == Window.OK) {
-			processNewAccount(dialog.getIncomingServer(), dialog.getOutgoingServer(), dialog.getUsername(), dialog.getDomain(), dialog.getRealname(), dialog.getPassword());
-		} 
-		*/
-	}
-	
-	private void processNewAccount(ServerInformation incoming, ServerInformation outgoing, String username, String domain, String realname, String password) {
-		SMTPAccount smtp = createSMTPAccount(outgoing, username, password);
-		model.store(smtp);
-		GmailIMAPAccount account = new GmailIMAPAccount(model, username + "@" + domain, username, domain, realname, password, smtp);
-		model.addAccount(account);
-	}
-	
-	private SMTPAccount createSMTPAccount(ServerInformation outgoingServer, String username, String password) {
-		return new SMTPAccount(outgoingServer.getHostname(), outgoingServer.getPort(), username, password);
 	}
 }

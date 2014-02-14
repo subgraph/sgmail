@@ -1,20 +1,15 @@
 package com.subgraph.sgmail.ui.identity;
 
-import java.util.concurrent.Executors;
-
-import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.Wizard;
-
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.*;
 import com.subgraph.sgmail.identity.KeyGenerationParameters;
 import com.subgraph.sgmail.identity.KeyGenerationResult;
 import com.subgraph.sgmail.identity.KeyGenerationTask;
 import com.subgraph.sgmail.model.IMAPAccount;
 import com.subgraph.sgmail.model.Model;
+import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.Wizard;
+
+import java.util.concurrent.Executors;
 
 public class NewIdentityWizard extends Wizard {
 
@@ -31,7 +26,7 @@ public class NewIdentityWizard extends Wizard {
 	}
 	
 	public NewIdentityWizard(Model model, IMAPAccount account) {
-		this.page1 = new IdentityCreationPage(model);
+		this.page1 = new IdentityCreationPage(model, null, null);
 		parameters.setEmailAddress(account.getEmailAddress());
 		parameters.setRealName(account.getRealname());
 	}
