@@ -1,6 +1,7 @@
 package com.subgraph.sgmail.identity;
 
 import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.bouncycastle.openpgp.operator.bc.BcPBESecretKeyDecryptorBuilder;
@@ -16,10 +17,12 @@ public class GnuPGPrivateIdentity extends AbstractPrivateIdentity implements Pri
 	}
 
 	private final PGPSecretKeyRing secretKeyring;
+    private final GnuPGPublicIdentity publicIdentity;
 	private String passphrase;
 	
-	public GnuPGPrivateIdentity(PGPSecretKeyRing secretKeyring) {
+	public GnuPGPrivateIdentity(PGPSecretKeyRing secretKeyring, PGPPublicKeyRing publicKeyRing) {
 		this.secretKeyring = secretKeyring;
+        this.publicIdentity = new GnuPGPublicIdentity(publicKeyRing);
 	}
 	
 	@Override
@@ -29,23 +32,22 @@ public class GnuPGPrivateIdentity extends AbstractPrivateIdentity implements Pri
 
 	@Override
 	public PublicIdentity getPublicIdentity() {
-		// TODO Auto-generated method stub
-		return null;
+        return publicIdentity;
 	}
 
-	public boolean testPassphrase(String passphrase) {
+    @Override
+	public boolean isValidPassphrase(String passphrase) {
 		try {
 			secretKeyring.getSecretKey().extractPrivateKey(createDecryptor(passphrase));
 			return true;
 		} catch (PGPException e) {
-			e.printStackTrace();
 			return false;
 		}
 	}
 
 	@Override
 	public void setPassphrase(String passphrase) throws OpenPGPException {
-		if(!testPassphrase(passphrase)) {
+		if(!isValidPassphrase(passphrase)) {
 			throw new OpenPGPException("Invalid passphrase for encypted GnuPGPrivateIdentity");
 		}
 		this.passphrase = passphrase;
@@ -55,4 +57,5 @@ public class GnuPGPrivateIdentity extends AbstractPrivateIdentity implements Pri
 	public String getPassphrase() {
 		return passphrase;
 	}
+
 }
