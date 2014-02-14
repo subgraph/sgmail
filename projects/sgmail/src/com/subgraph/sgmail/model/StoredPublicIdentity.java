@@ -1,27 +1,22 @@
 package com.subgraph.sgmail.model;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import org.bouncycastle.openpgp.PGPPublicKey;
-import org.bouncycastle.openpgp.PGPPublicKeyRing;
-import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator;
-
 import com.db4o.activation.ActivationPurpose;
 import com.subgraph.sgmail.identity.PublicIdentity;
+import com.subgraph.sgmail.identity.PublicKeyDecoder;
+import org.bouncycastle.openpgp.PGPPublicKey;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
+
+import java.io.IOException;
+import java.util.List;
 
 public class StoredPublicIdentity extends AbstractActivatable implements PublicIdentity {
 	
-	
 	private final byte[] bytes;
 	private final int keySource;
-	
-	private transient PGPPublicKeyRing cachedKeyRing;
-	private transient List<String> cachedUserIds;
-	
-	StoredPublicIdentity(byte[] bytes, int keySource) {
+
+    private transient PublicKeyDecoder cachedDecoder;
+
+	public StoredPublicIdentity(byte[] bytes, int keySource) {
 		this.bytes = bytes;
 		this.keySource = keySource;
 	}
@@ -29,49 +24,38 @@ public class StoredPublicIdentity extends AbstractActivatable implements PublicI
 	@Override
 	public int getKeySource() {
 		activate(ActivationPurpose.READ);
-		return keySource;
+        return keySource;
 	}
+
+    private synchronized PublicKeyDecoder getDecoder() {
+        activate(ActivationPurpose.READ);
+        if(cachedDecoder == null) {
+            try {
+                cachedDecoder = PublicKeyDecoder.createFromBytes(bytes);
+            } catch (IOException e) {
+                throw new IllegalStateException("IOException decoding StoredPublicIdentity key bytes: "+ e);
+            }
+        }
+        return cachedDecoder;
+    }
 
 	@Override
 	public synchronized PGPPublicKeyRing getPGPPublicKeyRing() {
-		if(cachedKeyRing == null) {
-			cachedKeyRing = createPublicKeyRing();
-		}
-		return cachedKeyRing;
+        return getDecoder().getPublicKeyRing();
 	}
 
-	private PGPPublicKeyRing createPublicKeyRing() {
-		activate(ActivationPurpose.READ);
-		try {
-			return new PGPPublicKeyRing(bytes, new JcaKeyFingerprintCalculator());
-		} catch (IOException e) {
-			throw new IllegalStateException("IOException creating key ring "+ e.getMessage(), e);
-		}
-	}
-	
+    @Override
+    public synchronized List<PGPPublicKey> getPublicKeys() {
+        return getDecoder().getPublicKeys();
+    }
+
 	@Override
 	public synchronized List<String> getUserIds() {
-		if(cachedUserIds == null) {
-			cachedUserIds = generateUserIds();
-		}
-		return cachedUserIds;
-	}
-	
-	private List<String> generateUserIds() {
-		final List<String> uids = new ArrayList<>();
-		final PGPPublicKey pk = getPGPPublicKeyRing().getPublicKey();
-		if(pk != null) {
-			final Iterator<?> it = pk.getUserIDs();
-			while(it.hasNext()) {
-				uids.add((String) it.next());
-			}
-		}
-		return uids;
+        return getDecoder().getUserIDs();
 	}
 
 	@Override
-	public byte[] getImageBytes() {
-		// TODO Auto-generated method stub
-		return null;
+	public byte[] getImageData() {
+        return getDecoder().getImageData();
 	}
 }
