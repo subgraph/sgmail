@@ -1,5 +1,11 @@
 package com.subgraph.sgmail.identity;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.io.ByteSource;
+import com.google.common.io.Files;
+import com.google.common.primitives.UnsignedLongs;
+import org.bouncycastle.openpgp.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -7,16 +13,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
-
-import org.bouncycastle.openpgp.PGPException;
-import org.bouncycastle.openpgp.PGPPublicKeyRing;
-import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
-import org.bouncycastle.openpgp.PGPSecretKeyRing;
-import org.bouncycastle.openpgp.PGPSecretKeyRingCollection;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.io.ByteSource;
-import com.google.common.io.Files;
 
 public class GnuPGKeyringLoader {
 	private final static Logger logger = Logger.getLogger(GnuPGKeyringLoader.class.getName());
@@ -34,8 +30,7 @@ public class GnuPGKeyringLoader {
 	private final List<PrivateIdentity> privateIdentities = new ArrayList<>();
 	
 	private boolean isLoaded;
-	private boolean validateLoadedKeys = false;
-	
+
 	public GnuPGKeyringLoader() {
 		this(DEFAULT_GNUPG_DIRECTORY);
 	}
@@ -73,18 +68,32 @@ public class GnuPGKeyringLoader {
 	private void reloadPublicIdentities() {
 		final List<PublicIdentity> ids = new ArrayList<>();
 		for(PGPPublicKeyRing pkr: loadPublicKeys()) {
-			if(!validateLoadedKeys || PublicKeyValidator.validate(pkr)) {
+			if(PublicKeyValidator.validate(pkr, false)) {
 				ids.add(new GnuPGPublicIdentity(pkr));
 			}
 		}
 		publicIdentities.clear();
 		publicIdentities.addAll(ids);
 	}
-	
+
+    private PublicIdentity getPublicIdentityByKeyId(long keyId) {
+        for(PublicIdentity pub: publicIdentities) {
+            if(pub.getPGPPublicKeyRing().getPublicKey().getKeyID() == keyId) {
+                return pub;
+            }
+        }
+        return null;
+    }
+
 	private void reloadPrivateIdentities() {
 		final List<PrivateIdentity> ids = new ArrayList<>();
 		for(PGPSecretKeyRing skr: loadSecretKeys()) {
-			ids.add(new GnuPGPrivateIdentity(skr));
+            PublicIdentity pub = getPublicIdentityByKeyId(skr.getPublicKey().getKeyID());
+            if(pub == null) {
+                logger.warning("No public key found for keyid "+ UnsignedLongs.toString(skr.getPublicKey().getKeyID(), 16));
+            } else {
+                ids.add(new GnuPGPrivateIdentity(skr, pub.getPGPPublicKeyRing()));
+            }
 		}
 		privateIdentities.clear();
 		privateIdentities.addAll(ids);
