@@ -1,18 +1,17 @@
 package com.subgraph.sgmail.model;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.List;
-import java.util.logging.Logger;
+import com.db4o.activation.ActivationPurpose;
+import com.db4o.collections.ActivatableArrayList;
+import com.google.common.collect.ImmutableList;
 
 import javax.mail.NoSuchProviderException;
 import javax.mail.Store;
 import javax.mail.URLName;
+import java.util.List;
+import java.util.logging.Logger;
 
-import com.db4o.activation.ActivationPurpose;
-import com.db4o.collections.ActivatableArrayList;
-import com.google.common.collect.ImmutableList;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class IMAPAccount extends AbstractActivatable implements Account {
 	
@@ -55,7 +54,7 @@ public class IMAPAccount extends AbstractActivatable implements Account {
 		this.isSecure = true;
 		this.isAutomaticSyncEnabled = true;
 		this.smtpAccount = smtpAccount;
-		this.preferences = new StoredAccountPreferences(this, model);
+		this.preferences = StoredAccountPreferences.create(this, model);
 	}
 	
 	public Model getModel() {
@@ -183,7 +182,11 @@ public class IMAPAccount extends AbstractActivatable implements Account {
 		return isSecure ? DEFAULT_IMAPS_PORT : DEFAULT_IMAP_PORT;
 	}
 
-	
+    SMTPAccount getSmtpAccount() {
+        activate(ActivationPurpose.READ);
+        return smtpAccount;
+    }
+
 	protected String getProto() {
 		return (isSecure) ? "imaps" : "imap";
 	}
