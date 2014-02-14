@@ -1,5 +1,6 @@
 package com.subgraph.sgmail.ui.panes.left;
 
+import com.subgraph.sgmail.model.*;
 import org.eclipse.jface.viewers.OwnerDrawLabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
@@ -10,19 +11,15 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 
-import com.subgraph.sgmail.model.Account;
-import com.subgraph.sgmail.model.ConversationSource;
-import com.subgraph.sgmail.model.GmailLabel;
-import com.subgraph.sgmail.model.StoredFolder;
 import com.subgraph.sgmail.ui.ImageCache;
 
 public class LabelProvider extends OwnerDrawLabelProvider {
 
 	@Override
 	protected void measure(Event event, Object element) {
-		event.width = getWidth(event);
+        event.width = getWidth(event);
 		event.height = event.gc.getFontMetrics().getHeight() + 4;
-	}
+    }
 	
 	private int getWidth(Event event) {
 		final TreeItem item = (TreeItem) event.item;
@@ -33,7 +30,7 @@ public class LabelProvider extends OwnerDrawLabelProvider {
 
 	@Override
 	protected void paint(Event event, Object element) {
-		Rectangle b = event.getBounds();
+        Rectangle b = event.getBounds();
 		String text = getText(element);
 		Image image = getImage(element);
 		
@@ -85,7 +82,7 @@ public class LabelProvider extends OwnerDrawLabelProvider {
 	}
 	
 	private String getText(Object element) {
-		if(element instanceof StoredFolder) {
+        if(element instanceof StoredFolder) {
 			final StoredFolder folder = (StoredFolder) element;
 			return folder.getFullName();
 		} else if(element instanceof Account) {

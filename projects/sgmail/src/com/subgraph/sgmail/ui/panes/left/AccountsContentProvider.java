@@ -1,20 +1,14 @@
 package com.subgraph.sgmail.ui.panes.left;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-
-import javax.mail.Folder;
-import javax.mail.MessagingException;
-
+import com.subgraph.sgmail.model.*;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import com.subgraph.sgmail.model.Account;
-import com.subgraph.sgmail.model.GmailIMAPAccount;
-import com.subgraph.sgmail.model.IMAPAccount;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.model.StoredFolder;
+import javax.mail.Folder;
+import javax.mail.MessagingException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 public class AccountsContentProvider implements ITreeContentProvider {
 	private final static Logger logger = Logger.getLogger(AccountsContentProvider.class.getName());
@@ -33,7 +27,7 @@ public class AccountsContentProvider implements ITreeContentProvider {
 
 	@Override
 	public Object[] getElements(Object inputElement) {
-		if(model == null) {
+        if(model == null) {
 			return new Object[0];
 		} else {
 			return getRootElements();
@@ -44,7 +38,7 @@ public class AccountsContentProvider implements ITreeContentProvider {
 	private Object[] getRootElements() {
 		final List<Object> elems = new ArrayList<>();
 		for(Account a: model.getAccounts()) {
-			elems.add(a);
+            elems.add(a);
 			if(a instanceof GmailIMAPAccount) {
 				elems.addAll(((GmailIMAPAccount) a).getLabels());
 			}
@@ -54,7 +48,7 @@ public class AccountsContentProvider implements ITreeContentProvider {
 
 	@Override
 	public Object[] getChildren(Object parentElement) {
-		if(parentElement instanceof Model) {
+        if(parentElement instanceof Model) {
 			return getRootElements();
 			//return ((Model) parentElement).getAccounts().toArray();
 		} else if(parentElement instanceof IMAPAccount) {
@@ -95,7 +89,7 @@ public class AccountsContentProvider implements ITreeContentProvider {
 
 	@Override
 	public boolean hasChildren(Object element) {
-		if(element instanceof Model) {
+        if(element instanceof Model) {
 			return !((Model)element).getAccounts().isEmpty();
 		} else if(element instanceof IMAPAccount) {
 			return getChildrenOfAccount((IMAPAccount) element).length > 0;
