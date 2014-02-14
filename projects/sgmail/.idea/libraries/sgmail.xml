@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="sgmail">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/dist/sgmail.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/src/org.eclipse.jface.source_3.9.1.v20130725-1141.jar!/" />
+    </SOURCES>
+  </library>
+</component>
