@@ -64,7 +64,6 @@ public class LeftPane extends Composite {
 		final TreeViewer tv = new TreeViewer(parent);
 		tv.getTree().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		tv.setContentProvider(new AccountsContentProvider());
-		//tv.setLabelProvider(new AccountsLabelProvider());
 		tv.setLabelProvider(new LabelProvider());
 		tv.setInput(model);
 		tv.addSelectionChangedListener(new ISelectionChangedListener() {
