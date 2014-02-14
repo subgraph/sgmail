@@ -23,6 +23,9 @@ public class ComposeMessageAction extends Action {
 	}
 	
 	public void run() {
+        if(model.getAccounts().isEmpty()) {
+            return;
+        }
 		ComposeWindow compose = new ComposeWindow(Display.getDefault().getActiveShell(), model);
 		compose.open();
 
