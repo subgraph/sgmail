@@ -1,33 +1,37 @@
 package com.subgraph.sgmail.model;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.io.File;
-import java.util.List;
-import java.util.Properties;
-import java.util.logging.Logger;
-
-import javax.mail.Session;
-
 import com.db4o.Db4oEmbedded;
 import com.db4o.ObjectContainer;
 import com.db4o.ObjectSet;
 import com.db4o.config.EmbeddedConfiguration;
-import com.db4o.events.Event4;
-import com.db4o.events.EventListener4;
-import com.db4o.events.EventRegistry;
-import com.db4o.events.EventRegistryFactory;
-import com.db4o.events.ObjectInfoEventArgs;
+import com.db4o.events.*;
+import com.db4o.query.Predicate;
 import com.db4o.ta.DeactivatingRollbackStrategy;
 import com.db4o.ta.TransparentPersistenceSupport;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.subgraph.sgmail.events.AccountAddedEvent;
 import com.subgraph.sgmail.events.PreferenceChangedEvent;
 import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.identity.PublicIdentity;
 import com.subgraph.sgmail.identity.PublicIdentityCache;
+import com.subgraph.sgmail.identity.client.IdentityServerManager;
 import com.subgraph.sgmail.sync.SynchronizationManager;
+
+import javax.mail.Session;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.logging.Logger;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Model {
 
@@ -42,10 +46,14 @@ public class Model {
 	private final Object dbLock = new Object();
 	
 	private SynchronizationManager synchronizationManager;
-	
+	private IdentityServerManager identityServerManager;
+    private ListeningExecutorService executor;
+
 	private boolean isOpened;
 	private ObjectContainer db;
-	
+
+    private Map<String, Contact> temporaryContactMap = new HashMap<>();
+
 	public Model(File databaseDirectory) {
 		this(databaseDirectory, new Properties());
 	}
@@ -64,6 +72,13 @@ public class Model {
 		}
 		return synchronizationManager;
 	}
+
+    public synchronized IdentityServerManager getIdentityServerManager() {
+        if(identityServerManager == null) {
+            identityServerManager = new IdentityServerManager(this);
+        }
+        return identityServerManager;
+    }
 
 	@Subscribe
 	public void onPreferenceChanged(PreferenceChangedEvent event) {
@@ -97,10 +112,14 @@ public class Model {
 
 	public void addAccount(Account account) {
 		checkOpened();
-		db.store(account);
 		if(account instanceof IMAPAccount) {
-			((IMAPAccount)account).onActivate(this);
+            final IMAPAccount imapAccount = (IMAPAccount) account;
+            db.store(imapAccount.getSmtpAccount());
+            imapAccount.onActivate(this);
 		}
+        db.store(account);
+        db.commit();
+        System.out.println("account added in model.addAccount()");
 		eventBus.post(new AccountAddedEvent(account));
 	}
 
@@ -135,7 +154,18 @@ public class Model {
 			isOpened = false;
 		}
 	}
-	
+
+    public synchronized ListeningExecutorService getExecutor() {
+        if(executor == null) {
+            executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
+        }
+        return executor;
+    }
+
+    public <T> ListenableFuture<T> submitTask(Callable<T> task) {
+        return getExecutor().submit(task);
+    }
+
 	private void registerEvents(final ObjectContainer db) {
 		final EventRegistry er = EventRegistryFactory.forObjectContainer(db);
 		er.activated().addListener(new EventListener4<ObjectInfoEventArgs>() {
@@ -165,7 +195,35 @@ public class Model {
 		checkOpened();
 		return db.query(Account.class);
 	}
-	
+
+
+    public Contact getContactByEmailAddress(final String emailAddress) {
+        final ObjectSet<Contact> result = db.query(new Predicate<Contact>() {
+            @Override
+            public boolean match(Contact contact) {
+                return contact.getEmailAddress().equalsIgnoreCase(emailAddress);
+            }
+        });
+
+        if(result.size() == 0) {
+            return getTemporaryContactByEmailAddress(emailAddress);
+        } else if(result.size() > 1) {
+            logger.warning("Multiple Contact entries found for emailAddress = "+ emailAddress + " ignoring duplicates");
+        }
+        return result.get(0);
+    }
+
+    private Contact getTemporaryContactByEmailAddress(String emailAddress) {
+        synchronized (temporaryContactMap) {
+            if(!temporaryContactMap.containsKey(emailAddress)) {
+                Contact contact = new Contact(emailAddress);
+                contact.onActivate(this);
+                temporaryContactMap.put(emailAddress, contact);
+            }
+            return temporaryContactMap.get(emailAddress);
+        }
+    }
+
 	public List<PublicIdentity> findIdentitiesFor(String emailAddress) {
 		return publicIdentityCache.findKeysFor(emailAddress);
 	}
@@ -196,13 +254,13 @@ public class Model {
 	public StoredPreferences getRootStoredPreferences() {
 		final StoredPreferences result = getModelSingleton(StoredRootPreferences.class);
 		return (result != null) ? (result) 
-				: (storeNewObject(new StoredRootPreferences()));
+				: (storeNewObject(StoredRootPreferences.create()));
 	}
 
 	public byte[] findAvatarImageDataForEmail(String emailAddress) {
 		for(PublicIdentity pk: findIdentitiesFor(emailAddress)) {
-			byte[] imageBytes = pk.getImageBytes();
-			if(imageBytes != null) {
+			byte[] imageBytes = pk.getImageData();
+			if(imageBytes != null && imageBytes.length > 0) {
 				return imageBytes;
 			}
 		}
