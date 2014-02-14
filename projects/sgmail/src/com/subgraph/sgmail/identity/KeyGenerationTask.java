@@ -1,31 +1,24 @@
 package com.subgraph.sgmail.identity;
 
-import java.math.BigInteger;
-import java.security.SecureRandom;
-import java.util.Date;
-import java.util.concurrent.Callable;
-
+import com.google.common.base.Strings;
 import org.bouncycastle.bcpg.HashAlgorithmTags;
 import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
 import org.bouncycastle.bcpg.sig.Features;
 import org.bouncycastle.bcpg.sig.KeyFlags;
 import org.bouncycastle.crypto.generators.RSAKeyPairGenerator;
 import org.bouncycastle.crypto.params.RSAKeyGenerationParameters;
-import org.bouncycastle.openpgp.PGPEncryptedData;
-import org.bouncycastle.openpgp.PGPException;
-import org.bouncycastle.openpgp.PGPKeyPair;
-import org.bouncycastle.openpgp.PGPKeyRingGenerator;
-import org.bouncycastle.openpgp.PGPPublicKey;
-import org.bouncycastle.openpgp.PGPPublicKeyRing;
-import org.bouncycastle.openpgp.PGPSecretKeyRing;
-import org.bouncycastle.openpgp.PGPSignature;
-import org.bouncycastle.openpgp.PGPSignatureSubpacketGenerator;
+import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.PBESecretKeyEncryptor;
 import org.bouncycastle.openpgp.operator.PGPDigestCalculator;
 import org.bouncycastle.openpgp.operator.bc.BcPBESecretKeyEncryptorBuilder;
 import org.bouncycastle.openpgp.operator.bc.BcPGPContentSignerBuilder;
 import org.bouncycastle.openpgp.operator.bc.BcPGPDigestCalculatorProvider;
 import org.bouncycastle.openpgp.operator.bc.BcPGPKeyPair;
+
+import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.util.Date;
+import java.util.concurrent.Callable;
 
 public class KeyGenerationTask implements Callable<KeyGenerationResult>{
 	
@@ -53,7 +46,7 @@ public class KeyGenerationTask implements Callable<KeyGenerationResult>{
 	@Override
 	public KeyGenerationResult call()  {
 		try {
-			final PGPKeyRingGenerator krg = createKeyRingGenerator(parameters.getEmailAddress(), 0xc0, new char[0]);
+			final PGPKeyRingGenerator krg = createKeyRingGenerator(createPrimaryId(), 0xc0, new char[0]);
 			final PGPSecretKeyRing secretKeyRing = krg.generateSecretKeyRing();
 			final PGPPublicKeyRing publicKeyRing = krg.generatePublicKeyRing();
 			return new KeyGenerationResult(secretKeyRing, publicKeyRing);
@@ -61,7 +54,20 @@ public class KeyGenerationTask implements Callable<KeyGenerationResult>{
 			return new KeyGenerationResult("Error generating keys "+ e.getMessage());
 		}
 	}
-	
+
+    private String createPrimaryId() {
+        final String rn = Strings.emptyToNull(parameters.getRealName());
+        final String comment = Strings.emptyToNull(parameters.getComment());
+        final String email = Strings.emptyToNull(parameters.getEmailAddress());
+
+        if(rn == null) {
+            return (email == null) ? "None" : email;
+        }
+
+        final String realname = (comment == null) ? (rn) : (rn + " ("+ comment +")");
+
+        return (email == null) ? (realname) : (realname + " <" + email + ">");
+    }
 	private PGPKeyRingGenerator createKeyRingGenerator(String id, int s2kCount, char[] passPhrase) throws PGPException {
 		final PGPKeyPair masterKey = createSigningKeys();
 		final PGPKeyPair subKey = createEncryptionKeys();
