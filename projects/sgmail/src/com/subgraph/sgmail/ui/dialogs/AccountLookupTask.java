@@ -2,6 +2,7 @@ package com.subgraph.sgmail.ui.dialogs;
 
 import java.lang.reflect.InvocationTargetException;
 
+import com.subgraph.sgmail.servers.MailserverAutoconfiguration;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
@@ -27,7 +28,7 @@ public class AccountLookupTask implements IRunnableWithProgress {
 	
 	@Override
 	public void run(IProgressMonitor monitor) throws InvocationTargetException {
-		MozillaAutoconfiguration autoconf = new MozillaAutoconfiguration(domain);
+        MailserverAutoconfiguration autoconf = new MailserverAutoconfiguration(domain);
 		monitor.beginTask("Looking up server information", 1);
 		if(autoconf.performLookup()) {
 			final ServerInformation incoming = getIMAPServer(autoconf);
@@ -44,7 +45,7 @@ public class AccountLookupTask implements IRunnableWithProgress {
 	public boolean getLookupSucceeded() {
 		return lookupSucceeded;
 	}
-	private ServerInformation getIMAPServer(MozillaAutoconfiguration autoconf) {
+	private ServerInformation getIMAPServer(MailserverAutoconfiguration autoconf) {
 		for(ServerInformation info: autoconf.getIncomingServers()) {
 			if(info.getProtocol() == Protocol.IMAP) {
 				return info;
@@ -53,7 +54,7 @@ public class AccountLookupTask implements IRunnableWithProgress {
 		return null;
 	}
 	
-	private ServerInformation getSMTPServer(MozillaAutoconfiguration autoconf) {
+	private ServerInformation getSMTPServer(MailserverAutoconfiguration autoconf) {
 		for(ServerInformation info: autoconf.getOutgoingServers()) {
 			return info;
 		}

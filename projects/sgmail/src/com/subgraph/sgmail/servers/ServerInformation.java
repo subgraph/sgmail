@@ -19,11 +19,15 @@ public class ServerInformation {
 		}
 		
 		Builder protocol(String val) { protocol = stringToProtocol(val); return this; }
+        Builder protocol(Protocol p) { this.protocol = p; return this; }
 		Builder hostname(String s) { hostname = s; return this; }
 		Builder port(int p) { port = p; return this; }
 		Builder socketType(String s) { socketType = stringToSocketType(s); return this; }
+        Builder socketType(SocketType st) { socketType = st; return this; }
 		Builder authenticationType(String s) { authenticationType = stringToAuthenticationType(s); return this; }
+        Builder authenticationType(AuthenticationType at) { authenticationType = at; return this; }
 		Builder usernameType(String s) { usernameType = stringToUsernameType(s); return this; }
+        Builder usernameType(UsernameType ut) { usernameType = ut; return this; }
 	}
 	
 	
