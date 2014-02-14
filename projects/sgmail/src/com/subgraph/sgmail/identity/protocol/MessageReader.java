@@ -1,11 +1,11 @@
 package com.subgraph.sgmail.identity.protocol;
 
+import com.subgraph.sgmail.identity.protocol.Protocol.ProtocolMessage;
+import com.subgraph.sgmail.identity.protocol.Protocol.ProtocolMessage.Type;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-
-import com.subgraph.sgmail.identity.protocol.Protocol.ProtocolMessage;
-import com.subgraph.sgmail.identity.protocol.Protocol.ProtocolMessage.Type;
 
 public class MessageReader implements Closeable {
 	private final static int MAXIMUM_MESSAGE_LENGTH = 256 * 1024;
@@ -36,6 +36,14 @@ public class MessageReader implements Closeable {
 			return KeyPublishRequest.fromProtocolMessage(pm.getPublishRequest());
 		case Type.KEY_PUBLISH_RESPONSE_VALUE:
 			return KeyPublishResponse.fromProtocolMessage(pm.getPublishResponse());
+        case Type.KEY_REGISTRATION_REQUEST_VALUE:
+            return KeyRegistrationRequest.fromProtocolMessage(pm.getRegistrationRequest());
+        case Type.KEY_REGISTRATION_RESPONSE_VALUE:
+            return KeyRegistrationResponse.fromProtocolMessage(pm.getRegistrationResponse());
+        case Type.KEY_REGISTRATION_FINALIZE_REQUEST_VALUE:
+            return KeyRegistrationFinalizeRequest.fromProtocolMessage(pm.getRegistrationFinalizeRequest());
+        case Type.KEY_REGISTRATION_FINALIZE_RESPONSE_VALUE:
+            return KeyRegistrationFinalizeResponse.fromProtocolMessage(pm.getRegistrationFinalizeResponse());
 		default:
 			throw new IllegalArgumentException("Unknown message type "+ type.getNumber());
 		}

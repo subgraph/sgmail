@@ -3,7 +3,6 @@
 
 package com.subgraph.sgmail.identity.protocol;
 
-@SuppressWarnings("unused")
 public final class Protocol {
   private Protocol() {}
   public static void registerAllExtensions(
@@ -77,6 +76,62 @@ public final class Protocol {
      * <code>optional .identity.KeyPublishResponse publish_response = 5;</code>
      */
     com.subgraph.sgmail.identity.protocol.Protocol.KeyPublishResponseOrBuilder getPublishResponseOrBuilder();
+
+    // optional .identity.KeyRegistrationRequest registration_request = 6;
+    /**
+     * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+     */
+    boolean hasRegistrationRequest();
+    /**
+     * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+     */
+    com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest getRegistrationRequest();
+    /**
+     * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+     */
+    com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequestOrBuilder getRegistrationRequestOrBuilder();
+
+    // optional .identity.KeyRegistrationResponse registration_response = 7;
+    /**
+     * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+     */
+    boolean hasRegistrationResponse();
+    /**
+     * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+     */
+    com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse getRegistrationResponse();
+    /**
+     * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+     */
+    com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponseOrBuilder getRegistrationResponseOrBuilder();
+
+    // optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;
+    /**
+     * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+     */
+    boolean hasRegistrationFinalizeRequest();
+    /**
+     * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+     */
+    com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest getRegistrationFinalizeRequest();
+    /**
+     * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+     */
+    com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequestOrBuilder getRegistrationFinalizeRequestOrBuilder();
+
+    // optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;
+    /**
+     * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+     */
+    boolean hasRegistrationFinalizeResponse();
+    /**
+     * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+     */
+    com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse getRegistrationFinalizeResponse();
+    /**
+     * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+     */
+    com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponseOrBuilder getRegistrationFinalizeResponseOrBuilder();
   }
   /**
    * Protobuf type {@code identity.ProtocolMessage}
@@ -106,8 +161,7 @@ public final class Protocol {
         getUnknownFields() {
       return this.unknownFields;
     }
-    
-	private ProtocolMessage(
+    private ProtocolMessage(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -193,6 +247,58 @@ public final class Protocol {
               bitField0_ |= 0x00000010;
               break;
             }
+            case 50: {
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000020) == 0x00000020)) {
+                subBuilder = registrationRequest_.toBuilder();
+              }
+              registrationRequest_ = input.readMessage(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(registrationRequest_);
+                registrationRequest_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000020;
+              break;
+            }
+            case 58: {
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000040) == 0x00000040)) {
+                subBuilder = registrationResponse_.toBuilder();
+              }
+              registrationResponse_ = input.readMessage(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(registrationResponse_);
+                registrationResponse_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000040;
+              break;
+            }
+            case 66: {
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000080) == 0x00000080)) {
+                subBuilder = registrationFinalizeRequest_.toBuilder();
+              }
+              registrationFinalizeRequest_ = input.readMessage(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(registrationFinalizeRequest_);
+                registrationFinalizeRequest_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000080;
+              break;
+            }
+            case 74: {
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000100) == 0x00000100)) {
+                subBuilder = registrationFinalizeResponse_.toBuilder();
+              }
+              registrationFinalizeResponse_ = input.readMessage(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(registrationFinalizeResponse_);
+                registrationFinalizeResponse_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000100;
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -253,6 +359,22 @@ public final class Protocol {
        * <code>KEY_PUBLISH_RESPONSE = 4;</code>
        */
       KEY_PUBLISH_RESPONSE(3, 4),
+      /**
+       * <code>KEY_REGISTRATION_REQUEST = 5;</code>
+       */
+      KEY_REGISTRATION_REQUEST(4, 5),
+      /**
+       * <code>KEY_REGISTRATION_RESPONSE = 6;</code>
+       */
+      KEY_REGISTRATION_RESPONSE(5, 6),
+      /**
+       * <code>KEY_REGISTRATION_FINALIZE_REQUEST = 7;</code>
+       */
+      KEY_REGISTRATION_FINALIZE_REQUEST(6, 7),
+      /**
+       * <code>KEY_REGISTRATION_FINALIZE_RESPONSE = 8;</code>
+       */
+      KEY_REGISTRATION_FINALIZE_RESPONSE(7, 8),
       ;
 
       /**
@@ -271,6 +393,22 @@ public final class Protocol {
        * <code>KEY_PUBLISH_RESPONSE = 4;</code>
        */
       public static final int KEY_PUBLISH_RESPONSE_VALUE = 4;
+      /**
+       * <code>KEY_REGISTRATION_REQUEST = 5;</code>
+       */
+      public static final int KEY_REGISTRATION_REQUEST_VALUE = 5;
+      /**
+       * <code>KEY_REGISTRATION_RESPONSE = 6;</code>
+       */
+      public static final int KEY_REGISTRATION_RESPONSE_VALUE = 6;
+      /**
+       * <code>KEY_REGISTRATION_FINALIZE_REQUEST = 7;</code>
+       */
+      public static final int KEY_REGISTRATION_FINALIZE_REQUEST_VALUE = 7;
+      /**
+       * <code>KEY_REGISTRATION_FINALIZE_RESPONSE = 8;</code>
+       */
+      public static final int KEY_REGISTRATION_FINALIZE_RESPONSE_VALUE = 8;
 
 
       public final int getNumber() { return value; }
@@ -281,6 +419,10 @@ public final class Protocol {
           case 2: return KEY_LOOKUP_RESPONSE;
           case 3: return KEY_PUBLISH_REQUEST;
           case 4: return KEY_PUBLISH_RESPONSE;
+          case 5: return KEY_REGISTRATION_REQUEST;
+          case 6: return KEY_REGISTRATION_RESPONSE;
+          case 7: return KEY_REGISTRATION_FINALIZE_REQUEST;
+          case 8: return KEY_REGISTRATION_FINALIZE_RESPONSE;
           default: return null;
         }
       }
@@ -437,12 +579,104 @@ public final class Protocol {
       return publishResponse_;
     }
 
+    // optional .identity.KeyRegistrationRequest registration_request = 6;
+    public static final int REGISTRATION_REQUEST_FIELD_NUMBER = 6;
+    private com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest registrationRequest_;
+    /**
+     * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+     */
+    public boolean hasRegistrationRequest() {
+      return ((bitField0_ & 0x00000020) == 0x00000020);
+    }
+    /**
+     * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+     */
+    public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest getRegistrationRequest() {
+      return registrationRequest_;
+    }
+    /**
+     * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+     */
+    public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequestOrBuilder getRegistrationRequestOrBuilder() {
+      return registrationRequest_;
+    }
+
+    // optional .identity.KeyRegistrationResponse registration_response = 7;
+    public static final int REGISTRATION_RESPONSE_FIELD_NUMBER = 7;
+    private com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse registrationResponse_;
+    /**
+     * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+     */
+    public boolean hasRegistrationResponse() {
+      return ((bitField0_ & 0x00000040) == 0x00000040);
+    }
+    /**
+     * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+     */
+    public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse getRegistrationResponse() {
+      return registrationResponse_;
+    }
+    /**
+     * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+     */
+    public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponseOrBuilder getRegistrationResponseOrBuilder() {
+      return registrationResponse_;
+    }
+
+    // optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;
+    public static final int REGISTRATION_FINALIZE_REQUEST_FIELD_NUMBER = 8;
+    private com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest registrationFinalizeRequest_;
+    /**
+     * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+     */
+    public boolean hasRegistrationFinalizeRequest() {
+      return ((bitField0_ & 0x00000080) == 0x00000080);
+    }
+    /**
+     * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+     */
+    public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest getRegistrationFinalizeRequest() {
+      return registrationFinalizeRequest_;
+    }
+    /**
+     * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+     */
+    public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequestOrBuilder getRegistrationFinalizeRequestOrBuilder() {
+      return registrationFinalizeRequest_;
+    }
+
+    // optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;
+    public static final int REGISTRATION_FINALIZE_RESPONSE_FIELD_NUMBER = 9;
+    private com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse registrationFinalizeResponse_;
+    /**
+     * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+     */
+    public boolean hasRegistrationFinalizeResponse() {
+      return ((bitField0_ & 0x00000100) == 0x00000100);
+    }
+    /**
+     * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+     */
+    public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse getRegistrationFinalizeResponse() {
+      return registrationFinalizeResponse_;
+    }
+    /**
+     * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+     */
+    public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponseOrBuilder getRegistrationFinalizeResponseOrBuilder() {
+      return registrationFinalizeResponse_;
+    }
+
     private void initFields() {
       type_ = com.subgraph.sgmail.identity.protocol.Protocol.ProtocolMessage.Type.KEY_LOOKUP_REQUEST;
       lookupRequest_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyLookupRequest.getDefaultInstance();
       lookupResponse_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyLookupResponse.getDefaultInstance();
       publishRequest_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyPublishRequest.getDefaultInstance();
       publishResponse_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyPublishResponse.getDefaultInstance();
+      registrationRequest_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.getDefaultInstance();
+      registrationResponse_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.getDefaultInstance();
+      registrationFinalizeRequest_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.getDefaultInstance();
+      registrationFinalizeResponse_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -475,6 +709,18 @@ public final class Protocol {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         output.writeMessage(5, publishResponse_);
       }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        output.writeMessage(6, registrationRequest_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        output.writeMessage(7, registrationResponse_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        output.writeMessage(8, registrationFinalizeRequest_);
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        output.writeMessage(9, registrationFinalizeResponse_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -503,6 +749,22 @@ public final class Protocol {
       if (((bitField0_ & 0x00000010) == 0x00000010)) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, publishResponse_);
+      }
+      if (((bitField0_ & 0x00000020) == 0x00000020)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(6, registrationRequest_);
+      }
+      if (((bitField0_ & 0x00000040) == 0x00000040)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(7, registrationResponse_);
+      }
+      if (((bitField0_ & 0x00000080) == 0x00000080)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(8, registrationFinalizeRequest_);
+      }
+      if (((bitField0_ & 0x00000100) == 0x00000100)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(9, registrationFinalizeResponse_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -600,7 +862,7 @@ public final class Protocol {
                 com.subgraph.sgmail.identity.protocol.Protocol.ProtocolMessage.class, com.subgraph.sgmail.identity.protocol.Protocol.ProtocolMessage.Builder.class);
       }
 
-      // Construct using com.subgraph.identity.protocol.Protocol.ProtocolMessage.newBuilder()
+      // Construct using com.subgraph.sgmail.identity.protocol.Protocol.ProtocolMessage.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -616,6 +878,10 @@ public final class Protocol {
           getLookupResponseFieldBuilder();
           getPublishRequestFieldBuilder();
           getPublishResponseFieldBuilder();
+          getRegistrationRequestFieldBuilder();
+          getRegistrationResponseFieldBuilder();
+          getRegistrationFinalizeRequestFieldBuilder();
+          getRegistrationFinalizeResponseFieldBuilder();
         }
       }
       private static Builder create() {
@@ -650,6 +916,30 @@ public final class Protocol {
           publishResponseBuilder_.clear();
         }
         bitField0_ = (bitField0_ & ~0x00000010);
+        if (registrationRequestBuilder_ == null) {
+          registrationRequest_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.getDefaultInstance();
+        } else {
+          registrationRequestBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000020);
+        if (registrationResponseBuilder_ == null) {
+          registrationResponse_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.getDefaultInstance();
+        } else {
+          registrationResponseBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000040);
+        if (registrationFinalizeRequestBuilder_ == null) {
+          registrationFinalizeRequest_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.getDefaultInstance();
+        } else {
+          registrationFinalizeRequestBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000080);
+        if (registrationFinalizeResponseBuilder_ == null) {
+          registrationFinalizeResponse_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.getDefaultInstance();
+        } else {
+          registrationFinalizeResponseBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000100);
         return this;
       }
 
@@ -714,6 +1004,38 @@ public final class Protocol {
         } else {
           result.publishResponse_ = publishResponseBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+          to_bitField0_ |= 0x00000020;
+        }
+        if (registrationRequestBuilder_ == null) {
+          result.registrationRequest_ = registrationRequest_;
+        } else {
+          result.registrationRequest_ = registrationRequestBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000040;
+        }
+        if (registrationResponseBuilder_ == null) {
+          result.registrationResponse_ = registrationResponse_;
+        } else {
+          result.registrationResponse_ = registrationResponseBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000080;
+        }
+        if (registrationFinalizeRequestBuilder_ == null) {
+          result.registrationFinalizeRequest_ = registrationFinalizeRequest_;
+        } else {
+          result.registrationFinalizeRequest_ = registrationFinalizeRequestBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+          to_bitField0_ |= 0x00000100;
+        }
+        if (registrationFinalizeResponseBuilder_ == null) {
+          result.registrationFinalizeResponse_ = registrationFinalizeResponse_;
+        } else {
+          result.registrationFinalizeResponse_ = registrationFinalizeResponseBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -744,6 +1066,18 @@ public final class Protocol {
         }
         if (other.hasPublishResponse()) {
           mergePublishResponse(other.getPublishResponse());
+        }
+        if (other.hasRegistrationRequest()) {
+          mergeRegistrationRequest(other.getRegistrationRequest());
+        }
+        if (other.hasRegistrationResponse()) {
+          mergeRegistrationResponse(other.getRegistrationResponse());
+        }
+        if (other.hasRegistrationFinalizeRequest()) {
+          mergeRegistrationFinalizeRequest(other.getRegistrationFinalizeRequest());
+        }
+        if (other.hasRegistrationFinalizeResponse()) {
+          mergeRegistrationFinalizeResponse(other.getRegistrationFinalizeResponse());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -1280,6 +1614,474 @@ public final class Protocol {
         return publishResponseBuilder_;
       }
 
+      // optional .identity.KeyRegistrationRequest registration_request = 6;
+      private com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest registrationRequest_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.Builder, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequestOrBuilder> registrationRequestBuilder_;
+      /**
+       * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+       */
+      public boolean hasRegistrationRequest() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest getRegistrationRequest() {
+        if (registrationRequestBuilder_ == null) {
+          return registrationRequest_;
+        } else {
+          return registrationRequestBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+       */
+      public Builder setRegistrationRequest(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest value) {
+        if (registrationRequestBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          registrationRequest_ = value;
+          onChanged();
+        } else {
+          registrationRequestBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+       */
+      public Builder setRegistrationRequest(
+          com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.Builder builderForValue) {
+        if (registrationRequestBuilder_ == null) {
+          registrationRequest_ = builderForValue.build();
+          onChanged();
+        } else {
+          registrationRequestBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+       */
+      public Builder mergeRegistrationRequest(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest value) {
+        if (registrationRequestBuilder_ == null) {
+          if (((bitField0_ & 0x00000020) == 0x00000020) &&
+              registrationRequest_ != com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.getDefaultInstance()) {
+            registrationRequest_ =
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.newBuilder(registrationRequest_).mergeFrom(value).buildPartial();
+          } else {
+            registrationRequest_ = value;
+          }
+          onChanged();
+        } else {
+          registrationRequestBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000020;
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+       */
+      public Builder clearRegistrationRequest() {
+        if (registrationRequestBuilder_ == null) {
+          registrationRequest_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.getDefaultInstance();
+          onChanged();
+        } else {
+          registrationRequestBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000020);
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.Builder getRegistrationRequestBuilder() {
+        bitField0_ |= 0x00000020;
+        onChanged();
+        return getRegistrationRequestFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequestOrBuilder getRegistrationRequestOrBuilder() {
+        if (registrationRequestBuilder_ != null) {
+          return registrationRequestBuilder_.getMessageOrBuilder();
+        } else {
+          return registrationRequest_;
+        }
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationRequest registration_request = 6;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.Builder, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequestOrBuilder> 
+          getRegistrationRequestFieldBuilder() {
+        if (registrationRequestBuilder_ == null) {
+          registrationRequestBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.Builder, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequestOrBuilder>(
+                  registrationRequest_,
+                  getParentForChildren(),
+                  isClean());
+          registrationRequest_ = null;
+        }
+        return registrationRequestBuilder_;
+      }
+
+      // optional .identity.KeyRegistrationResponse registration_response = 7;
+      private com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse registrationResponse_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.Builder, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponseOrBuilder> registrationResponseBuilder_;
+      /**
+       * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+       */
+      public boolean hasRegistrationResponse() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse getRegistrationResponse() {
+        if (registrationResponseBuilder_ == null) {
+          return registrationResponse_;
+        } else {
+          return registrationResponseBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+       */
+      public Builder setRegistrationResponse(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse value) {
+        if (registrationResponseBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          registrationResponse_ = value;
+          onChanged();
+        } else {
+          registrationResponseBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000040;
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+       */
+      public Builder setRegistrationResponse(
+          com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.Builder builderForValue) {
+        if (registrationResponseBuilder_ == null) {
+          registrationResponse_ = builderForValue.build();
+          onChanged();
+        } else {
+          registrationResponseBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000040;
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+       */
+      public Builder mergeRegistrationResponse(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse value) {
+        if (registrationResponseBuilder_ == null) {
+          if (((bitField0_ & 0x00000040) == 0x00000040) &&
+              registrationResponse_ != com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.getDefaultInstance()) {
+            registrationResponse_ =
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.newBuilder(registrationResponse_).mergeFrom(value).buildPartial();
+          } else {
+            registrationResponse_ = value;
+          }
+          onChanged();
+        } else {
+          registrationResponseBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000040;
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+       */
+      public Builder clearRegistrationResponse() {
+        if (registrationResponseBuilder_ == null) {
+          registrationResponse_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.getDefaultInstance();
+          onChanged();
+        } else {
+          registrationResponseBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000040);
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.Builder getRegistrationResponseBuilder() {
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return getRegistrationResponseFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponseOrBuilder getRegistrationResponseOrBuilder() {
+        if (registrationResponseBuilder_ != null) {
+          return registrationResponseBuilder_.getMessageOrBuilder();
+        } else {
+          return registrationResponse_;
+        }
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationResponse registration_response = 7;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.Builder, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponseOrBuilder> 
+          getRegistrationResponseFieldBuilder() {
+        if (registrationResponseBuilder_ == null) {
+          registrationResponseBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.Builder, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponseOrBuilder>(
+                  registrationResponse_,
+                  getParentForChildren(),
+                  isClean());
+          registrationResponse_ = null;
+        }
+        return registrationResponseBuilder_;
+      }
+
+      // optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;
+      private com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest registrationFinalizeRequest_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.Builder, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequestOrBuilder> registrationFinalizeRequestBuilder_;
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+       */
+      public boolean hasRegistrationFinalizeRequest() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest getRegistrationFinalizeRequest() {
+        if (registrationFinalizeRequestBuilder_ == null) {
+          return registrationFinalizeRequest_;
+        } else {
+          return registrationFinalizeRequestBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+       */
+      public Builder setRegistrationFinalizeRequest(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest value) {
+        if (registrationFinalizeRequestBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          registrationFinalizeRequest_ = value;
+          onChanged();
+        } else {
+          registrationFinalizeRequestBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000080;
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+       */
+      public Builder setRegistrationFinalizeRequest(
+          com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.Builder builderForValue) {
+        if (registrationFinalizeRequestBuilder_ == null) {
+          registrationFinalizeRequest_ = builderForValue.build();
+          onChanged();
+        } else {
+          registrationFinalizeRequestBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000080;
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+       */
+      public Builder mergeRegistrationFinalizeRequest(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest value) {
+        if (registrationFinalizeRequestBuilder_ == null) {
+          if (((bitField0_ & 0x00000080) == 0x00000080) &&
+              registrationFinalizeRequest_ != com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.getDefaultInstance()) {
+            registrationFinalizeRequest_ =
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.newBuilder(registrationFinalizeRequest_).mergeFrom(value).buildPartial();
+          } else {
+            registrationFinalizeRequest_ = value;
+          }
+          onChanged();
+        } else {
+          registrationFinalizeRequestBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000080;
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+       */
+      public Builder clearRegistrationFinalizeRequest() {
+        if (registrationFinalizeRequestBuilder_ == null) {
+          registrationFinalizeRequest_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.getDefaultInstance();
+          onChanged();
+        } else {
+          registrationFinalizeRequestBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000080);
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.Builder getRegistrationFinalizeRequestBuilder() {
+        bitField0_ |= 0x00000080;
+        onChanged();
+        return getRegistrationFinalizeRequestFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequestOrBuilder getRegistrationFinalizeRequestOrBuilder() {
+        if (registrationFinalizeRequestBuilder_ != null) {
+          return registrationFinalizeRequestBuilder_.getMessageOrBuilder();
+        } else {
+          return registrationFinalizeRequest_;
+        }
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeRequest registration_finalize_request = 8;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.Builder, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequestOrBuilder> 
+          getRegistrationFinalizeRequestFieldBuilder() {
+        if (registrationFinalizeRequestBuilder_ == null) {
+          registrationFinalizeRequestBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.Builder, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequestOrBuilder>(
+                  registrationFinalizeRequest_,
+                  getParentForChildren(),
+                  isClean());
+          registrationFinalizeRequest_ = null;
+        }
+        return registrationFinalizeRequestBuilder_;
+      }
+
+      // optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;
+      private com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse registrationFinalizeResponse_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.Builder, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponseOrBuilder> registrationFinalizeResponseBuilder_;
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+       */
+      public boolean hasRegistrationFinalizeResponse() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse getRegistrationFinalizeResponse() {
+        if (registrationFinalizeResponseBuilder_ == null) {
+          return registrationFinalizeResponse_;
+        } else {
+          return registrationFinalizeResponseBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+       */
+      public Builder setRegistrationFinalizeResponse(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse value) {
+        if (registrationFinalizeResponseBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          registrationFinalizeResponse_ = value;
+          onChanged();
+        } else {
+          registrationFinalizeResponseBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000100;
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+       */
+      public Builder setRegistrationFinalizeResponse(
+          com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.Builder builderForValue) {
+        if (registrationFinalizeResponseBuilder_ == null) {
+          registrationFinalizeResponse_ = builderForValue.build();
+          onChanged();
+        } else {
+          registrationFinalizeResponseBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000100;
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+       */
+      public Builder mergeRegistrationFinalizeResponse(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse value) {
+        if (registrationFinalizeResponseBuilder_ == null) {
+          if (((bitField0_ & 0x00000100) == 0x00000100) &&
+              registrationFinalizeResponse_ != com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.getDefaultInstance()) {
+            registrationFinalizeResponse_ =
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.newBuilder(registrationFinalizeResponse_).mergeFrom(value).buildPartial();
+          } else {
+            registrationFinalizeResponse_ = value;
+          }
+          onChanged();
+        } else {
+          registrationFinalizeResponseBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000100;
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+       */
+      public Builder clearRegistrationFinalizeResponse() {
+        if (registrationFinalizeResponseBuilder_ == null) {
+          registrationFinalizeResponse_ = com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.getDefaultInstance();
+          onChanged();
+        } else {
+          registrationFinalizeResponseBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000100);
+        return this;
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.Builder getRegistrationFinalizeResponseBuilder() {
+        bitField0_ |= 0x00000100;
+        onChanged();
+        return getRegistrationFinalizeResponseFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponseOrBuilder getRegistrationFinalizeResponseOrBuilder() {
+        if (registrationFinalizeResponseBuilder_ != null) {
+          return registrationFinalizeResponseBuilder_.getMessageOrBuilder();
+        } else {
+          return registrationFinalizeResponse_;
+        }
+      }
+      /**
+       * <code>optional .identity.KeyRegistrationFinalizeResponse registration_finalize_response = 9;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.Builder, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponseOrBuilder> 
+          getRegistrationFinalizeResponseFieldBuilder() {
+        if (registrationFinalizeResponseBuilder_ == null) {
+          registrationFinalizeResponseBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.Builder, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponseOrBuilder>(
+                  registrationFinalizeResponse_,
+                  getParentForChildren(),
+                  isClean());
+          registrationFinalizeResponse_ = null;
+        }
+        return registrationFinalizeResponseBuilder_;
+      }
+
       // @@protoc_insertion_point(builder_scope:identity.ProtocolMessage)
     }
 
@@ -1646,7 +2448,7 @@ public final class Protocol {
                 com.subgraph.sgmail.identity.protocol.Protocol.KeyLookupRequest.class, com.subgraph.sgmail.identity.protocol.Protocol.KeyLookupRequest.Builder.class);
       }
 
-      // Construct using com.subgraph.identity.protocol.Protocol.KeyLookupRequest.newBuilder()
+      // Construct using com.subgraph.sgmail.identity.protocol.Protocol.KeyLookupRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -2210,7 +3012,7 @@ public final class Protocol {
                 com.subgraph.sgmail.identity.protocol.Protocol.KeyLookupResponse.class, com.subgraph.sgmail.identity.protocol.Protocol.KeyLookupResponse.Builder.class);
       }
 
-      // Construct using com.subgraph.identity.protocol.Protocol.KeyLookupResponse.newBuilder()
+      // Construct using com.subgraph.sgmail.identity.protocol.Protocol.KeyLookupResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -2844,7 +3646,7 @@ public final class Protocol {
                 com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.class, com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.Builder.class);
       }
 
-      // Construct using com.subgraph.identity.protocol.Protocol.PublicKey.newBuilder()
+      // Construct using com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -3261,7 +4063,7 @@ public final class Protocol {
                 com.subgraph.sgmail.identity.protocol.Protocol.KeyPublishRequest.class, com.subgraph.sgmail.identity.protocol.Protocol.KeyPublishRequest.Builder.class);
       }
 
-      // Construct using com.subgraph.identity.protocol.Protocol.KeyPublishRequest.newBuilder()
+      // Construct using com.subgraph.sgmail.identity.protocol.Protocol.KeyPublishRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -3821,7 +4623,7 @@ public final class Protocol {
                 com.subgraph.sgmail.identity.protocol.Protocol.KeyPublishResponse.class, com.subgraph.sgmail.identity.protocol.Protocol.KeyPublishResponse.Builder.class);
       }
 
-      // Construct using com.subgraph.identity.protocol.Protocol.KeyPublishResponse.newBuilder()
+      // Construct using com.subgraph.sgmail.identity.protocol.Protocol.KeyPublishResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -4050,6 +4852,2334 @@ public final class Protocol {
     // @@protoc_insertion_point(class_scope:identity.KeyPublishResponse)
   }
 
+  public interface KeyRegistrationRequestOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional .identity.PublicKey key = 1;
+    /**
+     * <code>optional .identity.PublicKey key = 1;</code>
+     */
+    boolean hasKey();
+    /**
+     * <code>optional .identity.PublicKey key = 1;</code>
+     */
+    com.subgraph.sgmail.identity.protocol.Protocol.PublicKey getKey();
+    /**
+     * <code>optional .identity.PublicKey key = 1;</code>
+     */
+    com.subgraph.sgmail.identity.protocol.Protocol.PublicKeyOrBuilder getKeyOrBuilder();
+
+    // optional string email_address = 2;
+    /**
+     * <code>optional string email_address = 2;</code>
+     */
+    boolean hasEmailAddress();
+    /**
+     * <code>optional string email_address = 2;</code>
+     */
+    java.lang.String getEmailAddress();
+    /**
+     * <code>optional string email_address = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getEmailAddressBytes();
+  }
+  /**
+   * Protobuf type {@code identity.KeyRegistrationRequest}
+   */
+  public static final class KeyRegistrationRequest extends
+      com.google.protobuf.GeneratedMessage
+      implements KeyRegistrationRequestOrBuilder {
+    // Use KeyRegistrationRequest.newBuilder() to construct.
+    private KeyRegistrationRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private KeyRegistrationRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final KeyRegistrationRequest defaultInstance;
+    public static KeyRegistrationRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public KeyRegistrationRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private KeyRegistrationRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000001) == 0x00000001)) {
+                subBuilder = key_.toBuilder();
+              }
+              key_ = input.readMessage(com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(key_);
+                key_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000001;
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              emailAddress_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.class, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<KeyRegistrationRequest> PARSER =
+        new com.google.protobuf.AbstractParser<KeyRegistrationRequest>() {
+      public KeyRegistrationRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new KeyRegistrationRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<KeyRegistrationRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional .identity.PublicKey key = 1;
+    public static final int KEY_FIELD_NUMBER = 1;
+    private com.subgraph.sgmail.identity.protocol.Protocol.PublicKey key_;
+    /**
+     * <code>optional .identity.PublicKey key = 1;</code>
+     */
+    public boolean hasKey() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional .identity.PublicKey key = 1;</code>
+     */
+    public com.subgraph.sgmail.identity.protocol.Protocol.PublicKey getKey() {
+      return key_;
+    }
+    /**
+     * <code>optional .identity.PublicKey key = 1;</code>
+     */
+    public com.subgraph.sgmail.identity.protocol.Protocol.PublicKeyOrBuilder getKeyOrBuilder() {
+      return key_;
+    }
+
+    // optional string email_address = 2;
+    public static final int EMAIL_ADDRESS_FIELD_NUMBER = 2;
+    private java.lang.Object emailAddress_;
+    /**
+     * <code>optional string email_address = 2;</code>
+     */
+    public boolean hasEmailAddress() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string email_address = 2;</code>
+     */
+    public java.lang.String getEmailAddress() {
+      java.lang.Object ref = emailAddress_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          emailAddress_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string email_address = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getEmailAddressBytes() {
+      java.lang.Object ref = emailAddress_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        emailAddress_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      key_ = com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.getDefaultInstance();
+      emailAddress_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeMessage(1, key_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getEmailAddressBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, key_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getEmailAddressBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code identity.KeyRegistrationRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.class, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.Builder.class);
+      }
+
+      // Construct using com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getKeyFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (keyBuilder_ == null) {
+          key_ = com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.getDefaultInstance();
+        } else {
+          keyBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        emailAddress_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationRequest_descriptor;
+      }
+
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest getDefaultInstanceForType() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.getDefaultInstance();
+      }
+
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest build() {
+        com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest buildPartial() {
+        com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest result = new com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        if (keyBuilder_ == null) {
+          result.key_ = key_;
+        } else {
+          result.key_ = keyBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.emailAddress_ = emailAddress_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest) {
+          return mergeFrom((com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest other) {
+        if (other == com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest.getDefaultInstance()) return this;
+        if (other.hasKey()) {
+          mergeKey(other.getKey());
+        }
+        if (other.hasEmailAddress()) {
+          bitField0_ |= 0x00000002;
+          emailAddress_ = other.emailAddress_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional .identity.PublicKey key = 1;
+      private com.subgraph.sgmail.identity.protocol.Protocol.PublicKey key_ = com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          com.subgraph.sgmail.identity.protocol.Protocol.PublicKey, com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.Builder, com.subgraph.sgmail.identity.protocol.Protocol.PublicKeyOrBuilder> keyBuilder_;
+      /**
+       * <code>optional .identity.PublicKey key = 1;</code>
+       */
+      public boolean hasKey() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional .identity.PublicKey key = 1;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.PublicKey getKey() {
+        if (keyBuilder_ == null) {
+          return key_;
+        } else {
+          return keyBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .identity.PublicKey key = 1;</code>
+       */
+      public Builder setKey(com.subgraph.sgmail.identity.protocol.Protocol.PublicKey value) {
+        if (keyBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          key_ = value;
+          onChanged();
+        } else {
+          keyBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .identity.PublicKey key = 1;</code>
+       */
+      public Builder setKey(
+          com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.Builder builderForValue) {
+        if (keyBuilder_ == null) {
+          key_ = builderForValue.build();
+          onChanged();
+        } else {
+          keyBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .identity.PublicKey key = 1;</code>
+       */
+      public Builder mergeKey(com.subgraph.sgmail.identity.protocol.Protocol.PublicKey value) {
+        if (keyBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001) &&
+              key_ != com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.getDefaultInstance()) {
+            key_ =
+              com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.newBuilder(key_).mergeFrom(value).buildPartial();
+          } else {
+            key_ = value;
+          }
+          onChanged();
+        } else {
+          keyBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000001;
+        return this;
+      }
+      /**
+       * <code>optional .identity.PublicKey key = 1;</code>
+       */
+      public Builder clearKey() {
+        if (keyBuilder_ == null) {
+          key_ = com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.getDefaultInstance();
+          onChanged();
+        } else {
+          keyBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000001);
+        return this;
+      }
+      /**
+       * <code>optional .identity.PublicKey key = 1;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.Builder getKeyBuilder() {
+        bitField0_ |= 0x00000001;
+        onChanged();
+        return getKeyFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .identity.PublicKey key = 1;</code>
+       */
+      public com.subgraph.sgmail.identity.protocol.Protocol.PublicKeyOrBuilder getKeyOrBuilder() {
+        if (keyBuilder_ != null) {
+          return keyBuilder_.getMessageOrBuilder();
+        } else {
+          return key_;
+        }
+      }
+      /**
+       * <code>optional .identity.PublicKey key = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          com.subgraph.sgmail.identity.protocol.Protocol.PublicKey, com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.Builder, com.subgraph.sgmail.identity.protocol.Protocol.PublicKeyOrBuilder> 
+          getKeyFieldBuilder() {
+        if (keyBuilder_ == null) {
+          keyBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              com.subgraph.sgmail.identity.protocol.Protocol.PublicKey, com.subgraph.sgmail.identity.protocol.Protocol.PublicKey.Builder, com.subgraph.sgmail.identity.protocol.Protocol.PublicKeyOrBuilder>(
+                  key_,
+                  getParentForChildren(),
+                  isClean());
+          key_ = null;
+        }
+        return keyBuilder_;
+      }
+
+      // optional string email_address = 2;
+      private java.lang.Object emailAddress_ = "";
+      /**
+       * <code>optional string email_address = 2;</code>
+       */
+      public boolean hasEmailAddress() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string email_address = 2;</code>
+       */
+      public java.lang.String getEmailAddress() {
+        java.lang.Object ref = emailAddress_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          emailAddress_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string email_address = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getEmailAddressBytes() {
+        java.lang.Object ref = emailAddress_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          emailAddress_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string email_address = 2;</code>
+       */
+      public Builder setEmailAddress(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        emailAddress_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string email_address = 2;</code>
+       */
+      public Builder clearEmailAddress() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        emailAddress_ = getDefaultInstance().getEmailAddress();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string email_address = 2;</code>
+       */
+      public Builder setEmailAddressBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        emailAddress_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:identity.KeyRegistrationRequest)
+    }
+
+    static {
+      defaultInstance = new KeyRegistrationRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:identity.KeyRegistrationRequest)
+  }
+
+  public interface KeyRegistrationResponseOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional bool is_success = 1;
+    /**
+     * <code>optional bool is_success = 1;</code>
+     */
+    boolean hasIsSuccess();
+    /**
+     * <code>optional bool is_success = 1;</code>
+     */
+    boolean getIsSuccess();
+
+    // optional uint64 request_id = 2;
+    /**
+     * <code>optional uint64 request_id = 2;</code>
+     */
+    boolean hasRequestId();
+    /**
+     * <code>optional uint64 request_id = 2;</code>
+     */
+    long getRequestId();
+
+    // optional string error_message = 3;
+    /**
+     * <code>optional string error_message = 3;</code>
+     */
+    boolean hasErrorMessage();
+    /**
+     * <code>optional string error_message = 3;</code>
+     */
+    java.lang.String getErrorMessage();
+    /**
+     * <code>optional string error_message = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getErrorMessageBytes();
+  }
+  /**
+   * Protobuf type {@code identity.KeyRegistrationResponse}
+   */
+  public static final class KeyRegistrationResponse extends
+      com.google.protobuf.GeneratedMessage
+      implements KeyRegistrationResponseOrBuilder {
+    // Use KeyRegistrationResponse.newBuilder() to construct.
+    private KeyRegistrationResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private KeyRegistrationResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final KeyRegistrationResponse defaultInstance;
+    public static KeyRegistrationResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public KeyRegistrationResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private KeyRegistrationResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              isSuccess_ = input.readBool();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              requestId_ = input.readUInt64();
+              break;
+            }
+            case 26: {
+              bitField0_ |= 0x00000004;
+              errorMessage_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.class, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<KeyRegistrationResponse> PARSER =
+        new com.google.protobuf.AbstractParser<KeyRegistrationResponse>() {
+      public KeyRegistrationResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new KeyRegistrationResponse(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<KeyRegistrationResponse> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional bool is_success = 1;
+    public static final int IS_SUCCESS_FIELD_NUMBER = 1;
+    private boolean isSuccess_;
+    /**
+     * <code>optional bool is_success = 1;</code>
+     */
+    public boolean hasIsSuccess() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional bool is_success = 1;</code>
+     */
+    public boolean getIsSuccess() {
+      return isSuccess_;
+    }
+
+    // optional uint64 request_id = 2;
+    public static final int REQUEST_ID_FIELD_NUMBER = 2;
+    private long requestId_;
+    /**
+     * <code>optional uint64 request_id = 2;</code>
+     */
+    public boolean hasRequestId() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional uint64 request_id = 2;</code>
+     */
+    public long getRequestId() {
+      return requestId_;
+    }
+
+    // optional string error_message = 3;
+    public static final int ERROR_MESSAGE_FIELD_NUMBER = 3;
+    private java.lang.Object errorMessage_;
+    /**
+     * <code>optional string error_message = 3;</code>
+     */
+    public boolean hasErrorMessage() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional string error_message = 3;</code>
+     */
+    public java.lang.String getErrorMessage() {
+      java.lang.Object ref = errorMessage_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          errorMessage_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string error_message = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getErrorMessageBytes() {
+      java.lang.Object ref = errorMessage_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        errorMessage_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      isSuccess_ = false;
+      requestId_ = 0L;
+      errorMessage_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBool(1, isSuccess_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeUInt64(2, requestId_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBytes(3, getErrorMessageBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(1, isSuccess_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(2, requestId_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(3, getErrorMessageBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code identity.KeyRegistrationResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.class, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.Builder.class);
+      }
+
+      // Construct using com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        isSuccess_ = false;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        requestId_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        errorMessage_ = "";
+        bitField0_ = (bitField0_ & ~0x00000004);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationResponse_descriptor;
+      }
+
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse getDefaultInstanceForType() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.getDefaultInstance();
+      }
+
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse build() {
+        com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse buildPartial() {
+        com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse result = new com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.isSuccess_ = isSuccess_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.requestId_ = requestId_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.errorMessage_ = errorMessage_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse) {
+          return mergeFrom((com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse other) {
+        if (other == com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse.getDefaultInstance()) return this;
+        if (other.hasIsSuccess()) {
+          setIsSuccess(other.getIsSuccess());
+        }
+        if (other.hasRequestId()) {
+          setRequestId(other.getRequestId());
+        }
+        if (other.hasErrorMessage()) {
+          bitField0_ |= 0x00000004;
+          errorMessage_ = other.errorMessage_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationResponse) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional bool is_success = 1;
+      private boolean isSuccess_ ;
+      /**
+       * <code>optional bool is_success = 1;</code>
+       */
+      public boolean hasIsSuccess() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional bool is_success = 1;</code>
+       */
+      public boolean getIsSuccess() {
+        return isSuccess_;
+      }
+      /**
+       * <code>optional bool is_success = 1;</code>
+       */
+      public Builder setIsSuccess(boolean value) {
+        bitField0_ |= 0x00000001;
+        isSuccess_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool is_success = 1;</code>
+       */
+      public Builder clearIsSuccess() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        isSuccess_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional uint64 request_id = 2;
+      private long requestId_ ;
+      /**
+       * <code>optional uint64 request_id = 2;</code>
+       */
+      public boolean hasRequestId() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional uint64 request_id = 2;</code>
+       */
+      public long getRequestId() {
+        return requestId_;
+      }
+      /**
+       * <code>optional uint64 request_id = 2;</code>
+       */
+      public Builder setRequestId(long value) {
+        bitField0_ |= 0x00000002;
+        requestId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint64 request_id = 2;</code>
+       */
+      public Builder clearRequestId() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        requestId_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional string error_message = 3;
+      private java.lang.Object errorMessage_ = "";
+      /**
+       * <code>optional string error_message = 3;</code>
+       */
+      public boolean hasErrorMessage() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional string error_message = 3;</code>
+       */
+      public java.lang.String getErrorMessage() {
+        java.lang.Object ref = errorMessage_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          errorMessage_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string error_message = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getErrorMessageBytes() {
+        java.lang.Object ref = errorMessage_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          errorMessage_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string error_message = 3;</code>
+       */
+      public Builder setErrorMessage(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        errorMessage_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string error_message = 3;</code>
+       */
+      public Builder clearErrorMessage() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        errorMessage_ = getDefaultInstance().getErrorMessage();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string error_message = 3;</code>
+       */
+      public Builder setErrorMessageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+        errorMessage_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:identity.KeyRegistrationResponse)
+    }
+
+    static {
+      defaultInstance = new KeyRegistrationResponse(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:identity.KeyRegistrationResponse)
+  }
+
+  public interface KeyRegistrationFinalizeRequestOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional uint64 request_id = 1;
+    /**
+     * <code>optional uint64 request_id = 1;</code>
+     */
+    boolean hasRequestId();
+    /**
+     * <code>optional uint64 request_id = 1;</code>
+     */
+    long getRequestId();
+
+    // optional bytes hash = 2;
+    /**
+     * <code>optional bytes hash = 2;</code>
+     */
+    boolean hasHash();
+    /**
+     * <code>optional bytes hash = 2;</code>
+     */
+    com.google.protobuf.ByteString getHash();
+  }
+  /**
+   * Protobuf type {@code identity.KeyRegistrationFinalizeRequest}
+   */
+  public static final class KeyRegistrationFinalizeRequest extends
+      com.google.protobuf.GeneratedMessage
+      implements KeyRegistrationFinalizeRequestOrBuilder {
+    // Use KeyRegistrationFinalizeRequest.newBuilder() to construct.
+    private KeyRegistrationFinalizeRequest(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private KeyRegistrationFinalizeRequest(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final KeyRegistrationFinalizeRequest defaultInstance;
+    public static KeyRegistrationFinalizeRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public KeyRegistrationFinalizeRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private KeyRegistrationFinalizeRequest(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              requestId_ = input.readUInt64();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              hash_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationFinalizeRequest_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationFinalizeRequest_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.class, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<KeyRegistrationFinalizeRequest> PARSER =
+        new com.google.protobuf.AbstractParser<KeyRegistrationFinalizeRequest>() {
+      public KeyRegistrationFinalizeRequest parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new KeyRegistrationFinalizeRequest(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<KeyRegistrationFinalizeRequest> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional uint64 request_id = 1;
+    public static final int REQUEST_ID_FIELD_NUMBER = 1;
+    private long requestId_;
+    /**
+     * <code>optional uint64 request_id = 1;</code>
+     */
+    public boolean hasRequestId() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional uint64 request_id = 1;</code>
+     */
+    public long getRequestId() {
+      return requestId_;
+    }
+
+    // optional bytes hash = 2;
+    public static final int HASH_FIELD_NUMBER = 2;
+    private com.google.protobuf.ByteString hash_;
+    /**
+     * <code>optional bytes hash = 2;</code>
+     */
+    public boolean hasHash() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional bytes hash = 2;</code>
+     */
+    public com.google.protobuf.ByteString getHash() {
+      return hash_;
+    }
+
+    private void initFields() {
+      requestId_ = 0L;
+      hash_ = com.google.protobuf.ByteString.EMPTY;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeUInt64(1, requestId_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, hash_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt64Size(1, requestId_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, hash_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code identity.KeyRegistrationFinalizeRequest}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequestOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationFinalizeRequest_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationFinalizeRequest_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.class, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.Builder.class);
+      }
+
+      // Construct using com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        requestId_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        hash_ = com.google.protobuf.ByteString.EMPTY;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationFinalizeRequest_descriptor;
+      }
+
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest getDefaultInstanceForType() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.getDefaultInstance();
+      }
+
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest build() {
+        com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest buildPartial() {
+        com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest result = new com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.requestId_ = requestId_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.hash_ = hash_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest) {
+          return mergeFrom((com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest other) {
+        if (other == com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest.getDefaultInstance()) return this;
+        if (other.hasRequestId()) {
+          setRequestId(other.getRequestId());
+        }
+        if (other.hasHash()) {
+          setHash(other.getHash());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeRequest) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional uint64 request_id = 1;
+      private long requestId_ ;
+      /**
+       * <code>optional uint64 request_id = 1;</code>
+       */
+      public boolean hasRequestId() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional uint64 request_id = 1;</code>
+       */
+      public long getRequestId() {
+        return requestId_;
+      }
+      /**
+       * <code>optional uint64 request_id = 1;</code>
+       */
+      public Builder setRequestId(long value) {
+        bitField0_ |= 0x00000001;
+        requestId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint64 request_id = 1;</code>
+       */
+      public Builder clearRequestId() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        requestId_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional bytes hash = 2;
+      private com.google.protobuf.ByteString hash_ = com.google.protobuf.ByteString.EMPTY;
+      /**
+       * <code>optional bytes hash = 2;</code>
+       */
+      public boolean hasHash() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional bytes hash = 2;</code>
+       */
+      public com.google.protobuf.ByteString getHash() {
+        return hash_;
+      }
+      /**
+       * <code>optional bytes hash = 2;</code>
+       */
+      public Builder setHash(com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        hash_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bytes hash = 2;</code>
+       */
+      public Builder clearHash() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        hash_ = getDefaultInstance().getHash();
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:identity.KeyRegistrationFinalizeRequest)
+    }
+
+    static {
+      defaultInstance = new KeyRegistrationFinalizeRequest(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:identity.KeyRegistrationFinalizeRequest)
+  }
+
+  public interface KeyRegistrationFinalizeResponseOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // optional bool is_success = 1;
+    /**
+     * <code>optional bool is_success = 1;</code>
+     */
+    boolean hasIsSuccess();
+    /**
+     * <code>optional bool is_success = 1;</code>
+     */
+    boolean getIsSuccess();
+
+    // optional string error_message = 2;
+    /**
+     * <code>optional string error_message = 2;</code>
+     */
+    boolean hasErrorMessage();
+    /**
+     * <code>optional string error_message = 2;</code>
+     */
+    java.lang.String getErrorMessage();
+    /**
+     * <code>optional string error_message = 2;</code>
+     */
+    com.google.protobuf.ByteString
+        getErrorMessageBytes();
+  }
+  /**
+   * Protobuf type {@code identity.KeyRegistrationFinalizeResponse}
+   */
+  public static final class KeyRegistrationFinalizeResponse extends
+      com.google.protobuf.GeneratedMessage
+      implements KeyRegistrationFinalizeResponseOrBuilder {
+    // Use KeyRegistrationFinalizeResponse.newBuilder() to construct.
+    private KeyRegistrationFinalizeResponse(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private KeyRegistrationFinalizeResponse(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final KeyRegistrationFinalizeResponse defaultInstance;
+    public static KeyRegistrationFinalizeResponse getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public KeyRegistrationFinalizeResponse getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private KeyRegistrationFinalizeResponse(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              isSuccess_ = input.readBool();
+              break;
+            }
+            case 18: {
+              bitField0_ |= 0x00000002;
+              errorMessage_ = input.readBytes();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationFinalizeResponse_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationFinalizeResponse_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.class, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<KeyRegistrationFinalizeResponse> PARSER =
+        new com.google.protobuf.AbstractParser<KeyRegistrationFinalizeResponse>() {
+      public KeyRegistrationFinalizeResponse parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new KeyRegistrationFinalizeResponse(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<KeyRegistrationFinalizeResponse> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // optional bool is_success = 1;
+    public static final int IS_SUCCESS_FIELD_NUMBER = 1;
+    private boolean isSuccess_;
+    /**
+     * <code>optional bool is_success = 1;</code>
+     */
+    public boolean hasIsSuccess() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>optional bool is_success = 1;</code>
+     */
+    public boolean getIsSuccess() {
+      return isSuccess_;
+    }
+
+    // optional string error_message = 2;
+    public static final int ERROR_MESSAGE_FIELD_NUMBER = 2;
+    private java.lang.Object errorMessage_;
+    /**
+     * <code>optional string error_message = 2;</code>
+     */
+    public boolean hasErrorMessage() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional string error_message = 2;</code>
+     */
+    public java.lang.String getErrorMessage() {
+      java.lang.Object ref = errorMessage_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          errorMessage_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string error_message = 2;</code>
+     */
+    public com.google.protobuf.ByteString
+        getErrorMessageBytes() {
+      java.lang.Object ref = errorMessage_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        errorMessage_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    private void initFields() {
+      isSuccess_ = false;
+      errorMessage_ = "";
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBool(1, isSuccess_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBytes(2, getErrorMessageBytes());
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(1, isSuccess_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(2, getErrorMessageBytes());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code identity.KeyRegistrationFinalizeResponse}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponseOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationFinalizeResponse_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationFinalizeResponse_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.class, com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.Builder.class);
+      }
+
+      // Construct using com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        isSuccess_ = false;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        errorMessage_ = "";
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.internal_static_identity_KeyRegistrationFinalizeResponse_descriptor;
+      }
+
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse getDefaultInstanceForType() {
+        return com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.getDefaultInstance();
+      }
+
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse build() {
+        com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse buildPartial() {
+        com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse result = new com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.isSuccess_ = isSuccess_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.errorMessage_ = errorMessage_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse) {
+          return mergeFrom((com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse other) {
+        if (other == com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse.getDefaultInstance()) return this;
+        if (other.hasIsSuccess()) {
+          setIsSuccess(other.getIsSuccess());
+        }
+        if (other.hasErrorMessage()) {
+          bitField0_ |= 0x00000002;
+          errorMessage_ = other.errorMessage_;
+          onChanged();
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (com.subgraph.sgmail.identity.protocol.Protocol.KeyRegistrationFinalizeResponse) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // optional bool is_success = 1;
+      private boolean isSuccess_ ;
+      /**
+       * <code>optional bool is_success = 1;</code>
+       */
+      public boolean hasIsSuccess() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>optional bool is_success = 1;</code>
+       */
+      public boolean getIsSuccess() {
+        return isSuccess_;
+      }
+      /**
+       * <code>optional bool is_success = 1;</code>
+       */
+      public Builder setIsSuccess(boolean value) {
+        bitField0_ |= 0x00000001;
+        isSuccess_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool is_success = 1;</code>
+       */
+      public Builder clearIsSuccess() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        isSuccess_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional string error_message = 2;
+      private java.lang.Object errorMessage_ = "";
+      /**
+       * <code>optional string error_message = 2;</code>
+       */
+      public boolean hasErrorMessage() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>optional string error_message = 2;</code>
+       */
+      public java.lang.String getErrorMessage() {
+        java.lang.Object ref = errorMessage_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          errorMessage_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string error_message = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getErrorMessageBytes() {
+        java.lang.Object ref = errorMessage_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          errorMessage_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string error_message = 2;</code>
+       */
+      public Builder setErrorMessage(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        errorMessage_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string error_message = 2;</code>
+       */
+      public Builder clearErrorMessage() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        errorMessage_ = getDefaultInstance().getErrorMessage();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string error_message = 2;</code>
+       */
+      public Builder setErrorMessageBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+        errorMessage_ = value;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:identity.KeyRegistrationFinalizeResponse)
+    }
+
+    static {
+      defaultInstance = new KeyRegistrationFinalizeResponse(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:identity.KeyRegistrationFinalizeResponse)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_identity_ProtocolMessage_descriptor;
   private static
@@ -4080,6 +7210,26 @@ public final class Protocol {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_identity_KeyPublishResponse_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_identity_KeyRegistrationRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_identity_KeyRegistrationRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_identity_KeyRegistrationResponse_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_identity_KeyRegistrationResponse_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_identity_KeyRegistrationFinalizeRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_identity_KeyRegistrationFinalizeRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_identity_KeyRegistrationFinalizeResponse_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_identity_KeyRegistrationFinalizeResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -4089,25 +7239,44 @@ public final class Protocol {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\024proto/messages.proto\022\010identity\"\203\003\n\017Pro" +
+      "\n\024proto/messages.proto\022\010identity\"\266\006\n\017Pro" +
       "tocolMessage\022,\n\004type\030\001 \002(\0162\036.identity.Pr" +
       "otocolMessage.Type\0222\n\016lookup_request\030\002 \001" +
       "(\0132\032.identity.KeyLookupRequest\0224\n\017lookup" +
       "_response\030\003 \001(\0132\033.identity.KeyLookupResp" +
       "onse\0224\n\017publish_request\030\004 \001(\0132\033.identity" +
       ".KeyPublishRequest\0226\n\020publish_response\030\005" +
-      " \001(\0132\034.identity.KeyPublishResponse\"j\n\004Ty" +
-      "pe\022\026\n\022KEY_LOOKUP_REQUEST\020\001\022\027\n\023KEY_LOOKUP" +
-      "_RESPONSE\020\002\022\027\n\023KEY_PUBLISH_REQUEST\020\003\022\030\n\024",
-      "KEY_PUBLISH_RESPONSE\020\004\"6\n\020KeyLookupReque" +
-      "st\022\r\n\005email\030\001 \001(\t\022\023\n\013fingerprint\030\002 \001(\t\"6" +
-      "\n\021KeyLookupResponse\022!\n\004keys\030\001 \003(\0132\023.iden" +
-      "tity.PublicKey\"\035\n\tPublicKey\022\020\n\010key_data\030" +
-      "\001 \001(\014\"5\n\021KeyPublishRequest\022 \n\003key\030\001 \001(\0132" +
-      "\023.identity.PublicKey\"?\n\022KeyPublishRespon" +
-      "se\022\022\n\nis_success\030\001 \001(\010\022\025\n\rerror_message\030" +
-      "\002 \001(\tB*\n\036com.subgraph.identity.protocolB" +
-      "\010Protocol"
+      " \001(\0132\034.identity.KeyPublishResponse\022>\n\024re" +
+      "gistration_request\030\006 \001(\0132 .identity.KeyR" +
+      "egistrationRequest\022@\n\025registration_respo",
+      "nse\030\007 \001(\0132!.identity.KeyRegistrationResp" +
+      "onse\022O\n\035registration_finalize_request\030\010 " +
+      "\001(\0132(.identity.KeyRegistrationFinalizeRe" +
+      "quest\022Q\n\036registration_finalize_response\030" +
+      "\t \001(\0132).identity.KeyRegistrationFinalize" +
+      "Response\"\366\001\n\004Type\022\026\n\022KEY_LOOKUP_REQUEST\020" +
+      "\001\022\027\n\023KEY_LOOKUP_RESPONSE\020\002\022\027\n\023KEY_PUBLIS" +
+      "H_REQUEST\020\003\022\030\n\024KEY_PUBLISH_RESPONSE\020\004\022\034\n" +
+      "\030KEY_REGISTRATION_REQUEST\020\005\022\035\n\031KEY_REGIS" +
+      "TRATION_RESPONSE\020\006\022%\n!KEY_REGISTRATION_F",
+      "INALIZE_REQUEST\020\007\022&\n\"KEY_REGISTRATION_FI" +
+      "NALIZE_RESPONSE\020\010\"6\n\020KeyLookupRequest\022\r\n" +
+      "\005email\030\001 \001(\t\022\023\n\013fingerprint\030\002 \001(\t\"6\n\021Key" +
+      "LookupResponse\022!\n\004keys\030\001 \003(\0132\023.identity." +
+      "PublicKey\"\035\n\tPublicKey\022\020\n\010key_data\030\001 \001(\014" +
+      "\"5\n\021KeyPublishRequest\022 \n\003key\030\001 \001(\0132\023.ide" +
+      "ntity.PublicKey\"?\n\022KeyPublishResponse\022\022\n" +
+      "\nis_success\030\001 \001(\010\022\025\n\rerror_message\030\002 \001(\t" +
+      "\"Q\n\026KeyRegistrationRequest\022 \n\003key\030\001 \001(\0132" +
+      "\023.identity.PublicKey\022\025\n\remail_address\030\002 ",
+      "\001(\t\"X\n\027KeyRegistrationResponse\022\022\n\nis_suc" +
+      "cess\030\001 \001(\010\022\022\n\nrequest_id\030\002 \001(\004\022\025\n\rerror_" +
+      "message\030\003 \001(\t\"B\n\036KeyRegistrationFinalize" +
+      "Request\022\022\n\nrequest_id\030\001 \001(\004\022\014\n\004hash\030\002 \001(" +
+      "\014\"L\n\037KeyRegistrationFinalizeResponse\022\022\n\n" +
+      "is_success\030\001 \001(\010\022\025\n\rerror_message\030\002 \001(\tB" +
+      "1\n%com.subgraph.sgmail.identity.protocol" +
+      "B\010Protocol"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -4119,7 +7288,7 @@ public final class Protocol {
           internal_static_identity_ProtocolMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_identity_ProtocolMessage_descriptor,
-              new java.lang.String[] { "Type", "LookupRequest", "LookupResponse", "PublishRequest", "PublishResponse", });
+              new java.lang.String[] { "Type", "LookupRequest", "LookupResponse", "PublishRequest", "PublishResponse", "RegistrationRequest", "RegistrationResponse", "RegistrationFinalizeRequest", "RegistrationFinalizeResponse", });
           internal_static_identity_KeyLookupRequest_descriptor =
             getDescriptor().getMessageTypes().get(1);
           internal_static_identity_KeyLookupRequest_fieldAccessorTable = new
@@ -4149,6 +7318,30 @@ public final class Protocol {
           internal_static_identity_KeyPublishResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_identity_KeyPublishResponse_descriptor,
+              new java.lang.String[] { "IsSuccess", "ErrorMessage", });
+          internal_static_identity_KeyRegistrationRequest_descriptor =
+            getDescriptor().getMessageTypes().get(6);
+          internal_static_identity_KeyRegistrationRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_identity_KeyRegistrationRequest_descriptor,
+              new java.lang.String[] { "Key", "EmailAddress", });
+          internal_static_identity_KeyRegistrationResponse_descriptor =
+            getDescriptor().getMessageTypes().get(7);
+          internal_static_identity_KeyRegistrationResponse_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_identity_KeyRegistrationResponse_descriptor,
+              new java.lang.String[] { "IsSuccess", "RequestId", "ErrorMessage", });
+          internal_static_identity_KeyRegistrationFinalizeRequest_descriptor =
+            getDescriptor().getMessageTypes().get(8);
+          internal_static_identity_KeyRegistrationFinalizeRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_identity_KeyRegistrationFinalizeRequest_descriptor,
+              new java.lang.String[] { "RequestId", "Hash", });
+          internal_static_identity_KeyRegistrationFinalizeResponse_descriptor =
+            getDescriptor().getMessageTypes().get(9);
+          internal_static_identity_KeyRegistrationFinalizeResponse_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_identity_KeyRegistrationFinalizeResponse_descriptor,
               new java.lang.String[] { "IsSuccess", "ErrorMessage", });
           return null;
         }

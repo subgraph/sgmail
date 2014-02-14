@@ -5,11 +5,14 @@ public class KeyLookupRequest implements Message {
 	public static KeyLookupRequest fromProtocolMessage(Protocol.KeyLookupRequest msg) {
 		return new KeyLookupRequest(msg.getEmail(), msg.getFingerprint());
 	}
+    public static KeyLookupRequest createLookupByEmail(String emailAddress) {
+        return new KeyLookupRequest(emailAddress, null);
+    }
 
 	private final String emailAddress;
 	private final String fingerprint;
 	
-	public KeyLookupRequest(String emailAddress, String fingerprint) {
+	private KeyLookupRequest(String emailAddress, String fingerprint) {
 		this.emailAddress = emailAddress;
 		this.fingerprint = fingerprint;
 	}

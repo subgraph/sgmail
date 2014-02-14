@@ -1,10 +1,10 @@
 package com.subgraph.sgmail.identity.protocol;
 
+import com.subgraph.sgmail.identity.protocol.Protocol.ProtocolMessage.Type;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
-
-import com.subgraph.sgmail.identity.protocol.Protocol.ProtocolMessage.Type;
 
 public class MessageWriter implements Closeable {
 	
@@ -41,8 +41,12 @@ public class MessageWriter implements Closeable {
 		if (message instanceof KeyLookupRequest)    { return serializeKeyLookupRequest((KeyLookupRequest) message); }   else 
 		if (message instanceof KeyLookupResponse)   { return serializeKeyLookupResponse((KeyLookupResponse) message); } else
 		if (message instanceof KeyPublishRequest)   { return serializeKeyPublishRequest((KeyPublishRequest) message); }   else
-		if (message instanceof KeyPublishResponse)  { return serializeKeyPublishResponse((KeyPublishResponse) message); }
-		
+        if (message instanceof KeyPublishResponse)  { return serializeKeyPublishResponse((KeyPublishResponse) message); } else
+        if (message instanceof KeyRegistrationRequest)  { return serializeKeyRegistrationRequest((KeyRegistrationRequest) message); } else
+        if (message instanceof KeyRegistrationResponse)  { return serializeKeyRegistrationResponse((KeyRegistrationResponse) message); } else
+        if (message instanceof KeyRegistrationFinalizeRequest)  { return serializeKeyRegistrationFinalizeRequest((KeyRegistrationFinalizeRequest) message); } else
+        if (message instanceof KeyRegistrationFinalizeResponse)  { return serializeKeyRegistrationFinalizeResponse((KeyRegistrationFinalizeResponse) message); }
+
 		throw new IllegalArgumentException("Unknown message type "+ message);
 	}
 	
@@ -73,6 +77,34 @@ public class MessageWriter implements Closeable {
 				.setPublishResponse(msg.toProtocolMessage())
 				.build().toByteArray();
 	}
+
+    private byte[] serializeKeyRegistrationRequest(KeyRegistrationRequest msg) {
+        return Protocol.ProtocolMessage.newBuilder()
+                .setType(Type.KEY_REGISTRATION_REQUEST)
+                .setRegistrationRequest(msg.toProtocolMessage())
+                .build().toByteArray();
+    }
+
+    private byte[] serializeKeyRegistrationResponse(KeyRegistrationResponse msg) {
+        return Protocol.ProtocolMessage.newBuilder()
+                .setType(Type.KEY_REGISTRATION_RESPONSE)
+                .setRegistrationResponse(msg.toProtocolMessage())
+                .build().toByteArray();
+    }
+
+    private byte[] serializeKeyRegistrationFinalizeRequest(KeyRegistrationFinalizeRequest msg) {
+        return Protocol.ProtocolMessage.newBuilder()
+                .setType(Type.KEY_REGISTRATION_FINALIZE_REQUEST)
+                .setRegistrationFinalizeRequest(msg.toProtocolMessage())
+                .build().toByteArray();
+    }
+
+    private byte[] serializeKeyRegistrationFinalizeResponse(KeyRegistrationFinalizeResponse msg) {
+        return Protocol.ProtocolMessage.newBuilder()
+                .setType(Type.KEY_REGISTRATION_FINALIZE_RESPONSE)
+                .setRegistrationFinalizeResponse(msg.toProtocolMessage())
+                .build().toByteArray();
+    }
 	
 	@Override
 	public void close() throws IOException {
