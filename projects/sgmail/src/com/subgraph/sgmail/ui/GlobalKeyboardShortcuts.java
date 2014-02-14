@@ -68,9 +68,11 @@ public class GlobalKeyboardShortcuts {
 			return true;
 		}
 		if(c == 'c') {
-			ComposeWindow compose = new ComposeWindow(Display.getDefault().getActiveShell(), model);
-			compose.open();
-			return true;
+            if(!model.getAccounts().isEmpty()) {
+                ComposeWindow compose = new ComposeWindow(Display.getDefault().getActiveShell(), model);
+                compose.open();
+                return true;
+            }
 		}
 		return false;
 	}
