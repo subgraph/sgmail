@@ -1,17 +1,16 @@
 package com.subgraph.sgmail.model;
 
-import java.io.IOException;
-
-import org.bouncycastle.openpgp.PGPException;
-import org.bouncycastle.openpgp.PGPSecretKeyRing;
-import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator;
-
 import com.db4o.activation.ActivationPurpose;
 import com.db4o.activation.Activator;
 import com.db4o.ta.Activatable;
 import com.subgraph.sgmail.identity.AbstractPrivateIdentity;
 import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.identity.PublicIdentity;
+import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPSecretKeyRing;
+import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator;
+
+import java.io.IOException;
 
 public class StoredPrivateIdentity extends AbstractPrivateIdentity implements PrivateIdentity, Activatable {
 
@@ -58,8 +57,13 @@ public class StoredPrivateIdentity extends AbstractPrivateIdentity implements Pr
 		activate(ActivationPurpose.READ);
 		return passphrase;
 	}
-	
-	@Override
+
+    @Override
+    public boolean isValidPassphrase(String passphrase) {
+        return false;
+    }
+
+    @Override
 	public void setPassphrase(String passphrase) {
 		activate(ActivationPurpose.WRITE);
 		this.passphrase = passphrase;
