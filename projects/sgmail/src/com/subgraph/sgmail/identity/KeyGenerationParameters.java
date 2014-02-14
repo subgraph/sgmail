@@ -20,7 +20,16 @@ public class KeyGenerationParameters {
 	private int expiry = 0;
 	private String realName = "";
 	private String emailAddress = "";
-	
+    private String comment = "";
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
 	public String getRealName() {
 		return realName;
 	}
