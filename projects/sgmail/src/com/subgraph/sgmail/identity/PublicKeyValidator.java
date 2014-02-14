@@ -20,8 +20,8 @@ public class PublicKeyValidator {
 	
 	public static boolean LOG_FAILURES = true;
 	
-	static boolean validate(PGPPublicKeyRing pkr) {
-		final PublicKeyValidator v = new PublicKeyValidator(pkr);
+	static boolean validate(PGPPublicKeyRing pkr, boolean validateSignatures) {
+		final PublicKeyValidator v = new PublicKeyValidator(pkr, validateSignatures);
 		try {
 			v.validate();
 			return true;
@@ -34,9 +34,11 @@ public class PublicKeyValidator {
 	}
 
 	private final List<PGPPublicKey> publicKeys;
+	private final boolean validateSignatures;
 	
-	PublicKeyValidator(PGPPublicKeyRing keyring) {
+	PublicKeyValidator(PGPPublicKeyRing keyring, boolean validateSignatures) {
 		this.publicKeys = extractPublicKeys(keyring);
+		this.validateSignatures = validateSignatures;
 	}
 	
 	private static List<PGPPublicKey> extractPublicKeys(PGPPublicKeyRing pkr) {
@@ -55,7 +57,9 @@ public class PublicKeyValidator {
 		}
 		
 		try {
-			verifySignatures(master);
+			if(validateSignatures) {
+				verifySignatures(master);
+			}
 		} catch (SignatureException e) {
 			throw new KeyValidationException("SignatureException processing signatures: "+ e.getMessage(), e);
 		} catch (PGPException e) {
