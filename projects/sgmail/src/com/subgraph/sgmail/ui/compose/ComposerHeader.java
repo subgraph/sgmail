@@ -1,11 +1,18 @@
 package com.subgraph.sgmail.ui.compose;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.UUID;
+import com.google.common.base.Strings;
+import com.subgraph.sgmail.identity.PrivateIdentity;
+import com.subgraph.sgmail.model.*;
+import com.subgraph.sgmail.ui.ImageCache;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.*;
 
 import javax.mail.Address;
 import javax.mail.Message;
@@ -16,31 +23,8 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
-
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Layout;
-import org.eclipse.swt.widgets.Text;
-
-import com.google.common.base.Strings;
-import com.subgraph.sgmail.identity.PrivateIdentity;
-import com.subgraph.sgmail.identity.PublicIdentity;
-import com.subgraph.sgmail.model.Account;
-import com.subgraph.sgmail.model.IMAPAccount;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.model.Preferences;
-import com.subgraph.sgmail.model.StoredAccountPreferences;
-import com.subgraph.sgmail.ui.ImageCache;
+import java.util.*;
+import java.util.List;
 
 public class ComposerHeader extends Composite {
 
@@ -81,9 +65,8 @@ public class ComposerHeader extends Composite {
 		
 		onSelectedAccountChanged();
 		updateButtonStates();
-
-		
 	}
+
 
 	public Message createNewMessage(final IMAPAccount account) throws MessagingException {
 		final Session session = Session.getInstance(new Properties());
@@ -224,9 +207,20 @@ public class ComposerHeader extends Composite {
 	}
 
 	private void addRecipientSection(int type, ModifyListener modifyListener) {
-		recipientSectionMap.put(type, new RecipientSection(this, type, modifyListener));
+		recipientSectionMap.put(type, new RecipientSection(model, this, type, modifyListener));
 	}
-	
+
+    void updateRecipientKeyAvailability() {
+        recipientKeysAvailable = false;
+        for(RecipientSection rs: recipientSectionMap.values()) {
+            if(!rs.haveKeysForAllRecipients()) {
+                return;
+            }
+        }
+        recipientKeysAvailable = true;
+        updateButtonStates();
+    }
+
 	private ModifyListener createModifyListener() {
 		return new ModifyListener() {
 			@Override
@@ -378,30 +372,14 @@ public class ComposerHeader extends Composite {
 	}
 	
 	public boolean isHeaderValid() {
-		boolean allKeys = true;
+
 		for(RecipientSection r: recipientSectionMap.values()) {
 			if(!r.isValid()) {
 				return false;
 			}
-			if(r.getAddresses().length > 0 && !findKeys(r)) {
-				allKeys = false;
-			}
-		}
-		if(recipientKeysAvailable != allKeys) {
-			recipientKeysAvailable = allKeys;
-			updateButtonStates();
 		}
 		return true;
 	}
-	
-	private boolean findKeys(RecipientSection r) {
-		for(InternetAddress a: r.getAddresses()) {
-			String email = a.getAddress();
-			List<PublicIdentity> is = model.findIdentitiesFor(email);
-			if(!is.isEmpty()) {
-				return true;
-			} 
-		}
-		return false;
-	}
+
+
 }

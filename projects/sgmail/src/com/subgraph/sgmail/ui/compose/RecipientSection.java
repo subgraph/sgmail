@@ -1,18 +1,26 @@
 package com.subgraph.sgmail.ui.compose;
 
-import java.util.Map;
-
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.eventbus.Subscribe;
+import com.google.common.net.InternetDomainName;
+import com.subgraph.sgmail.events.ContactPublicIdentityChangedEvent;
+import com.subgraph.sgmail.model.Contact;
+import com.subgraph.sgmail.model.Model;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.google.common.collect.ImmutableMap;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class RecipientSection {
 
@@ -22,16 +30,35 @@ public class RecipientSection {
 	
 	final static Map<Integer, String> labels = 
 			ImmutableMap.of(TYPE_TO, "To", TYPE_CC, "CC", TYPE_BCC, "BCC");
-	
+
+    private final Model model;
+    private final ComposerHeader headerSection;
 	private final int type;
 	private final Text textField;
-	
-	RecipientSection(Composite composite, int type, ModifyListener modifyListener) {
+	private List<Contact> contactList;
+    private boolean haveKeysForAll;
+
+	RecipientSection(Model model, ComposerHeader headerSection, int type, ModifyListener modifyListener) {
+        this.model = model;
+        this.headerSection = headerSection;
 		this.type = type;
-		createLabel(composite, type);
-		textField = createTextField(composite, modifyListener);
+		createLabel(headerSection, type);
+		textField = createTextField(headerSection, modifyListener);
+        contactList = new ArrayList<>();
+        haveKeysForAll = true;
+        model.registerEventListener(this);
 	}
-	
+
+    @Subscribe
+    public void onContactPublicIdentityChanged(ContactPublicIdentityChangedEvent event) {
+        haveKeysForAll = true;
+        for(Contact c: contactList) {
+            if(c.getPublicIdentity() == null) {
+                haveKeysForAll = false;
+            }
+        }
+        headerSection.updateRecipientKeyAvailability();
+    }
 	public void setText(String text) {
 		textField.setText(text);
 	}
@@ -67,11 +94,38 @@ public class RecipientSection {
 
 	private boolean isValidRecipient(String fieldText) {
 		try {
+            if(!isValidRecipientString(fieldText)) {
+                return false;
+            }
 			return InternetAddress.parse(fieldText, false).length > 0;
 		} catch (AddressException e) {
 			return false;
 		}
 	}
+
+    private boolean isValidRecipientString(String text) {
+        for(String address: text.split(",")) {
+            String parts[] = address.split("@");
+            if(!( parts.length == 2 &&
+                  isValidUser(parts[0]) &&
+                  isValidDomain(parts[1])) ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isValidUser(String user) {
+        return !user.isEmpty();
+    }
+
+    private boolean isValidDomain(String domain) {
+        if(!InternetDomainName.isValid(domain)) {
+            return false;
+        }
+        InternetDomainName idn = InternetDomainName.from(domain);
+        return idn.hasPublicSuffix();
+    }
 	
 	private Label createLabel(Composite composite, int type) {
 		final Label label = new Label(composite, SWT.NONE);
@@ -93,6 +147,39 @@ public class RecipientSection {
 		final GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
 		text.setLayoutData(gd);
 		text.addModifyListener(modifyListener);
+        text.addFocusListener(createFocusListener());
 		return text;
 	}
+
+    private FocusListener createFocusListener() {
+        return new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                populateContacts();
+            }
+        };
+    }
+
+
+    private void populateContacts() {
+        contactList.clear();
+        haveKeysForAll = true;
+        for(InternetAddress address :getAddresses()) {
+            Contact contact = model.getContactByEmailAddress(address.getAddress());
+            if(contact.getPublicIdentity() == null) {
+                haveKeysForAll = false;
+                contact.fetchPublicIdentity();
+            }
+            contactList.add(contact);
+        }
+        headerSection.updateRecipientKeyAvailability();
+    }
+
+    List<Contact> getContactList() {
+        return contactList;
+    }
+
+    boolean haveKeysForAllRecipients() {
+        return haveKeysForAll;
+    }
 }
