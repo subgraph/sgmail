@@ -1,5 +1,6 @@
 package com.subgraph.sgmail.servers;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -79,6 +80,8 @@ public class MozillaAutoconfiguration {
 		if(url != null) {
 			try {
 				return url.openStream();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
