@@ -1,8 +1,8 @@
 package com.subgraph.sgmail.model;
 
 import com.db4o.activation.ActivationPurpose;
+import com.subgraph.sgmail.identity.OpenPGPKeyUtils;
 import com.subgraph.sgmail.identity.PublicIdentity;
-import com.subgraph.sgmail.identity.PublicKeyDecoder;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 
@@ -11,15 +11,21 @@ import java.util.List;
 
 public class StoredPublicIdentity extends AbstractActivatable implements PublicIdentity {
 	
-	private final byte[] bytes;
+	private byte[] bytes;
 	private final int keySource;
 
-    private transient PublicKeyDecoder cachedDecoder;
+    private transient OpenPGPKeyUtils cachedKeyUtils;
 
 	public StoredPublicIdentity(byte[] bytes, int keySource) {
 		this.bytes = bytes;
 		this.keySource = keySource;
 	}
+
+    public synchronized void updateKeyBytes(byte[] bytes) {
+        activate(ActivationPurpose.WRITE);
+        this.bytes = bytes;
+        cachedKeyUtils = null;
+    }
 
 	@Override
 	public int getKeySource() {
@@ -27,35 +33,35 @@ public class StoredPublicIdentity extends AbstractActivatable implements PublicI
         return keySource;
 	}
 
-    private synchronized PublicKeyDecoder getDecoder() {
+    private synchronized OpenPGPKeyUtils getKeyUtils() {
         activate(ActivationPurpose.READ);
-        if(cachedDecoder == null) {
+        if(cachedKeyUtils == null) {
             try {
-                cachedDecoder = PublicKeyDecoder.createFromBytes(bytes);
+                cachedKeyUtils = OpenPGPKeyUtils.createFromPublicKeyBytes(bytes);
             } catch (IOException e) {
                 throw new IllegalStateException("IOException decoding StoredPublicIdentity key bytes: "+ e);
             }
         }
-        return cachedDecoder;
+        return cachedKeyUtils;
     }
 
 	@Override
 	public synchronized PGPPublicKeyRing getPGPPublicKeyRing() {
-        return getDecoder().getPublicKeyRing();
+        return getKeyUtils().getPublicKeyRing();
 	}
 
     @Override
     public synchronized List<PGPPublicKey> getPublicKeys() {
-        return getDecoder().getPublicKeys();
+        return getKeyUtils().getPublicKeys();
     }
 
-	@Override
+    @Override
 	public synchronized List<String> getUserIds() {
-        return getDecoder().getUserIDs();
+        return getKeyUtils().getUserIDs();
 	}
 
 	@Override
 	public byte[] getImageData() {
-        return getDecoder().getImageData();
+        return getKeyUtils().getImageData();
 	}
 }

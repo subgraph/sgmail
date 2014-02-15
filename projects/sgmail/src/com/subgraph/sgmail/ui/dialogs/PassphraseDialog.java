@@ -46,7 +46,7 @@ public class PassphraseDialog extends TitleAreaDialog {
         composite.setLayout(new GridLayout(2, false));
 
         final PublicIdentityPane publicIdentityPane = new PublicIdentityPane(composite, false);
-        publicIdentityPane.displayIdentity(identity.getPublicIdentity());
+        publicIdentityPane.displayIdentity(identity.getPublicIdentity(), identity);
         publicIdentityPane.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 
         final Label label = new Label(composite, SWT.NONE);

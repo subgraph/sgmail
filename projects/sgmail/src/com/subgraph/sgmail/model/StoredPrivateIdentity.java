@@ -4,17 +4,20 @@ import com.db4o.activation.ActivationPurpose;
 import com.db4o.activation.Activator;
 import com.db4o.ta.Activatable;
 import com.subgraph.sgmail.identity.AbstractPrivateIdentity;
+import com.subgraph.sgmail.identity.OpenPGPKeyUtils;
 import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.identity.PublicIdentity;
 import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator;
 
 import java.io.IOException;
+import java.security.SignatureException;
 
 public class StoredPrivateIdentity extends AbstractPrivateIdentity implements PrivateIdentity, Activatable {
 
-	private final byte[] bytes;
+	private byte[] bytes;
 	private String passphrase;
 	private final StoredPublicIdentity publicIdentity;
 	
@@ -26,7 +29,14 @@ public class StoredPrivateIdentity extends AbstractPrivateIdentity implements Pr
 		this.passphrase = passphrase;
 		this.publicIdentity = publicIdentity;
 	}
-	
+
+    public synchronized void updateKeyBytes(byte[] bytes) {
+        activate(ActivationPurpose.WRITE);
+        this.bytes = bytes;
+        cachedKeyRing = null;
+        clearCachedValues();
+    }
+
 	@Override
 	public synchronized PGPSecretKeyRing getPGPSecretKeyRing() {
 		if(cachedKeyRing == null) {
@@ -57,6 +67,25 @@ public class StoredPrivateIdentity extends AbstractPrivateIdentity implements Pr
 		activate(ActivationPurpose.READ);
 		return passphrase;
 	}
+
+    @Override
+    public void addImageData(byte[] imageData) {
+        final PGPPublicKeyRing pkr = getPublicIdentity().getPGPPublicKeyRing();
+        final PGPSecretKeyRing skr = getPGPSecretKeyRing();
+        final OpenPGPKeyUtils keyUtils = new OpenPGPKeyUtils(pkr, skr, getPassphrase());
+        try {
+            keyUtils.addImageAttribute(imageData);
+            publicIdentity.updateKeyBytes(pkr.getEncoded());
+            updateKeyBytes(skr.getEncoded());
+
+        } catch (PGPException e) {
+            e.printStackTrace();
+        } catch (SignatureException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public boolean isValidPassphrase(String passphrase) {

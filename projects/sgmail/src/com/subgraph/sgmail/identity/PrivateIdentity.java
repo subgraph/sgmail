@@ -8,6 +8,7 @@ public interface PrivateIdentity {
 	PGPPrivateKey getPrivateKeyByKeyId(long keyId) throws OpenPGPException;
 	void setPassphrase(String passphrase) throws OpenPGPException;
 	String getPassphrase();
+    void addImageData(byte[] imageData);
     boolean isValidPassphrase(String passphrase);
 	PGPPrivateKey getSigningKey() throws OpenPGPException;
 	PGPPrivateKey getEncryptionKey() throws OpenPGPException;

@@ -7,6 +7,8 @@ import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.bouncycastle.openpgp.operator.bc.BcPBESecretKeyDecryptorBuilder;
 import org.bouncycastle.openpgp.operator.bc.BcPGPDigestCalculatorProvider;
 
+import java.security.SignatureException;
+
 public class GnuPGPrivateIdentity extends AbstractPrivateIdentity implements PrivateIdentity {
 
 	private final static BcPBESecretKeyDecryptorBuilder decryptorBuilder = 
@@ -57,5 +59,17 @@ public class GnuPGPrivateIdentity extends AbstractPrivateIdentity implements Pri
 	public String getPassphrase() {
 		return passphrase;
 	}
+
+    @Override
+    public void addImageData(byte[] imageData) {
+        final OpenPGPKeyUtils keyUtils = new OpenPGPKeyUtils(getPublicIdentity().getPGPPublicKeyRing(), secretKeyring, passphrase);
+        try {
+            keyUtils.addImageAttribute(imageData);
+        } catch (PGPException e) {
+            e.printStackTrace();
+        } catch (SignatureException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

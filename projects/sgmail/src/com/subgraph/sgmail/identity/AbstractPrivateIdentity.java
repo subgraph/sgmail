@@ -24,7 +24,12 @@ public abstract class AbstractPrivateIdentity {
 	
 	public abstract PGPSecretKeyRing getPGPSecretKeyRing();
 	public abstract String getPassphrase();
-	
+
+    protected void clearCachedValues() {
+        cachedSigningKey = null;
+        cachedEncryptionKey = null;
+    }
+
 	public PGPPrivateKey getSigningKey() throws OpenPGPException  {
 		if(cachedSigningKey == null) {
 			cachedSigningKey = extractPrivateKey(getPGPSecretKeyRing().getSecretKey());

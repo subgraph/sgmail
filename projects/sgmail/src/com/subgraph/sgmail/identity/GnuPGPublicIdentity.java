@@ -8,12 +8,12 @@ import java.util.List;
 public class GnuPGPublicIdentity implements PublicIdentity {
 
 	private final PGPPublicKeyRing publicKeyRing;
-    private final PublicKeyDecoder decoder;
+    private final OpenPGPKeyUtils keyUtils;
 	
 
 	GnuPGPublicIdentity(PGPPublicKeyRing pkr) {
 		this.publicKeyRing = pkr;
-        this.decoder = new PublicKeyDecoder(pkr);
+        this.keyUtils = new OpenPGPKeyUtils(pkr);
 	}
 
 	@Override
@@ -23,11 +23,11 @@ public class GnuPGPublicIdentity implements PublicIdentity {
 
     @Override
     public List<PGPPublicKey> getPublicKeys() {
-        return decoder.getPublicKeys();
+        return keyUtils.getPublicKeys();
     }
 
     public synchronized List<String> getUserIds() {
-        return decoder.getUserIDs();
+        return keyUtils.getUserIDs();
 	}
 
 	@Override
@@ -37,6 +37,6 @@ public class GnuPGPublicIdentity implements PublicIdentity {
 
 	@Override
 	public byte[] getImageData() {
-        return decoder.getImageData();
+        return keyUtils.getImageData();
 	}
 }
