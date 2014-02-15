@@ -32,7 +32,6 @@ public class Server {
     private KeyRegistrationMailer registrationMailer;
 	
 	Server(Properties properties) {
-        properties.list(System.out);
 		this.properties = properties;
         this.dispatcher = createMessageDispatcher();
 	}
@@ -82,6 +81,7 @@ public class Server {
 
     public void registerPublicKey(KeyRegistrationState krs) {
         synchronized (keyRegistrationLock) {
+            System.out.println("Registering key for "+ krs.getEmailAddress());
         final PGPPublicKeyRing pkr = krs.getPublicKeyRing();
             try {
                 registrationByEmail.remove(krs.getEmailAddress());

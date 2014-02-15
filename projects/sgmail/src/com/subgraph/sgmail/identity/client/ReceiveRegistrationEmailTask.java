@@ -23,47 +23,61 @@ public class ReceiveRegistrationEmailTask implements Callable<MimeMessage> {
     private final String imapLogin;
     private final String imapPassword;
     private final String imapServer;
-    private long requestId;
+    private long expectedRequestId;
 
 
     private MimeMessage messageReceived;
+    private IMAPFolder idleFolder;
 
     public ReceiveRegistrationEmailTask(String imapServer, String imapLogin, String imapPassword) {
         this.imapServer = imapServer;
         this.imapLogin = imapLogin;
         this.imapPassword = imapPassword;
-        this.requestId = 0;
+        this.expectedRequestId = 0;
     }
 
-    public synchronized void setRequestId(long requestId) {
-       this.requestId = requestId;
+    public synchronized void setExpectedRequestId(long requestId) {
+        System.out.println("setting expected: "+ requestId);
+       this.expectedRequestId = requestId;
        notifyAll();
     }
 
     @Override
     public MimeMessage call() throws Exception {
+        System.out.println("Starting ReceiveRegistrationEmailTask");
         final IMAPStore store = openStore();
         try {
             final IMAPFolder inbox = openInbox(store);
+            System.out.println("Inbox opened");
             final MimeMessage msg = searchFolder(inbox);
+            System.out.println("Inbox searched result = "+ msg);
+
             if(msg != null) {
-                inbox.close(false);
+                if(inbox.isOpen()) inbox.close(false);
                 return msg;
             }
-            while(true) {
-                inbox.idle();
-                if(messageReceived != null) {
-                    inbox.close(false);
-                    return messageReceived;
-                }
-            }
+            return waitForMessage(inbox);
         } finally {
             store.close();
         }
     }
 
+    private MimeMessage waitForMessage(IMAPFolder inbox) throws MessagingException {
+        idleFolder = inbox;
+        while(messageReceived == null) {
+            System.out.println("before idle: "+ messageReceived);
+            inbox.idle(true);
+            System.out.println("after idle: "+ messageReceived);
+        }
+        if(inbox.isOpen()) {
+            inbox.close(false);
+        }
+        return messageReceived;
+    }
+
     private IMAPStore openStore() throws MessagingException {
         final Session session = Session.getInstance(new Properties());
+        session.setDebug(true);
         final IMAPStore store = (IMAPStore) session.getStore("imaps");
         store.connect(imapServer, imapLogin, imapPassword);
         return store;
@@ -105,8 +119,17 @@ public class ReceiveRegistrationEmailTask implements Callable<MimeMessage> {
     }
 
     private void processIncomingMessage(Message message) {
+        System.out.println("Processing incoming message");
         if(messageMatchesRequestId(message)) {
+            System.out.println("Matches!");
             messageReceived = (MimeMessage) message;
+            if(idleFolder != null) {
+                try {
+                    idleFolder.close(false);
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -129,14 +152,18 @@ public class ReceiveRegistrationEmailTask implements Callable<MimeMessage> {
             return false;
         }
         synchronized (this) {
-            while(requestId == 0) {
+            while(expectedRequestId == 0) {
                 try {
+                    System.out.println("Waiting for expected request id to be set");
                     wait();
                 } catch (InterruptedException e) {
+
                     e.printStackTrace();
+                    return false;
                 }
             }
+            System.out.println("Expected Request id: "+ expectedRequestId);
         }
-        return UnsignedLongs.parseUnsignedLong(parts[0], 16) == requestId;
+        return UnsignedLongs.parseUnsignedLong(parts[0], 16) == expectedRequestId;
     }
 }

@@ -23,23 +23,20 @@ public class KeyRegistrationMailer {
     }
 
     private final Session session;
+    private final String smtpHostname;
     private final String smtpUsername;
     private final String smtpPassword;
     private final String fromAddress;
 
-    private KeyRegistrationMailer(String smtpServer, String smtpUsername, String smtpPassword, String fromAddress) {
-        this.session = createSession(smtpServer);
+    private KeyRegistrationMailer(String smtpHostname, String smtpUsername, String smtpPassword, String fromAddress) {
+        this.session = Session.getInstance(new Properties());
+        this.session.setDebug(true);
+        this.smtpHostname = smtpHostname;
         this.smtpUsername = smtpUsername;
         this.smtpPassword = smtpPassword;
         this.fromAddress = fromAddress;
     }
 
-    private Session createSession(String smtpServer) {
-        final Properties properties = new Properties();
-        properties.put("mail.smtp.host", smtpServer);
-        properties.put("mail.transport.protocol", "smtps");
-        return Session.getInstance(properties);
-    }
 
     public void queueRequest(KeyRegistrationState request) {
         try {
@@ -51,7 +48,15 @@ public class KeyRegistrationMailer {
     }
 
     private void sendMail(KeyRegistrationState krs) throws MessagingException {
-        Transport.send(createMessageFor(krs), smtpUsername, smtpPassword);
+        Transport transport = session.getTransport("smtps");
+        try {
+            transport.connect(smtpHostname, smtpUsername, smtpPassword);
+            final MimeMessage message = createMessageFor(krs);
+            message.saveChanges();
+            transport.sendMessage(message, message.getAllRecipients());
+        } finally {
+            transport.close();
+        }
     }
 
     private MimeMessage createMessageFor(KeyRegistrationState krs) throws MessagingException {

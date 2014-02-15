@@ -31,6 +31,7 @@ public class KeyRegistrationTask implements Callable<KeyRegistrationResult> {
 
     @Override
     public KeyRegistrationResult call() throws Exception {
+        System.out.println("Starting key registration task");
         final IdentityServerConnection connection = model.getIdentityServerManager().getIdentityServerConnection();
         final KeyRegistrationRequest request = new KeyRegistrationRequest(publicIdentity.getPGPPublicKeyRing().getEncoded(), emailAddress);
         final ListenableFuture<MimeMessage> future = model.submitTask(receiveRegistrationEmailTask);
@@ -40,13 +41,15 @@ public class KeyRegistrationTask implements Callable<KeyRegistrationResult> {
             future.cancel(true);
             return new KeyRegistrationResult(response.getErrorMessage());
         }
-        receiveRegistrationEmailTask.setRequestId(response.getRequestId());
+        receiveRegistrationEmailTask.setExpectedRequestId(response.getRequestId());
 
         final MimeMessage message = future.get();
 
+        System.out.println("Email received: "+ message);
+
         final KeyRegistrationFinalizeRequest finalizeRequest = createFinalizeRequest(response.getRequestId(), message);
         final KeyRegistrationFinalizeResponse finalizeResponse = connection.transact(finalizeRequest, KeyRegistrationFinalizeResponse.class);
-
+        System.out.println("Finalize response received...");
         if(finalizeResponse.isSuccess()) {
             return new KeyRegistrationResult();
         } else {

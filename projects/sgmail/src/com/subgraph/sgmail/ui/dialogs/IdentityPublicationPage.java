@@ -37,7 +37,7 @@ public class IdentityPublicationPage extends WizardPage {
 
     public void setIdentity(Identity identity) {
         this.identity = identity;
-        publicIdentityPane.displayIdentity(identity.getPublicIdentity());
+        publicIdentityPane.displayIdentity(identity.getPublicIdentity(), identity.getPrivateIdentity());
     }
 
 	@Override
@@ -96,6 +96,7 @@ public class IdentityPublicationPage extends WizardPage {
         return new FutureCallback<KeyRegistrationResult>() {
             @Override
             public void onSuccess(KeyRegistrationResult keyRegistrationResult) {
+                System.out.println("Keyregistration onSuccess");
                 if(!keyRegistrationResult.isError()) {
                     onKeyRegistrationSucceeded();
                 }
@@ -103,7 +104,8 @@ public class IdentityPublicationPage extends WizardPage {
 
             @Override
             public void onFailure(Throwable throwable) {
-
+                throwable.printStackTrace();
+                System.out.println("KeyRegistrationTask onFailure"+ throwable);
             }
         };
     }

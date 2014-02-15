@@ -1,6 +1,6 @@
 package com.subgraph.sgmail.identity.server;
 
-import com.subgraph.sgmail.identity.PublicKeyDecoder;
+import com.subgraph.sgmail.identity.OpenPGPKeyUtils;
 import com.subgraph.sgmail.identity.protocol.KeyRegistrationRequest;
 import com.subgraph.sgmail.identity.protocol.KeyRegistrationResponse;
 import com.subgraph.sgmail.identity.protocol.Message;
@@ -38,8 +38,9 @@ public class KeyRegistrationHandler implements MessageHandler {
 
         final byte[] keyData = request.getKeyData();
 
-        final PublicKeyDecoder decoder = PublicKeyDecoder.createFromBytes(keyData);
-        if(!emailMatchesUserIDList(email, decoder.getUserIDs())) {
+        final OpenPGPKeyUtils keyUtils = OpenPGPKeyUtils.createFromPublicKeyBytes(keyData);
+        //final PublicKeyDecoder decoder = PublicKeyDecoder.createFromBytes(keyData);
+        if(!emailMatchesUserIDList(email, keyUtils.getUserIDs())) {
             sendError(connection, "Email address does not match any key id");
             return;
         }
@@ -49,7 +50,7 @@ public class KeyRegistrationHandler implements MessageHandler {
             return;
         }
 
-        final KeyRegistrationState registrationState = server.createRegistrationState(email, decoder.getPublicKeyRing());
+        final KeyRegistrationState registrationState = server.createRegistrationState(email, keyUtils.getPublicKeyRing());
         connection.writeMessage(KeyRegistrationResponse.createSuccessResponse(registrationState.getRequestId()));
         server.getRegistrationMailer().queueRequest(registrationState);
     }
