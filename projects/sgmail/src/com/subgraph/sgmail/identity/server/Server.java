@@ -31,7 +31,7 @@ public class Server {
 
     private KeyRegistrationMailer registrationMailer;
 	
-	Server(Properties properties) {
+	public Server(Properties properties) {
 		this.properties = properties;
         this.dispatcher = createMessageDispatcher();
 	}

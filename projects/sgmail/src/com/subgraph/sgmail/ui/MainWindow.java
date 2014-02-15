@@ -1,8 +1,13 @@
 package com.subgraph.sgmail.ui;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.security.Security;
+import java.util.Properties;
 
+import com.subgraph.sgmail.identity.server.Server;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
@@ -150,7 +155,7 @@ public class MainWindow extends ApplicationWindow {
 		final MenuManager fileMenu = new MenuManager("File");
 		menuManager.add(fileMenu);
 		
-		fileMenu.add(new NewIdentityAction(model));
+		//fileMenu.add(new NewIdentityAction(model));
 		fileMenu.add(new NewAccountAction(model));
 		fileMenu.add(new OpenPreferencesAction(model));
 		fileMenu.add(createSyncAction());
@@ -160,6 +165,11 @@ public class MainWindow extends ApplicationWindow {
 	}
 
 	public static void main(String[] args) {
+        if(args.length == 2 && args[0].equals("--server")) {
+            startServer(args[1]);
+            return;
+        }
+
 		Security.addProvider(new BouncyCastleProvider());
 		Display.setAppName("Mail");
 
@@ -176,7 +186,24 @@ public class MainWindow extends ApplicationWindow {
 		}
 		
 	}
-	
+
+    private static void startServer(String propertyFile) {
+        try {
+            final Properties properties = loadProperties(propertyFile);
+            Server s = new Server(properties);
+            s.start();
+        } catch (IOException e) {
+            System.err.println("Error loading properties file: "+ e);
+        }
+    }
+    private static Properties loadProperties(String path) throws IOException {
+        final File propertiesFile = new File(path);
+        try(Reader reader = new FileReader(propertiesFile)) {
+            final Properties p = new Properties();
+            p.load(reader);
+            return p;
+        }
+    }
 	private static Model createModel() {
 		final File home = new File(System.getProperty("user.home"));
 		final Model model = new Model(new File(home, ".sgos"));
