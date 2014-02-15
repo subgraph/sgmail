@@ -31,6 +31,13 @@ public class MailserverAutoconfiguration {
     static {
         addDomainEntry("gmail.com", "imap.googlemail.com", "smtp.googlemail.com");
         addDomainEntry("subgraph.com", "imap.googlemail.com", "smtp.googlemail.com");
+        addDomainEntry("riseup.net", "imap.riseup.net", "xyvp43vrggckj427.onion", "smtp.riseup.net", "xyvp43vrggckj427.onion");
+    }
+
+    private static void addDomainEntry(String domain, String imapHostname, String imapOnionname, String smtpHostname, String smtpOnionname) {
+        final ServerInformation incomingServer = createImapServer(imapHostname, imapOnionname);
+        final ServerInformation outgoingServer = createSMTPServer(smtpHostname, smtpOnionname);
+        addDomainEntry(domain, incomingServer, outgoingServer);
     }
 
     private static void addDomainEntry(String domain, String imapHostname, String smtpHostname) {
@@ -44,8 +51,15 @@ public class MailserverAutoconfiguration {
         domainEntries.put(domain, entry);
     }
 
+    private static ServerInformation createImapServer(String hostname, String onion) {
+        return createIMAPBuilder().hostname(hostname).onion(onion).build();
+    }
     private static ServerInformation createImapServer(String hostname) {
         return createIMAPBuilder().hostname(hostname).build();
+    }
+
+    private static ServerInformation createSMTPServer(String hostname, String onion) {
+        return createSMTPBuilder().hostname(hostname).onion(onion).build();
     }
 
     private static ServerInformation createSMTPServer(String hostname) {
