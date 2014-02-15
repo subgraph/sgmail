@@ -44,12 +44,12 @@ public class IdentityCreationPage extends WizardPage {
     private Identity generatedIdentity = null;
 
     public IdentityCreationPage(Model model, AccountDetailsPage accountDetails, IdentityPublicationPage publicationPage) {
-		super("first");
+		super("identity");
 		this.model = model;
         this.accountDetailsPage = accountDetails;
         this.publicationPage = publicationPage;
 		setTitle("Create an Identity");
-		setDescription("description goes here");
+		setDescription("Generate OpenPGP keys for this account or import an existing set of keys from a file or from the local GnuPG keyring");
 	}
 
 	public boolean skipIdentityCreation() {
@@ -154,7 +154,7 @@ public class IdentityCreationPage extends WizardPage {
 		keyringOption = createRadio(parent, "Choose existing key from local GPG keyring");
 		keyringOption.addSelectionListener(listener);
 		for(PrivateIdentity id : model.getLocalPrivateIdentities()) {
-			System.out.println("id: "+ id);
+			//System.out.println("id: "+ id);
 		}
 	}
 	
