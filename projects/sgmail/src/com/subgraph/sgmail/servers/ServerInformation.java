@@ -8,6 +8,7 @@ public class ServerInformation {
 	
 	public static class Builder {
 		private Protocol protocol = Protocol.UNKNOWN;
+        private String onionHostname;
 		private String hostname;
 		private int port;
 		private SocketType socketType = SocketType.UNKNOWN;
@@ -20,6 +21,7 @@ public class ServerInformation {
 		
 		Builder protocol(String val) { protocol = stringToProtocol(val); return this; }
         Builder protocol(Protocol p) { this.protocol = p; return this; }
+        Builder onion(String s) { this.onionHostname = s; return this; }
 		Builder hostname(String s) { hostname = s; return this; }
 		Builder port(int p) { port = p; return this; }
 		Builder socketType(String s) { socketType = stringToSocketType(s); return this; }
@@ -76,6 +78,7 @@ public class ServerInformation {
 	
 	private final Protocol protocol;
 	private final String hostname;
+    private final String onionHostname;
 	private final int port;
 	private final SocketType socketType;
 	private final AuthenticationType authType;
@@ -84,6 +87,7 @@ public class ServerInformation {
 	private ServerInformation(Builder builder) {
 		this.protocol = builder.protocol;
 		this.hostname = builder.hostname;
+        this.onionHostname = builder.onionHostname;
 		this.port = builder.port;
 		this.socketType = builder.socketType;
 		this.authType = builder.authenticationType;
@@ -97,6 +101,10 @@ public class ServerInformation {
 	public String getHostname() {
 		return hostname;
 	}
+
+    public String getOnionHostname() {
+        return onionHostname;
+    }
 	
 	public int getPort() {
 		return port;

@@ -13,6 +13,7 @@ import com.subgraph.sgmail.servers.ServerInformation.Protocol;
 
 public class IMapServerInfoPanel extends Composite {
 
+    private final boolean useTor;
 	private ServerInformation incomingServer;
 	private ServerInformation outgoingServer;
 	
@@ -20,8 +21,9 @@ public class IMapServerInfoPanel extends Composite {
 	private Label incomingHost;
 	private Label smtpHost;
 	
-	IMapServerInfoPanel(Composite parent) {
+	IMapServerInfoPanel(Composite parent, boolean useTor) {
 		super(parent, SWT.NONE);
+        this.useTor = useTor;
 		setLayout(new FillLayout());
 		final Group g = new Group(this, SWT.NONE);
 		g.setText("Server Information");
@@ -59,7 +61,11 @@ public class IMapServerInfoPanel extends Composite {
 	}
 	
 	private String getHostString(ServerInformation info) {
-		return info.getHostname() +":"+ Integer.toString(info.getPort());
+        if(useTor && info.getOnionHostname() != null) {
+            return info.getOnionHostname() + ":" + Integer.toString(info.getPort());
+        } else {
+            return info.getHostname() +":"+ Integer.toString(info.getPort());
+        }
 	}
 	
 	private String getProtocolString(Protocol protocol) {

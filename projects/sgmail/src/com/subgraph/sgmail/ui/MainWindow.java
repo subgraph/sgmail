@@ -36,7 +36,8 @@ import com.subgraph.sgmail.ui.panes.right.RightPane;
 public class MainWindow extends ApplicationWindow {
 	
 	private final Model model;
-	
+	private final TorSupport torSupport;
+
 	private SashForm sashForm;
 
 	private final StoredUserInterfaceState savedState;
@@ -45,6 +46,7 @@ public class MainWindow extends ApplicationWindow {
 		super(null);
 		
 		this.model = model;
+        this.torSupport = TorSupport.create(model);
 		this.savedState = model.getStoredUserInterfaceState();
 		
 		setBlockOnOpen(true);

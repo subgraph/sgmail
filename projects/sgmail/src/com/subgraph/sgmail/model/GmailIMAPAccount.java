@@ -13,7 +13,7 @@ public class GmailIMAPAccount extends IMAPAccount {
 	private List<GmailLabel> labels = new ActivatableArrayList<>();
 	
 	public GmailIMAPAccount(Model model, String label, String username, String domain, String realname, String password, SMTPAccount smtpAccount) {
-		super(model, label, username, domain, realname, password, GMAIL_IMAP_SERVER, smtpAccount);
+		super(model, label, username, domain, realname, password, GMAIL_IMAP_SERVER,  null, smtpAccount);
 	}
 	
 	public List<GmailLabel> getLabels() {

@@ -149,7 +149,7 @@ public class NewAccountDialog extends TitleAreaDialog {
 		errorMessageLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		errorMessageLabel.setForeground(composite.getDisplay().getSystemColor(SWT.COLOR_RED));
 		
-		serverInfoPanel = new IMapServerInfoPanel(composite);
+		serverInfoPanel = new IMapServerInfoPanel(composite, false);
 		final GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
 		gd.heightHint = 200;
 		serverInfoPanel.setLayoutData(gd);

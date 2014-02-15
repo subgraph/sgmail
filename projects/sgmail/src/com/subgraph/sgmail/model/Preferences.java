@@ -8,6 +8,9 @@ public class Preferences {
 	public static String FETCH_KEYS_FROM_IDENTITY_SERVER = "com.subgraph.sgmail.autofetchKeys";
 	
 	public static String IDENTITY_SERVER_ADDRESS = "com.subgraph.sgmail.identity.serverAddress";
+
+    public static String TOR_ENABLED = "com.subgraph.sgmail.torEnabled";
+    public static String TOR_SOCKS_PORT = "com.subgraph.sgmail.torSocksPort";
 	
 	
 	public static void initializeRootPreferences(StoredPreferences preferences) {
@@ -32,6 +35,8 @@ public class Preferences {
 		set(DUMP_SELECTED_MESSAGE, false);
 		set(FETCH_KEYS_FROM_IDENTITY_SERVER, true);
 		set(IDENTITY_SERVER_ADDRESS, "127.0.0.1:12345");
+        set(TOR_ENABLED, "false");
+        set(TOR_SOCKS_PORT, "9050");
 	}
 	
 	private void initializeAccountDefaults() {

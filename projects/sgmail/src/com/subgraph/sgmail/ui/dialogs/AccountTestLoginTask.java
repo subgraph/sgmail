@@ -19,19 +19,21 @@ public class AccountTestLoginTask implements IRunnableWithProgress {
 	private final static Logger logger = Logger.getLogger(AccountTestLoginTask.class.getName());
 	
 	private final Properties sessionProperties;
-	//private final NewAccountDialog dialog;
 	private final ServerInformation server;
 	private final String login;
 	private final String password;
-	
+	private final boolean useTor;
+    private final boolean debug;
+
 	private boolean isSuccess;
 	private String errorMessage = "";
 	
-	AccountTestLoginTask(NewAccountDialog dialog, ServerInformation server, String login, String password) {
-		//this.dialog = dialog;
+	AccountTestLoginTask(ServerInformation server, String login, String password, boolean useTor, boolean debug) {
 		this.server = server;
 		this.login = login;
 		this.password = password;
+        this.useTor = useTor;
+        this.debug = debug;
 		this.sessionProperties = new Properties();
 	}
 
@@ -50,6 +52,9 @@ public class AccountTestLoginTask implements IRunnableWithProgress {
 		final String protocol = getProtocolName();
 		setupSessionProperties(protocol);
 		Session session = Session.getInstance(sessionProperties);
+        if(debug) {
+            session.setDebug(true);
+        }
 		
 		Store store;
 		try {
@@ -57,20 +62,16 @@ public class AccountTestLoginTask implements IRunnableWithProgress {
 			store.connect(login, password);
 			store.close();
 			isSuccess = true;
-			//dialog.accountVerificationSucceeded();
 		} catch (AuthenticationFailedException e) {
 			isSuccess = false;
 			errorMessage = "Login failed";
-			//dialog.accountVerificationFailed("Login failed", true);
 		} catch (NoSuchProviderException e) {
 			isSuccess = false;
 			errorMessage = e.getMessage();
-			//dialog.accountVerificationFailed(e.getMessage(), false);
 			logger.warning("Could not test login credentials: "+ e.getMessage());
 		} catch (MessagingException e) {
 			isSuccess = false;
 			errorMessage = e.getMessage();
-			//dialog.accountVerificationFailed(e.getMessage(), false);
 			logger.warning("Error testing login credentials: "+ e.getMessage());
 		}
 	}
@@ -78,7 +79,12 @@ public class AccountTestLoginTask implements IRunnableWithProgress {
 	private void setupSessionProperties(String protocol) {
 		
 		set("mail.store.protocol", protocol);
-		set("mail."+ protocol +".host", server.getHostname());
+        if(useTor && server.getOnionHostname() != null) {
+            System.out.println("Using onion address: "+ server.getOnionHostname());
+            set("mail."+ protocol + ".host", server.getOnionHostname());
+        } else {
+            set("mail."+ protocol +".host", server.getHostname());
+        }
 		set("mail."+ protocol +".port", Integer.toString(server.getPort()));
 		
 		if(server.getSocketType() == SocketType.STARTTLS) {

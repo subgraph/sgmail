@@ -1,10 +1,7 @@
 package com.subgraph.sgmail.ui.dialogs;
 
 import com.google.common.net.InternetDomainName;
-import com.subgraph.sgmail.model.GmailIMAPAccount;
-import com.subgraph.sgmail.model.IMAPAccount;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.model.SMTPAccount;
+import com.subgraph.sgmail.model.*;
 import com.subgraph.sgmail.servers.ServerInformation;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
@@ -35,8 +32,10 @@ public class AccountDetailsPage extends WizardPage {
 	private String previousAddress;
 	
 	AccountDetailsPage(Model model) {
-		super("");
+		super("details");
         this.model = model;
+        setTitle("Email account details");
+        setDescription("Enter information about your email account");
 		setPageComplete(false);
 	}
 	
@@ -94,7 +93,7 @@ public class AccountDetailsPage extends WizardPage {
 
     IMAPAccount createIMAPAccount() {
         final SMTPAccount smtpAccount = createSMTPAccount();
-        final ServerInformation imapServer = getOutgoingServer();
+        final ServerInformation imapServer = getIncomingServer();
         final String hostname = imapServer.getHostname();
         final boolean isGmail = hostname.endsWith(".googlemail.com");
         final int port = imapServer.getPort();
@@ -106,7 +105,7 @@ public class AccountDetailsPage extends WizardPage {
         if(isGmail) {
             return new GmailIMAPAccount(model, email, login, domain, realname,  password, smtpAccount);
         } else {
-            return new IMAPAccount(model, email, login, domain, realname, password, hostname, port, smtpAccount);
+            return new IMAPAccount(model, email, login, domain, realname, password, hostname, imapServer.getOnionHostname(), port, smtpAccount);
         }
     }
 
@@ -125,7 +124,8 @@ public class AccountDetailsPage extends WizardPage {
 		c.setLayout(new GridLayout());
 		createAccountDetailsGroup(c);
 		errorMessageLabel = createErrorMessageLabel(c);
-		serverInfoPanel = new IMapServerInfoPanel(c);
+        boolean useTor = model.getRootStoredPreferences().getBoolean(Preferences.TOR_ENABLED);
+		serverInfoPanel = new IMapServerInfoPanel(c, useTor);
 		serverInfoPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		setControl(c);
 	}
@@ -245,9 +245,7 @@ public class AccountDetailsPage extends WizardPage {
 
 	
 	public IWizardPage getNextPage() {
-		System.out.println("Get next page...");
 		if(!verifyAccountDetails()) {
-			System.out.println("setting false");
 			setPageComplete(false);
 			return null;
 		}
@@ -285,15 +283,17 @@ public class AccountDetailsPage extends WizardPage {
 			setAccountTestError("No incoming server information");
 			return null;
 		}
-		final String username = getUsername();
-		if(username == null) {
+		final String login = getIncomingLogin();
+		if(login == null) {
 			setAccountTestError("No username");
 		}
 		final String password = getPassword();
 		if(password == null) {
 			setAccountTestError("No password");
 		}
-		return new AccountTestLoginTask(null, incoming, username, password);
-		
+
+        final boolean useTor = model.getRootStoredPreferences().getBoolean(Preferences.TOR_ENABLED);
+        final boolean debug = model.getRootStoredPreferences().getBoolean(Preferences.IMAP_DEBUG_OUTPUT);
+		return new AccountTestLoginTask(incoming, login, password, useTor, debug);
 	}
 }

@@ -25,6 +25,7 @@ public class IMAPAccount extends AbstractActivatable implements Account {
 	private String domain;
 	private String realname;
 	private String password;
+    private String onionHostname;
 	private String hostname;
 	private int port;
 	private boolean isSecure;
@@ -37,11 +38,11 @@ public class IMAPAccount extends AbstractActivatable implements Account {
 	
 	private transient Store remoteStore;
 	
-	public IMAPAccount(Model model, String label, String username, String domain, String realname, String password, String hostname, SMTPAccount smtpAccount) {
-		this(model, label, username, domain, realname, password, hostname, DEFAULT_IMAPS_PORT, smtpAccount);
+	public IMAPAccount(Model model, String label, String username, String domain, String realname, String password, String hostname, String onionHostname, SMTPAccount smtpAccount) {
+		this(model, label, username, domain, realname, password, hostname, onionHostname, DEFAULT_IMAPS_PORT, smtpAccount);
 	}
 
-	public IMAPAccount(Model model, String label, String username, String domain, String realname, String password, String hostname, int port, SMTPAccount smtpAccount) {
+	public IMAPAccount(Model model, String label, String username, String domain, String realname, String password, String hostname, String onionHostname, int port, SMTPAccount smtpAccount) {
 		this.model = model;
 		this.label = checkNotNull(label);
 		this.username = checkNotNull(username);
@@ -49,6 +50,7 @@ public class IMAPAccount extends AbstractActivatable implements Account {
 		this.realname = checkNotNull(realname);
 		this.password = checkNotNull(password);
 		this.hostname = checkNotNull(hostname);
+        this.onionHostname = onionHostname;
 		checkArgument(port > 0 && port <= 0xFFFF, "Port value must be between 1 and 65535");
 		this.port = port; 
 		this.isSecure = true;
@@ -175,7 +177,11 @@ public class IMAPAccount extends AbstractActivatable implements Account {
 	public URLName getURLName() {
 		activate(ActivationPurpose.READ);
 		final int portValue = (port == getDefaultPort()) ? -1 : port;
-		return new URLName(getProto(), hostname, portValue, null, username, password);
+        if(onionHostname != null && model.getRootStoredPreferences().getBoolean(Preferences.TOR_ENABLED)) {
+            return new URLName(getProto(), onionHostname, portValue, null, username, password);
+        } else {
+            return new URLName(getProto(), hostname, portValue, null, username, password);
+        }
 	}
 
 	private int getDefaultPort() {
@@ -201,7 +207,7 @@ public class IMAPAccount extends AbstractActivatable implements Account {
 	
 	private Store createRemoteStore() {
 		final URLName urlname = getURLName();
-		try {
+        try {
 			return model.getSession().getStore(urlname);
 		} catch (NoSuchProviderException e) {
 			logger.warning("Could not create store for "+ urlname + " : "+ e);
