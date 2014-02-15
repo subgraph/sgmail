@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../javamail/javamail.iml" filepath="$PROJECT_DIR$/../javamail/javamail.iml" />
       <module fileurl="file://$PROJECT_DIR$/sgmail.iml" filepath="$PROJECT_DIR$/sgmail.iml" />
     </modules>
   </component>

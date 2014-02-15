@@ -6,6 +6,7 @@
     <JAVADOC />
     <SOURCES>
       <root url="jar://$PROJECT_DIR$/lib/src/org.eclipse.jface.source_3.9.1.v20130725-1141.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/src/bcpg-jdk15on-150/src.zip!/" />
     </SOURCES>
   </library>
 </component>
