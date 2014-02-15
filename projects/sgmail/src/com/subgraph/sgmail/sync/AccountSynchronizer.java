@@ -52,11 +52,6 @@ public class AccountSynchronizer {
 		
 		checkState(runningTask == null);
 
-		if(!(account instanceof GmailIMAPAccount)) {
-			System.out.println("only gmail supported for now");
-			return;
-		}
-		
 		runningTask = new SynchronizeTask(model, remoteStore, account);
 		executor.execute(runningTask);
 		

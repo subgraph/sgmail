@@ -77,7 +77,9 @@ public class SynchronizeTask implements Runnable {
 		}
 		if(isGmail) {
 			idleFolderByName(folders, "[Gmail]/All Mail");
-		}
+		} else {
+            idleFolderByName(folders, "INBOX");
+        }
 		//synchronizeFolder("[Gmail]/All Mail");
 	}
 
