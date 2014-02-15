@@ -21,7 +21,7 @@ public class NewAccountWizard extends Wizard {
         this.identityPublicationPage = new IdentityPublicationPage(model, accountDetailsPage);
 		this.identityCreationPage = new IdentityCreationPage(model, accountDetailsPage, identityPublicationPage);
 		this.finishedPage = new AccountCreationFinishedPage();
-		setNeedsProgressMonitor(true);
+		//setNeedsProgressMonitor(true);
 	}
 	
 	@Override
