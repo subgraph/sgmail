@@ -147,13 +147,14 @@ public class AccountDetailsPage extends WizardPage {
         final boolean isGmail = imapServer.getHostname().endsWith(".googlemail.com");
         return new IMAPAccount.Builder()
                 .gmail(isGmail)
+                .login(getIncomingLogin())
                 .label(addressField.getText())
                 .domain(getDomain())
                 .smtp(createSMTPAccount())
                 .hostname(imapServer.getHostname())
                 .onion(imapServer.getOnionHostname())
                 .port(imapServer.getPort())
-                .username(getIncomingLogin())
+                .username(getUsername())
                 .realname(getRealname())
                 .password(getPassword())
                 .build(model);
