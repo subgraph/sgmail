@@ -4,8 +4,12 @@ import com.subgraph.sgmail.identity.protocol.KeyLookupRequest;
 import com.subgraph.sgmail.identity.protocol.KeyLookupResponse;
 import com.subgraph.sgmail.identity.protocol.Message;
 import com.subgraph.sgmail.identity.protocol.PublicKeyData;
+import com.subgraph.sgmail.identity.server.model.IdentityRecord;
+
+import java.util.logging.Logger;
 
 public class KeyLookupHandler implements MessageHandler {
+    private final Logger logger = Logger.getLogger(KeyLookupHandler.class.getName());
     private final Server server;
 
     KeyLookupHandler(Server server) {
@@ -24,12 +28,15 @@ public class KeyLookupHandler implements MessageHandler {
     private void handleKeyLookupRequest(KeyLookupRequest request, ConnectionTask connection) {
         final KeyLookupResponse response = new KeyLookupResponse();
         String email = request.getEmailAddress();
+        logger.info("KeyLookupRequest received for address "+ email);
         if(email != null) {
-            final PublicKeyRecord pkr = server.lookupRecordByEmail(email);
-            if(pkr != null) {
-                response.addPublicKey(new PublicKeyData(pkr.getKeyData()));
+            final IdentityRecord record = server.lookupRecordByEmail(email);
+            if(record != null) {
+                logger.info("Record found for address "+ email);
+                response.addPublicKey(new PublicKeyData(record.getKeyData()));
             }
         }
+
         connection.writeMessage(response);
     }
 }

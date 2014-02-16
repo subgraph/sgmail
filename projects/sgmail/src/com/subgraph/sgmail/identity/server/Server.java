@@ -3,6 +3,8 @@ package com.subgraph.sgmail.identity.server;
 import com.subgraph.sgmail.identity.protocol.KeyLookupRequest;
 import com.subgraph.sgmail.identity.protocol.KeyRegistrationFinalizeRequest;
 import com.subgraph.sgmail.identity.protocol.KeyRegistrationRequest;
+import com.subgraph.sgmail.identity.server.model.IdentityRecord;
+import com.subgraph.sgmail.identity.server.model.ServerModel;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 
 import java.io.*;
@@ -21,6 +23,7 @@ public class Server {
 
     private final Properties properties;
 
+    private final ServerModel model;
     private final MessageDispatcher dispatcher;
     private final Object keyRegistrationLock = new Object();
     private final Map<String, KeyRegistrationState> registrationByEmail = new HashMap<>();
@@ -32,9 +35,19 @@ public class Server {
     private KeyRegistrationMailer registrationMailer;
 	
 	public Server(Properties properties) {
+        System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s [%1$tc]%n");
 		this.properties = properties;
         this.dispatcher = createMessageDispatcher();
+        this.model = new ServerModel(getDatabaseDirectory());
 	}
+
+    private File getDatabaseDirectory() {
+        final String dbdir = properties.getProperty("com.subgraph.identity.databaseDirectory");
+        if(dbdir != null) {
+            return new File(dbdir);
+        }
+        return new File(System.getProperty("user.home"), ".sgos");
+    }
 
     private MessageDispatcher createMessageDispatcher() {
         final MessageDispatcher dispatcher = new MessageDispatcher();
@@ -82,28 +95,31 @@ public class Server {
     public void registerPublicKey(KeyRegistrationState krs) {
         synchronized (keyRegistrationLock) {
             System.out.println("Registering key for "+ krs.getEmailAddress());
-        final PGPPublicKeyRing pkr = krs.getPublicKeyRing();
+            final PGPPublicKeyRing pkr = krs.getPublicKeyRing();
             try {
                 registrationByEmail.remove(krs.getEmailAddress());
                 registrationByRequestId.remove(krs.getRequestId());
-                keysByEmail.put(krs.getEmailAddress(), new PublicKeyRecord(pkr.getEncoded()));
+                final IdentityRecord identityRecord = new IdentityRecord(krs.getEmailAddress(), pkr.getEncoded());
+                model.store(identityRecord);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public PublicKeyRecord lookupRecordByEmail(String email) {
+    public IdentityRecord lookupRecordByEmail(String email) {
         synchronized (keyRegistrationLock) {
-            return keysByEmail.get(email);
+            return model.findRecordForEmail(email);
         }
     }
 
 	public void start() throws IOException {
-
+        model.open();
+        logger.info("Server listening on port "+ getListeningPort());
 		try(ServerSocket listeningSocket = new ServerSocket(getListeningPort())) {
 			while(true) {
 				Socket newSocket = listeningSocket.accept();
+                logger.info("New connection received from "+ newSocket.getInetAddress());
 				launchConnectionTask(newSocket);
 			}
 		} 
