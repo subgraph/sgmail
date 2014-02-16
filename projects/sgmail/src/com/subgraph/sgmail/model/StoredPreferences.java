@@ -28,7 +28,7 @@ public class StoredPreferences extends AbstractActivatable {
 		activate(ActivationPurpose.READ);
 		if(preferences.containsKey(name)) {
 			return preferences.get(name);
-		} {
+		} else {
 			return defaultPreferences.get(name);
 		}
 	}
