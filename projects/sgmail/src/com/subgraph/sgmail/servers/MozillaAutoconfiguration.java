@@ -35,12 +35,15 @@ public class MozillaAutoconfiguration {
 	}
 
 	public boolean performLookup() {
-		final Document document = retrieveDocument();
-		if(document == null) {
-			return false;
-		} else {
-			return processDocument(document);
-		}
+        try {
+            final Document document = retrieveDocument();
+            if(document == null) {
+                return false;
+            }
+            return processDocument(document);
+        } catch (FileNotFoundException e) {
+            return false;
+        }
 	}
 
 	public List<ServerInformation> getIncomingServers() {
@@ -51,7 +54,7 @@ public class MozillaAutoconfiguration {
 		return outgoingServers;
 	}
 
-	private Document retrieveDocument() {
+	private Document retrieveDocument() throws FileNotFoundException {
 		final InputStream input = openInputStream();
 		if(input == null) {
 			return null;
@@ -75,13 +78,13 @@ public class MozillaAutoconfiguration {
 		return null;
 	}
 	
-	private InputStream openInputStream() {
+	private InputStream openInputStream() throws FileNotFoundException {
 		final URL url = getTargetUrl();
 		if(url != null) {
 			try {
 				return url.openStream();
 			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+                throw e;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
