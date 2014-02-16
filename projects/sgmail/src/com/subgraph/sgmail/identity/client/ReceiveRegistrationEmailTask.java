@@ -15,8 +15,10 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 public class ReceiveRegistrationEmailTask implements Callable<MimeMessage> {
+    private final static Logger logger = Logger.getLogger(ReceiveRegistrationEmailTask.class.getName());
 
     private final static long CHECK_BACK_MESSAGES_PERIOD = TimeUnit.MINUTES.toMillis(5);
 
@@ -37,20 +39,18 @@ public class ReceiveRegistrationEmailTask implements Callable<MimeMessage> {
     }
 
     public synchronized void setExpectedRequestId(long requestId) {
-        System.out.println("setting expected: "+ requestId);
-       this.expectedRequestId = requestId;
-       notifyAll();
+        logger.fine("Expected request id set to "+ requestId);
+        this.expectedRequestId = requestId;
+        notifyAll();
     }
 
     @Override
     public MimeMessage call() throws Exception {
-        System.out.println("Starting ReceiveRegistrationEmailTask");
+        logger.fine("Starting ReceiveRegistrationEmailTask");
         final IMAPStore store = openStore();
         try {
             final IMAPFolder inbox = openInbox(store);
-            System.out.println("Inbox opened");
             final MimeMessage msg = searchFolder(inbox);
-            System.out.println("Inbox searched result = "+ msg);
 
             if(msg != null) {
                 if(inbox.isOpen()) inbox.close(false);
@@ -65,9 +65,7 @@ public class ReceiveRegistrationEmailTask implements Callable<MimeMessage> {
     private MimeMessage waitForMessage(IMAPFolder inbox) throws MessagingException {
         idleFolder = inbox;
         while(messageReceived == null) {
-            System.out.println("before idle: "+ messageReceived);
             inbox.idle(true);
-            System.out.println("after idle: "+ messageReceived);
         }
         if(inbox.isOpen()) {
             inbox.close(false);
@@ -119,9 +117,9 @@ public class ReceiveRegistrationEmailTask implements Callable<MimeMessage> {
     }
 
     private void processIncomingMessage(Message message) {
-        System.out.println("Processing incoming message");
+        logger.fine("processIncomingMessage()");
         if(messageMatchesRequestId(message)) {
-            System.out.println("Matches!");
+            logger.fine("Message matches expected request id");
             messageReceived = (MimeMessage) message;
             if(idleFolder != null) {
                 try {
@@ -154,7 +152,6 @@ public class ReceiveRegistrationEmailTask implements Callable<MimeMessage> {
         synchronized (this) {
             while(expectedRequestId == 0) {
                 try {
-                    System.out.println("Waiting for expected request id to be set");
                     wait();
                 } catch (InterruptedException e) {
 
@@ -162,7 +159,6 @@ public class ReceiveRegistrationEmailTask implements Callable<MimeMessage> {
                     return false;
                 }
             }
-            System.out.println("Expected Request id: "+ expectedRequestId);
         }
         return UnsignedLongs.parseUnsignedLong(parts[0], 16) == expectedRequestId;
     }

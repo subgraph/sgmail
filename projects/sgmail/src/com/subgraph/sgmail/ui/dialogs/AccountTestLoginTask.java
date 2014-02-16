@@ -80,7 +80,7 @@ public class AccountTestLoginTask implements IRunnableWithProgress {
 		
 		set("mail.store.protocol", protocol);
         if(useTor && server.getOnionHostname() != null) {
-            System.out.println("Using onion address: "+ server.getOnionHostname());
+            logger.info("Using onion address for testing login credentials: "+ server.getOnionHostname());
             set("mail."+ protocol + ".host", server.getOnionHostname());
         } else {
             set("mail."+ protocol +".host", server.getHostname());

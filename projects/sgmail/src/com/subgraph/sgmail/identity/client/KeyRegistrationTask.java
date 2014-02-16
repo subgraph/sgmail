@@ -11,8 +11,10 @@ import javax.mail.internet.MimeMessage;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Callable;
+import java.util.logging.Logger;
 
 public class KeyRegistrationTask implements Callable<KeyRegistrationResult> {
+    private final static Logger logger = Logger.getLogger(KeyRegistrationTask.class.getName());
 
     private final Model model;
     private final String emailAddress;
@@ -31,7 +33,7 @@ public class KeyRegistrationTask implements Callable<KeyRegistrationResult> {
 
     @Override
     public KeyRegistrationResult call() throws Exception {
-        System.out.println("Starting key registration task");
+        logger.fine("Starting key registration task");
         final IdentityServerConnection connection = model.getIdentityServerManager().getIdentityServerConnection();
         final KeyRegistrationRequest request = new KeyRegistrationRequest(publicIdentity.getPGPPublicKeyRing().getEncoded(), emailAddress);
         final ListenableFuture<MimeMessage> future = model.submitTask(receiveRegistrationEmailTask);
@@ -45,11 +47,11 @@ public class KeyRegistrationTask implements Callable<KeyRegistrationResult> {
 
         final MimeMessage message = future.get();
 
-        System.out.println("Email received: "+ message);
+        logger.fine("Email received in key registration task");
 
         final KeyRegistrationFinalizeRequest finalizeRequest = createFinalizeRequest(response.getRequestId(), message);
         final KeyRegistrationFinalizeResponse finalizeResponse = connection.transact(finalizeRequest, KeyRegistrationFinalizeResponse.class);
-        System.out.println("Finalize response received...");
+        logger.fine("Finalize response received in key registration task");
         if(finalizeResponse.isSuccess()) {
             return new KeyRegistrationResult();
         } else {
