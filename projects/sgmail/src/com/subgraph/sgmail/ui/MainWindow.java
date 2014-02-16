@@ -168,6 +168,8 @@ public class MainWindow extends ApplicationWindow {
 	}
 
 	public static void main(String[] args) {
+        LoggingConfiguration.configure();
+
         if(args.length == 2 && args[0].equals("--server")) {
             startServer(args[1]);
             return;
