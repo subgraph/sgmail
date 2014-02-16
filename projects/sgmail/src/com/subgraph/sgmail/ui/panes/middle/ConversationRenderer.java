@@ -9,6 +9,8 @@ import java.util.Map;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 
+import com.subgraph.sgmail.ui.Resources;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -27,9 +29,7 @@ import com.subgraph.sgmail.ui.MessageUtils;
 
 
 public class ConversationRenderer {
-	private final int FONT_SIZE_LARGER = 2;
-	private final int FONT_SIZE_SMALLER = -2;
-	
+
 //  +-- Left margin                                  Right margin -+                                                           
 //  |                                                              |
 //______V______________________________________________________________V_
@@ -56,54 +56,23 @@ public class ConversationRenderer {
 	private enum Section { SENDER, DATE, SUBJECT, BODY, END };
 	
 	private final Display display;
-	private final Map<Section, Font> fontMap = new HashMap<>();
-	
+
 	/** Vertical offsets of each section, and Section.END is total height */
 	private final Map<Section, Integer> yMap = new HashMap<>();
 
 	public ConversationRenderer(Display display) {
 		this.display = display;
-	}
-	
-	void setBaseFont(Font base) {
-		clearFontMap();
-		final FontData[] baseData = base.getFontData();
-		final FontData bd = baseData[0];
-		fontMap.put(Section.SENDER, createFont(bd, FONT_SIZE_LARGER, SWT.BOLD));
-		fontMap.put(Section.DATE, createFont(bd, FONT_SIZE_LARGER));
-		fontMap.put(Section.SUBJECT, createFont(bd, -2));
-		fontMap.put(Section.BODY, createFont(bd, FONT_SIZE_SMALLER -2));
-		
-		populateYMap();
-	}
-	
-	
-	private Font createFont(FontData baseData, int size) {
-		return createFont(baseData, size, 0);
+        populateYMap();
 	}
 
-	private Font createFont(FontData baseData, int size, int flags) {
-		final FontData fd = new FontData(
-				baseData.getName(), 
-				baseData.getHeight() + size, 
-				baseData.getStyle() | flags);
-		
-		return new Font(display, fd);
-	}
-	
-	private void clearFontMap() {
-		for(Font font: fontMap.values()) {
-			font.dispose();
-		}
-		fontMap.clear();
-	}
-	
+
 	private void populateYMap() {
 		final Image image = new Image(display, 1,1);
 		final GC gc = new GC(image);
-		final int senderFontHeight = getFontHeight(Section.SENDER, gc);
-		final int subjectFontHeight = getFontHeight(Section.SUBJECT, gc);
-		final int bodyFontHeight = getFontHeight(Section.BODY, gc);
+        final int senderFontHeight = getFontHeight(Resources.FONT_SENDER, gc);
+        final int subjectFontHeight = getFontHeight(Resources.FONT_SUBJECT, gc);
+        final int bodyFontHeight = getFontHeight(Resources.FONT_BODY_SNIPPET, gc);
+
 		gc.dispose();
 		image.dispose();
 		
@@ -125,28 +94,36 @@ public class ConversationRenderer {
 		y += BOTTOM_MARGIN;
 		
 		yMap.put(Section.END, y);
-		
 	}
-	
-	private int getFontHeight(Section section, GC gc) {
-		gc.setFont(fontMap.get(section));
-		return gc.textExtent("").y;
-	}
-	
+
+    private int getFontHeight(String fontName, GC gc) {
+        gc.setFont(getFont(fontName));
+        return gc.textExtent("").y;
+    }
+
+    private Font getFont(String name) {
+        final Font font = JFaceResources.getFontRegistry().get(name);
+        if(font == null) {
+            return Display.getDefault().getSystemFont();
+        } else {
+            return font;
+        }
+    }
+
 	Font getSenderFont() {
-		return fontMap.get(Section.SENDER);
+        return getFont(Resources.FONT_SENDER);
 	}
 	
 	Font getDateFont() {
-		return fontMap.get(Section.DATE);
+        return getFont(Resources.FONT_DATE);
 	}
 	
 	Font getSubjectFont() {
-		return fontMap.get(Section.SUBJECT);
+        return getFont(Resources.FONT_SUBJECT);
 	}
 	
 	Font getBodyFont() {
-		return fontMap.get(Section.BODY);
+        return getFont(Resources.FONT_BODY_SNIPPET);
 	}
 	
 	int getSenderY() {
@@ -268,7 +245,7 @@ public class ConversationRenderer {
 		final Rectangle b = ctx.getBounds();
 		final int x = b.x + LEFT_MARGIN;
 		final int y1 = b.y + getBodyY();
-		final int y2 = y1 + getFontHeight(Section.BODY, gc);
+        final int y2 = y1 + getFontHeight(Resources.FONT_BODY_SNIPPET, gc);
 		final String[] lines = getLinesForBody(message, gc, b);
 		gc.drawText(lines[0], x, y1, true);
 		if(!lines[1].isEmpty()) {

@@ -4,6 +4,8 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 
+import com.subgraph.sgmail.ui.Resources;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -21,7 +23,6 @@ import com.subgraph.sgmail.ui.MessageUtils;
 
 public class MessageHeaderViewer extends Composite {
 
-	private static Font BOLD_FONT;
 	private final Message message;
 	private final Label newMessageIndicator;
 
@@ -49,7 +50,7 @@ public class MessageHeaderViewer extends Composite {
 		middle.setLayout(new GridLayout(2, false));
 		
 		Color white = getDisplay().getSystemColor(SWT.COLOR_WHITE);
-		Color grey = getDisplay().getSystemColor(SWT.COLOR_GRAY);
+
 		middle.setBackground(white);
 		setBackground(white);
 		
@@ -60,19 +61,19 @@ public class MessageHeaderViewer extends Composite {
 		
 		Label fromLabel = new Label(middle, SWT.LEFT);
 		fromLabel.setBackground(white);
-		fromLabel.setFont(getBoldFont(fromLabel));
+        fromLabel.setFont(JFaceResources.getFont(Resources.FONT_SENDER));
 		fromLabel.setText(MessageUtils.getSender(message, true));
 		fromLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		Label dateLabel = new Label(middle, SWT.RIGHT);
 		dateLabel.setBackground(white);
-		dateLabel.setForeground(grey);
+        dateLabel.setForeground(JFaceResources.getColorRegistry().get(Resources.COLOR_DATE_SECTION));
 		dateLabel.setText(MessageUtils.getSentDate(message));
 		dateLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		Label toLabel = new Label(middle, SWT.LEFT);
 		toLabel.setBackground(white);
-		toLabel.setForeground(grey);
+        toLabel.setForeground(JFaceResources.getColorRegistry().get(Resources.COLOR_DATE_SECTION));
 		toLabel.setText("To: "+ MessageUtils.getRecipient(message, true));
 		toLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 		
@@ -114,14 +115,5 @@ public class MessageHeaderViewer extends Composite {
 		gd.verticalIndent = 5;
 		label.setLayoutData(gd);
 		return label;
-	}
-
-	private Font getBoldFont(Control c) {
-		if(BOLD_FONT == null) {
-			FontData fd = c.getFont().getFontData()[0];
-			FontData fd2 = new FontData(fd.getName(), fd.getHeight(), SWT.BOLD);
-			BOLD_FONT = new Font(c.getDisplay(), fd2);
-		}
-		return BOLD_FONT;
 	}
 }

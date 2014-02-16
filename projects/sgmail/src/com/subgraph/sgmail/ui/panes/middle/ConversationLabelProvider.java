@@ -18,8 +18,7 @@ public class ConversationLabelProvider extends OwnerDrawLabelProvider {
 		
 		final Table t = tableViewer.getTable();
 		this.renderer = new ConversationRenderer(t.getDisplay());
-		this.renderer.setBaseFont(t.getFont());
-	}		
+	}
 
 	@Override
 	protected void measure(Event event, Object element) {

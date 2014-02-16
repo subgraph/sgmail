@@ -181,7 +181,7 @@ public class MainWindow extends ApplicationWindow {
 		final MainWindow w = new MainWindow(createModel());
 		w.setBlockOnOpen(true);
 		w.create();
-        setupColors();
+        Resources.initialize();
 		w.open();
 		w.model.close();
 
@@ -191,10 +191,6 @@ public class MainWindow extends ApplicationWindow {
 		}
 		
 	}
-
-    private static void setupColors() {
-        JFaceResources.getColorRegistry().put(Resources.COLOR_ERROR_MESSAGE, StringConverter.asRGB("255,0,0"));
-    }
 
     private static void startServer(String propertyFile) {
         try {

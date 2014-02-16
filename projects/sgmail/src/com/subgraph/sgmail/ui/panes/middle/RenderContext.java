@@ -1,5 +1,7 @@
 package com.subgraph.sgmail.ui.panes.middle;
 
+import com.subgraph.sgmail.ui.Resources;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -46,8 +48,7 @@ public class RenderContext {
 		if(isSelected) {
 			setSelectedColors();
 		} else {
-			gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_BLACK));
-			
+            setColor(gc, Resources.COLOR_SENDER_SECTION);
 		}
 	}
 	
@@ -56,7 +57,7 @@ public class RenderContext {
 		if(isSelected) {
 			setSelectedColors();
 		} else {
-			gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_GRAY));
+            setColor(gc, Resources.COLOR_DATE_SECTION);
 		}
 	}
 	
@@ -65,7 +66,7 @@ public class RenderContext {
 		if(isSelected) {
 			setSelectedColors();
 		} else {
-			gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_BLACK));
+            setColor(gc, Resources.COLOR_SUBJECT_SECTION);
 		}
 	}
 	
@@ -74,7 +75,7 @@ public class RenderContext {
 		if(isSelected) {
 			setSelectedColors();
 		} else {
-			gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_GRAY));
+            setColor(gc, Resources.COLOR_BODY_SECTION);
 		}
 	}
 	
@@ -82,6 +83,15 @@ public class RenderContext {
 		gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
 		gc.setBackground(gc.getDevice().getSystemColor(SWT.COLOR_LIST_SELECTION));
 	}
+
+    private void setColor(GC gc, String name) {
+        final Color color = JFaceResources.getColorRegistry().get(name);
+        if(color == null) {
+            gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_BLACK));
+        } else {
+            gc.setForeground(color);
+        }
+    }
 
 	void restore() {
 		gc.setFont(savedFont);
