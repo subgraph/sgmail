@@ -3,14 +3,16 @@ package com.subgraph.sgmail.ui.dialogs;
 import com.google.common.net.InternetDomainName;
 import com.subgraph.sgmail.model.*;
 import com.subgraph.sgmail.servers.ServerInformation;
+import com.subgraph.sgmail.ui.Resources;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -22,14 +24,63 @@ import java.util.logging.Logger;
 public class AccountDetailsPage extends WizardPage {
     private final static Logger logger = Logger.getLogger(AccountDetailsPage.class.getName());
 
+    private static class TextFieldWithErrorLabel {
+        private final static int BASIC_TEXT_FLAGS = SWT.SINGLE | SWT.BORDER;
+        private final Text textField;
+        private final Label errorLabel;
+        private final Color defaultLabelForeground;
+
+        TextFieldWithErrorLabel(Composite parent, String labelText, String textMessage, boolean password) {
+            final Label label = new Label(parent, SWT.RIGHT);
+            label.setText(labelText);
+            label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+
+            final int flags = (password) ? (BASIC_TEXT_FLAGS | SWT.PASSWORD) : (BASIC_TEXT_FLAGS);
+            textField = new Text(parent, flags);
+            textField.setMessage(textMessage);
+            final GridData gd = new GridData(SWT.FILL, SWT.FILL, false, false);
+            gd.widthHint = 200;
+            textField.setLayoutData(gd);
+
+            errorLabel = new Label(parent, SWT.NONE);
+            errorLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+            defaultLabelForeground = errorLabel.getForeground();
+        }
+
+        void addTextFocusListener(FocusListener listener) {
+            textField.addFocusListener(listener);
+        }
+
+        void addTextModifyListener(ModifyListener listener) {
+            textField.addModifyListener(listener);
+        }
+
+        String getText() {
+            return textField.getText();
+        }
+
+        void setErrorText(String message) {
+            final Color errorColor = JFaceResources.getColorRegistry().get(Resources.COLOR_ERROR_MESSAGE);
+            if(errorColor != null) {
+                errorLabel.setForeground(errorColor);
+            }
+            errorLabel.setText(message);
+        }
+
+        void setInfoText(String message) {
+            errorLabel.setForeground(defaultLabelForeground);
+            errorLabel.setText(message);
+        }
+    }
+
     private final Model model;
 
-    private Text realnameText;
-	private Text addressText;
-	private Text passwordText;
-	private Label errorMessageLabel;
+    private TextFieldWithErrorLabel realnameField;
+    private TextFieldWithErrorLabel addressField;
+    private TextFieldWithErrorLabel passwordField;
 	private IMapServerInfoPanel serverInfoPanel;
 	private String previousAddress;
+    private boolean isAddressValid;
 	
 	AccountDetailsPage(Model model) {
 		super("details");
@@ -44,19 +95,19 @@ public class AccountDetailsPage extends WizardPage {
 	}
 
 	public String getUsername() {
-		return getAddressUsername(addressText.getText());
+		return getAddressUsername(addressField.getText());
 	}
 	
 	public String getDomain() {
-		return getAddressDomain(addressText.getText());
+		return getAddressDomain(addressField.getText());
 	}
 	
 	public String getRealname() {
-		return realnameText.getText();
+		return realnameField.getText();
 	}
 	
 	String getPassword() {
-		return passwordText.getText();
+		return passwordField.getText();
 	}
 
     String getIncomingLogin() {
@@ -68,7 +119,7 @@ public class AccountDetailsPage extends WizardPage {
     }
 
     private String getUsernameByType(ServerInformation.UsernameType type) {
-        final String email = addressText.getText();
+        final String email = addressField.getText();
         switch (type) {
             case USERNAME_EMAILADDRESS:
                 return email;
@@ -96,7 +147,7 @@ public class AccountDetailsPage extends WizardPage {
         final boolean isGmail = imapServer.getHostname().endsWith(".googlemail.com");
         return new IMAPAccount.Builder()
                 .gmail(isGmail)
-                .label(addressText.getText())
+                .label(addressField.getText())
                 .domain(getDomain())
                 .smtp(createSMTPAccount())
                 .hostname(imapServer.getHostname())
@@ -122,7 +173,6 @@ public class AccountDetailsPage extends WizardPage {
 		final Composite c = new Composite(parent, SWT.NONE);
 		c.setLayout(new GridLayout());
 		createAccountDetailsGroup(c);
-		errorMessageLabel = createErrorMessageLabel(c);
         boolean useTor = model.getRootStoredPreferences().getBoolean(Preferences.TOR_ENABLED);
 		serverInfoPanel = new IMapServerInfoPanel(c, useTor);
 		serverInfoPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
@@ -131,36 +181,37 @@ public class AccountDetailsPage extends WizardPage {
 
 	private Group createAccountDetailsGroup(Composite parent) {
 		final Group g = new Group(parent, SWT.NONE);
-		final GridLayout layout = new GridLayout(2, false);
+		final GridLayout layout = new GridLayout(3, false);
 		layout.verticalSpacing = 8;
 		g.setLayout(layout);
 		g.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-
-		realnameText = createTextWithLabel(g, "Your Name:", "enter your name", SWT.NONE);
-		addressText = createTextWithLabel(g, "Address:", "enter email address", SWT.NONE);
-		passwordText = createTextWithLabel(g, "Password:", "enter password", SWT.PASSWORD);
-		
-		addressText.addFocusListener(createAddressFocusListener());
-			
+        realnameField = new TextFieldWithErrorLabel(g, "Your Name:", "enter your name", false);
+        realnameField.addTextModifyListener(createTextModifyListener());
+        addressField = new TextFieldWithErrorLabel(g, "Address:", "enter email address", false);
+        addressField.addTextFocusListener(createAddressFocusListener());
+        passwordField = new TextFieldWithErrorLabel(g, "Password:", "enter password", true);
+        passwordField.addTextModifyListener(createTextModifyListener());
 		return g;
-		
 	}
 	
-	private Label createErrorMessageLabel(Composite parent) {
-		final Label label = new Label(parent, SWT.NONE);
-		label.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		label.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_RED));
-		return label;
-	}
-
 	private FocusListener createAddressFocusListener() {
 		return new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent event) {
-				onAddressChange(addressText.getText());
+				onAddressChange(addressField.getText());
+                testPageComplete();
 			}
 		};
 	}
+
+    private ModifyListener createTextModifyListener() {
+        return new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                testPageComplete();
+            }
+        };
+    }
 
 	private Text createTextWithLabel(Composite parent, String labelText,
 			String textMessage, int style) {
@@ -189,27 +240,36 @@ public class AccountDetailsPage extends WizardPage {
 			return;
 		}
 		previousAddress = address;
-		setPageComplete(false);
+        isAddressValid = false;
+
 		if(isValidAddress(address)) {
-			String domain = getAddressDomain(address);
+            final String domain = getAddressDomain(address);
 			try {
+                addressField.setInfoText("Searching provider information...");
 				final AccountLookupTask task = new AccountLookupTask(this, domain);
 				getContainer().run(false, true, task);
 				if(task.getLookupSucceeded()) {
-					setPageComplete(true);
+                    addressField.setInfoText("");
+                    isAddressValid = true;
 				} else {
-
+                    addressField.setErrorText("No info found for "+ domain);
+                    serverInfoPanel.clearServerInfo();
                 }
 				
 			} catch (InvocationTargetException | InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			//new Thread(new AccountLookupTask(this, domain)).start();
 		} else {
+            addressField.setErrorText("Invalid email address");
 			serverInfoPanel.clearServerInfo();
 		}	
 	}
+
+    private void testPageComplete() {
+        final boolean complete = (isAddressValid && !getRealname().isEmpty() && !getPassword().isEmpty());
+        setPageComplete(complete);
+    }
 
 	void setServerInfo(final ServerInformation incoming, final ServerInformation outgoing) {
 		getControl().getDisplay().syncExec(new Runnable() {
@@ -259,6 +319,7 @@ public class AccountDetailsPage extends WizardPage {
 			return false;
 		}
 		try {
+            passwordField.setInfoText("Verifying login details");
 			getContainer().run(false, true, task);
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
@@ -272,10 +333,12 @@ public class AccountDetailsPage extends WizardPage {
 
 		}
 		if(task.isSuccess()) {
+            passwordField.setInfoText("");
 			return true;
-		}
-		setErrorMessage(task.getErrorMessage());
-		return false;
+		} else {
+            passwordField.setErrorText(task.getErrorMessage());
+            return false;
+        }
 	}
 	
 	private AccountTestLoginTask createAccountLoginTest() {

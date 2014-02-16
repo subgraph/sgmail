@@ -12,6 +12,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -19,6 +21,7 @@ import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -176,7 +179,7 @@ public class MainWindow extends ApplicationWindow {
 		final MainWindow w = new MainWindow(createModel());
 		w.setBlockOnOpen(true);
 		w.create();
-
+        setupColors();
 		w.open();
 		w.model.close();
 
@@ -186,6 +189,10 @@ public class MainWindow extends ApplicationWindow {
 		}
 		
 	}
+
+    private static void setupColors() {
+        JFaceResources.getColorRegistry().put(Resources.COLOR_ERROR_MESSAGE, StringConverter.asRGB("255,0,0"));
+    }
 
     private static void startServer(String propertyFile) {
         try {
