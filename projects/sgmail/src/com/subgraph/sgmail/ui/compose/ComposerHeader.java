@@ -218,6 +218,7 @@ public class ComposerHeader extends Composite {
             }
         }
         recipientKeysAvailable = true;
+
         updateButtonStates();
     }
 

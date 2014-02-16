@@ -40,6 +40,7 @@ public class IdentityPublicationPage extends WizardPage {
     public void setIdentity(Identity identity) {
         this.identity = identity;
         publicIdentityPane.displayIdentity(identity.getPublicIdentity(), identity.getPrivateIdentity());
+
     }
 
 	@Override
