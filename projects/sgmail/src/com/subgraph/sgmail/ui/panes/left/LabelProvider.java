@@ -1,6 +1,8 @@
 package com.subgraph.sgmail.ui.panes.left;
 
 import com.subgraph.sgmail.model.*;
+import com.subgraph.sgmail.ui.Resources;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.OwnerDrawLabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
@@ -67,8 +69,8 @@ public class LabelProvider extends OwnerDrawLabelProvider {
 	
 	private void paintBadge(GC gc, int x, int y, int width, int height, String number) {
 		
-		gc.setBackground(gc.getDevice().getSystemColor(SWT.COLOR_GRAY));
-		gc.fillOval(x, y, height, height);
+		gc.setBackground(JFaceResources.getColorRegistry().get(Resources.COLOR_NEW_MESSAGE_BADGE));
+                gc.fillOval(x, y, height, height);
 		gc.fillOval(x + width - height, y, height, height);
 		gc.fillRectangle(x + (height/2), y, width - height, height);
 		

@@ -15,6 +15,7 @@ public class Resources {
     public final static String COLOR_DATE_SECTION = "com.subgraph.sgmail.colors.date";
     public final static String COLOR_SUBJECT_SECTION = "com.subgraph.sgmail.colors.subject";
     public final static String COLOR_BODY_SECTION = "com.subgraph.sgmail.colors.body";
+    public final static String COLOR_NEW_MESSAGE_BADGE = "com.subgraph.sgmail.colors.badge";
 
     public final static String FONT_SENDER = "com.subgraph.sgmail.fonts.sender";
     public final static String FONT_DATE = "com.subgraph.sgmail.fonts.date";
@@ -32,11 +33,17 @@ public class Resources {
         addColor(COLOR_DATE_SECTION, greyish);
         addColor(COLOR_BODY_SECTION, greyish);
 
+        addColor(COLOR_NEW_MESSAGE_BADGE, new RGB(0xC7,0xCC,0xD6));
+
         initializeFonts();
     }
 
+    public static void addColor(String name, RGB rgb) {
+        JFaceResources.getColorRegistry().put(name, rgb);
+    }
+
     public static void addColor(String name, String rgb) {
-        JFaceResources.getColorRegistry().put(name, StringConverter.asRGB(rgb));
+        addColor(name, StringConverter.asRGB(rgb));
     }
 
     public static void initializeFonts() {
