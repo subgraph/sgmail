@@ -30,8 +30,10 @@ public class IdentityPublicationPage extends WizardPage {
     private Button registerButton;
 
 	public IdentityPublicationPage(Model model, AccountDetailsPage accountDetailsPage) {
-        super("");
+        super("publish");
         this.model = model;
+        setTitle("Identity Publication");
+        setDescription("...");
         this.accountDetailsPage = accountDetailsPage;
 	}
 

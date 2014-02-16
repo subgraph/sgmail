@@ -12,7 +12,9 @@ public class AccountCreationFinishedPage extends WizardPage {
 	private Button startSynchronizingButton;
 	
 	public AccountCreationFinishedPage() {
-		super("");
+		super("finished");
+        setTitle("Account Creation Finished");
+        setDescription("New account has been created");
 	}
 	
 	
