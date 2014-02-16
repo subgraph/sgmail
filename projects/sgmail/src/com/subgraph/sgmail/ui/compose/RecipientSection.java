@@ -21,10 +21,12 @@ import javax.mail.internet.InternetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class RecipientSection {
+    private final Logger logger = Logger.getLogger(RecipientSection.class.getName());
 
-	final static int TYPE_TO = 0;
+    final static int TYPE_TO = 0;
 	final static int TYPE_CC = 1;
 	final static int TYPE_BCC = 2;
 	
@@ -51,14 +53,21 @@ public class RecipientSection {
 
     @Subscribe
     public void onContactPublicIdentityChanged(ContactPublicIdentityChangedEvent event) {
+        logger.info("Public identity changed for "+ event.getContact().getEmailAddress());
         haveKeysForAll = true;
         for(Contact c: contactList) {
             if(c.getPublicIdentity() == null) {
                 haveKeysForAll = false;
             }
         }
-        headerSection.updateRecipientKeyAvailability();
+        headerSection.getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                headerSection.updateRecipientKeyAvailability();
+            }
+        });
     }
+
 	public void setText(String text) {
 		textField.setText(text);
 	}
