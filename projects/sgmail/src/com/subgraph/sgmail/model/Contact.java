@@ -40,6 +40,7 @@ public class Contact extends AbstractActivatable {
         if(fetchInProgress) {
             return;
         }
+        logger.info("Querying identity server for "+ emailAddress);
         final ListenableFuture<KeyLookupResult> future = model.getIdentityServerManager().lookupKeyByEmailAddress(emailAddress);
         Futures.addCallback(future, createCallback());
     }
@@ -52,6 +53,7 @@ public class Contact extends AbstractActivatable {
         return new FutureCallback<KeyLookupResult>() {
             @Override
             public void onSuccess(KeyLookupResult keyLookupResult) {
+                logger.info("Response received from lookup of address "+ emailAddress);
                 processKeyLookupResult(keyLookupResult);
             }
 
@@ -59,7 +61,7 @@ public class Contact extends AbstractActivatable {
             public void onFailure(Throwable throwable) {
                 endFetch();
                 throwable.printStackTrace();
-                logger.warning("Error processing key lookup "+ throwable);
+                logger.warning("Error processing key lookup "+ throwable.getMessage());
             }
         };
     }
@@ -70,6 +72,7 @@ public class Contact extends AbstractActivatable {
             logger.warning("Key lookup failed for identity "+ emailAddress + " : "+ result.getErrorMessage());
             return;
         } else if (result.isNotFoundResult()) {
+            logger.info("No result found for "+ emailAddress);
             activate(ActivationPurpose.WRITE);
             notFoundAt = new Date().getTime();
             return;
