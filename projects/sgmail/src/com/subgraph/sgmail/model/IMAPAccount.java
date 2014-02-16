@@ -23,6 +23,7 @@ public class IMAPAccount extends AbstractActivatable implements Account {
     public static class Builder {
         private boolean isGmail;
         private String label;
+        private String login;
         private String username;
         private String domain;
         private String realname;
@@ -33,6 +34,7 @@ public class IMAPAccount extends AbstractActivatable implements Account {
         private int port;
 
         public Builder label(String s) { label = s; return this; }
+        public Builder login(String s) { login = s; return this; }
         public Builder hostname(String s) { hostname = s; return this; }
         public Builder username(String s) { username = s; return this; }
         public Builder domain(String s) { domain = s; return this; }
@@ -53,6 +55,7 @@ public class IMAPAccount extends AbstractActivatable implements Account {
     }
 
 	private final String label;
+    private final String login;
 	private final String username;
 	private final String domain;
 	private final String realname;
@@ -74,6 +77,7 @@ public class IMAPAccount extends AbstractActivatable implements Account {
     protected IMAPAccount(Builder builder, Model model) {
         this.model = model;
         this.label = checkNotNull(builder.label);
+        this.login = checkNotNull(builder.login);
         this.username = checkNotNull(builder.username);
         this.domain = checkNotNull(builder.domain);
         this.realname = checkNotNull(builder.realname);
@@ -144,7 +148,12 @@ public class IMAPAccount extends AbstractActivatable implements Account {
 		activate(ActivationPurpose.READ);
 		return label;
 	}
-	
+
+    public String getLogin() {
+        activate(ActivationPurpose.READ);
+        return login;
+    }
+
 	public String getEmailAddress() {
 		return getUsername() + "@" + getDomain();
 	}
