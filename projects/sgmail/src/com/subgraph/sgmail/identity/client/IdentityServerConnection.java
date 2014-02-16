@@ -88,7 +88,8 @@ public class IdentityServerConnection {
 
     private Socket openSocket() throws IOException {
         final Socket s = new Socket();
-        s.connect(getSocketAddress());
+        final SocketAddress address = getSocketAddress();
+        s.connect(address);
         return s;
     }
 

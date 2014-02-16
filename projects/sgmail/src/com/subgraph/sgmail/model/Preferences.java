@@ -34,8 +34,8 @@ public class Preferences {
 		set(IMAP_DEBUG_OUTPUT, false);
 		set(DUMP_SELECTED_MESSAGE, false);
 		set(FETCH_KEYS_FROM_IDENTITY_SERVER, true);
-		set(IDENTITY_SERVER_ADDRESS, "127.0.0.1:12345");
-        set(TOR_ENABLED, "false");
+        set(IDENTITY_SERVER_ADDRESS, "pkx53pmulhqw3wkt.onion:12345");
+        set(TOR_ENABLED, "true");
         set(TOR_SOCKS_PORT, "9050");
 	}
 	
