@@ -19,46 +19,76 @@ public class IMAPAccount extends AbstractActivatable implements Account {
 	
 	private final static int DEFAULT_IMAPS_PORT = 993;
 	private final static int DEFAULT_IMAP_PORT = 143;
-	
-	private String label;
-	private String username;
-	private String domain;
-	private String realname;
-	private String password;
-    private String onionHostname;
-	private String hostname;
-	private int port;
+
+    public static class Builder {
+        private boolean isGmail;
+        private String label;
+        private String username;
+        private String domain;
+        private String realname;
+        private String password;
+        private String hostname;
+        private String onionHostname;
+        private SMTPAccount smtpAccount;
+        private int port;
+
+        public Builder label(String s) { label = s; return this; }
+        public Builder hostname(String s) { hostname = s; return this; }
+        public Builder username(String s) { username = s; return this; }
+        public Builder domain(String s) { domain = s; return this; }
+        public Builder realname(String s) { realname = s; return this; }
+        public Builder gmail(boolean b) { isGmail = b; return this; }
+        public Builder password(String s) { password = s; return this; }
+        public Builder port(int n) { port = n; return this; }
+        public Builder onion(String s) { onionHostname = s; return this; }
+        public Builder smtp(SMTPAccount smtp) { smtpAccount = smtp; return this; };
+
+        public IMAPAccount build(Model model) {
+            if(isGmail) {
+                return new GmailIMAPAccount(this, model);
+            } else {
+                return new IMAPAccount(this, model);
+            }
+        }
+    }
+
+	private final String label;
+	private final String username;
+	private final String domain;
+	private final String realname;
+	private final String password;
+    private final String onionHostname;
+	private final String hostname;
+	private final int port;
+    private final SMTPAccount smtpAccount;
 	private boolean isSecure;
 	private boolean isAutomaticSyncEnabled;
 	private List<StoredFolder> folders = new ActivatableArrayList<>();
-	private SMTPAccount smtpAccount;
+
 	private Identity identity;
 	
 	private final StoredAccountPreferences preferences;
 	
 	private transient Store remoteStore;
-	
-	public IMAPAccount(Model model, String label, String username, String domain, String realname, String password, String hostname, String onionHostname, SMTPAccount smtpAccount) {
-		this(model, label, username, domain, realname, password, hostname, onionHostname, DEFAULT_IMAPS_PORT, smtpAccount);
-	}
 
-	public IMAPAccount(Model model, String label, String username, String domain, String realname, String password, String hostname, String onionHostname, int port, SMTPAccount smtpAccount) {
-		this.model = model;
-		this.label = checkNotNull(label);
-		this.username = checkNotNull(username);
-		this.domain = checkNotNull(domain);
-		this.realname = checkNotNull(realname);
-		this.password = checkNotNull(password);
-		this.hostname = checkNotNull(hostname);
-        this.onionHostname = onionHostname;
-		checkArgument(port > 0 && port <= 0xFFFF, "Port value must be between 1 and 65535");
-		this.port = port; 
-		this.isSecure = true;
-		this.isAutomaticSyncEnabled = true;
-		this.smtpAccount = smtpAccount;
-		this.preferences = StoredAccountPreferences.create(this, model);
-	}
-	
+    protected IMAPAccount(Builder builder, Model model) {
+        this.model = model;
+        this.label = checkNotNull(builder.label);
+        this.username = checkNotNull(builder.username);
+        this.domain = checkNotNull(builder.domain);
+        this.realname = checkNotNull(builder.realname);
+        this.password = checkNotNull(builder.password);
+        this.hostname = checkNotNull(builder.hostname);
+        this.onionHostname = builder.onionHostname;
+        this.port = builder.port;
+        checkArgument(port > 0 && port <= 0xFFFF, "Port value must be between 1 and 65535");
+        this.smtpAccount = checkNotNull(builder.smtpAccount);
+        this.isSecure = true;
+        this.isAutomaticSyncEnabled = true;
+
+        this.preferences = StoredAccountPreferences.create(this, model);
+    }
+
 	public Model getModel() {
 		return model;
 	}

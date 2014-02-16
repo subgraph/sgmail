@@ -92,21 +92,20 @@ public class AccountDetailsPage extends WizardPage {
 	}
 
     IMAPAccount createIMAPAccount() {
-        final SMTPAccount smtpAccount = createSMTPAccount();
         final ServerInformation imapServer = getIncomingServer();
-        final String hostname = imapServer.getHostname();
-        final boolean isGmail = hostname.endsWith(".googlemail.com");
-        final int port = imapServer.getPort();
-        final String login = getIncomingLogin();
-        final String email = addressText.getText();
-        final String domain = getDomain();
-        final String realname = getRealname();
-        final String password = getPassword();
-        if(isGmail) {
-            return new GmailIMAPAccount(model, email, login, domain, realname,  password, smtpAccount);
-        } else {
-            return new IMAPAccount(model, email, login, domain, realname, password, hostname, imapServer.getOnionHostname(), port, smtpAccount);
-        }
+        final boolean isGmail = imapServer.getHostname().endsWith(".googlemail.com");
+        return new IMAPAccount.Builder()
+                .gmail(isGmail)
+                .label(addressText.getText())
+                .domain(getDomain())
+                .smtp(createSMTPAccount())
+                .hostname(imapServer.getHostname())
+                .onion(imapServer.getOnionHostname())
+                .port(imapServer.getPort())
+                .username(getIncomingLogin())
+                .realname(getRealname())
+                .password(getPassword())
+                .build(model);
     }
 
     private SMTPAccount createSMTPAccount() {
@@ -198,7 +197,9 @@ public class AccountDetailsPage extends WizardPage {
 				getContainer().run(false, true, task);
 				if(task.getLookupSucceeded()) {
 					setPageComplete(true);
-				}
+				} else {
+
+                }
 				
 			} catch (InvocationTargetException | InterruptedException e) {
 				// TODO Auto-generated catch block

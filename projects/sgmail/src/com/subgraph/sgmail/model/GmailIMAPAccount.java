@@ -11,11 +11,11 @@ public class GmailIMAPAccount extends IMAPAccount {
 	private final static String GMAIL_IMAP_SERVER = "imap.gmail.com";
 	
 	private List<GmailLabel> labels = new ActivatableArrayList<>();
-	
-	public GmailIMAPAccount(Model model, String label, String username, String domain, String realname, String password, SMTPAccount smtpAccount) {
-		super(model, label, username, domain, realname, password, GMAIL_IMAP_SERVER,  null, smtpAccount);
-	}
-	
+
+    protected GmailIMAPAccount(Builder builder, Model model) {
+        super(builder.hostname(GMAIL_IMAP_SERVER), model);
+    }
+
 	public List<GmailLabel> getLabels() {
 		activate(ActivationPurpose.READ);
 		synchronized(labels) {
