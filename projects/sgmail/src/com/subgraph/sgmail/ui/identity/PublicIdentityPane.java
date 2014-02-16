@@ -142,6 +142,7 @@ public class PublicIdentityPane extends Composite {
         }
         this.publicIdentity = publicIdentity;
         this.privateIdentity = privateIdentity;
+        layout(true, true);
     }
 
     private Label createKeyInformationLabel(Composite parent) {
