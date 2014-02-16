@@ -11,6 +11,8 @@ import com.subgraph.sgmail.model.Account;
 import com.subgraph.sgmail.model.IMAPAccount;
 import com.subgraph.sgmail.model.Model;
 
+import java.util.List;
+
 public class PreferenceDialogFactory {
 
 
@@ -20,24 +22,32 @@ public class PreferenceDialogFactory {
 		PreferenceNode torNode = new PreferenceNode("tor", new TorPreferencePage());
 		manager.addToRoot(debugNode);
         manager.addToRoot(torNode);
-		PreferenceNode accountsNode = new PreferenceNode("accounts", new AllAccountsPage());
-		
-		manager.addToRoot(accountsNode);
-		for(Account a: model.getAccounts()) {
-			if(a instanceof IMAPAccount) {
-				IMAPAccount imap = (IMAPAccount) a;
-				PreferenceNode node = new PreferenceNode(imap.getEmailAddress(), new AccountPreferencePage(imap));
-				manager.addTo("accounts", node);
-			}
-		}
-		
-		
+
+        addAccountsNodes(manager, model.getAccounts());
+
+
 		final PreferenceDialog dialog = new PreferenceDialog(shell, manager);
 		final IPreferenceStore store = new PreferenceStoreAdapter(model.getRootStoredPreferences());
 		dialog.setPreferenceStore(store);
-        System.out.println("tor enabled: "+ store.getBoolean(Preferences.TOR_ENABLED));
-        System.out.println("tor port: "+ store.getInt(Preferences.TOR_SOCKS_PORT));
         return dialog;
 	}
+
+    private void addAccountsNodes(PreferenceManager manager, List<Account> accounts) {
+        if(accounts.isEmpty()) {
+            return;
+        }
+        final PreferenceNode accountsNode = new PreferenceNode("accounts", new AllAccountsPage());
+        manager.addToRoot(accountsNode);
+        for(Account a: accounts) {
+            if(a instanceof IMAPAccount) {
+                addIMAPAccount(manager, (IMAPAccount) a);
+            }
+        }
+    }
+
+    private void addIMAPAccount(PreferenceManager manager, IMAPAccount imapAccount) {
+        final PreferenceNode node = new PreferenceNode(imapAccount.getEmailAddress(), new AccountPreferencePage(imapAccount));
+        manager.addTo("accounts", node);
+    }
 
 }
