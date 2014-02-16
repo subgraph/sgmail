@@ -4,10 +4,7 @@ import com.google.common.eventbus.Subscribe;
 import com.subgraph.sgmail.events.*;
 import com.subgraph.sgmail.identity.OpenPGPException;
 import com.subgraph.sgmail.identity.PrivateIdentity;
-import com.subgraph.sgmail.model.Conversation;
-import com.subgraph.sgmail.model.LocalMimeMessage;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.model.StoredMessage;
+import com.subgraph.sgmail.model.*;
 import com.subgraph.sgmail.openpgp.MessageProcessor;
 import com.subgraph.sgmail.ui.compose.ComposeWindow;
 import com.subgraph.sgmail.ui.dialogs.PassphraseDialog;
@@ -253,21 +250,39 @@ public class RightPane extends Composite {
 		}
 
 		private PrivateIdentity findDecryptIdentity(List<Long> keyIds) {
-			for(PrivateIdentity p: model.getLocalPrivateIdentities()) {
-				for(long id: keyIds) {
-					if(p.containsKeyId(id)) {
-                        if(p.getPassphrase() == null) {
-                            if(showPassphraseDialog(p)) {
-                                return p;
-                            }
-                        } else {
-                            return p;
-                        }
-					}
-				}
-			}
+
+            for(PrivateIdentity p: model.getLocalPrivateIdentities()) {
+                if(testPrivateIdentity(p, keyIds)) {
+                    return p;
+                }
+            }
+
+            for(Account account: model.getAccounts()) {
+                if(account.getIdentity() != null) {
+                    PrivateIdentity privateIdentity = account.getIdentity().getPrivateIdentity();
+                    if(testPrivateIdentity(privateIdentity, keyIds)) {
+                        return privateIdentity;
+                    }
+                }
+            }
 			return null;
 		}
+
+        private boolean testPrivateIdentity(PrivateIdentity privateIdentity, List<Long> keyIds) {
+            if(privateIdentity == null) {
+                return false;
+            }
+            for(long id: keyIds) {
+                if(privateIdentity.containsKeyId(id)) {
+                    if(privateIdentity.getPassphrase() != null) {
+                        return true;
+                    } else if(showPassphraseDialog(privateIdentity)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
 
         private boolean showPassphraseDialog(final PrivateIdentity identity) {
             final int[] result = new int[1];
