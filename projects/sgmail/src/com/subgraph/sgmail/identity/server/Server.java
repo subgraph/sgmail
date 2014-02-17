@@ -28,7 +28,6 @@ public class Server {
     private final Object keyRegistrationLock = new Object();
     private final Map<String, KeyRegistrationState> registrationByEmail = new HashMap<>();
     private final Map<Long, KeyRegistrationState> registrationByRequestId = new HashMap<>();
-    private final Map<String, PublicKeyRecord> keysByEmail = new HashMap<>();
 
     private final Random random = new SecureRandom();
 
