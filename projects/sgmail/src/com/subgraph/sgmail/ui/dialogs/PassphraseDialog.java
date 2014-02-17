@@ -78,6 +78,7 @@ public class PassphraseDialog extends TitleAreaDialog {
                 identity.setPassphrase(passphrase);
                 setReturnCode(OK);
                 close();
+                return;
             } catch (OpenPGPException e) {
                 e.printStackTrace();
                 return;
