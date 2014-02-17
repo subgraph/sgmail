@@ -217,9 +217,9 @@ public class IMAPAccount extends AbstractActivatable implements Account {
 		activate(ActivationPurpose.READ);
 		final int portValue = (port == getDefaultPort()) ? -1 : port;
         if(onionHostname != null && model.getRootStoredPreferences().getBoolean(Preferences.TOR_ENABLED)) {
-            return new URLName(getProto(), onionHostname, portValue, null, username, password);
+            return new URLName(getProto(), onionHostname, portValue, null, login, password);
         } else {
-            return new URLName(getProto(), hostname, portValue, null, username, password);
+            return new URLName(getProto(), hostname, portValue, null, login, password);
         }
 	}
 
