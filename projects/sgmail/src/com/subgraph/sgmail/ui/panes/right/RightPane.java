@@ -235,8 +235,9 @@ public class RightPane extends Composite {
 					return;
 				}
 				if(!m.isFlagSet(StoredMessage.FLAG_DELETED)) {
-					MimeMessage mm = getMimeMessage(m);
-					addMessageViewer(mm, idx);
+					MimeMessage raw = getMimeMessage(m);
+                    MimeMessage decrypted = maybeDecryptMessage(raw);
+					addMessageViewer(raw, decrypted, idx);
 					idx += 1;
 				}
 			}
@@ -299,7 +300,7 @@ public class RightPane extends Composite {
 
 		private MimeMessage getMimeMessage(StoredMessage sm) {
 			try {
-				return maybeDecryptMessage(sm.toMimeMessage());
+                return sm.toMimeMessage();
 			} catch (MessagingException e) {
 				logger.warning("Error converting to MimeMessage: "+ e);
 				return null;
@@ -331,8 +332,8 @@ public class RightPane extends Composite {
 			
 		}
 
-		private void addMessageViewer(final MimeMessage m, final int idx) {
-			if(m == null) {
+		private void addMessageViewer(final MimeMessage raw, final MimeMessage decrypted, final int idx) {
+			if(raw == null) {
 				return;
 			}
 			getDisplay().asyncExec(new Runnable() {
@@ -341,7 +342,7 @@ public class RightPane extends Composite {
 						finished = true;
 						return;
 					}
-					final MessageViewer mv = new MessageViewer(composite, RightPane.this, m, model);
+					final MessageViewer mv = new MessageViewer(composite, RightPane.this, raw, decrypted, model);
 					mv.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 					// Update size for first three and every 10th after that
 					if(idx < 3 || (idx % 10) == 0) {

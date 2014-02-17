@@ -29,6 +29,7 @@ public class ImageCache {
 	public final static String BLUE_DOT_IMAGE = "bullet_blue_16x16.png";
 	
 	public final static String COMPOSE_IMAGE = "compose_24x24.png";
+    public final static String GEAR_IMAGE = "gear_16x16.png";
 	
 	public final static String LOCKED_IMAGE = "locked.png";
 	public final static String UNLOCKED_IMAGE = "unlocked.png";

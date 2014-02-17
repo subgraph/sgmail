@@ -1,20 +1,16 @@
 package com.subgraph.sgmail.ui.panes.right;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.logging.Logger;
-
-import javax.mail.Message;
-import javax.mail.MessagingException;
-
+import com.google.common.base.Charsets;
+import com.google.common.eventbus.Subscribe;
+import com.subgraph.sgmail.events.MessageStateChangedEvent;
+import com.subgraph.sgmail.model.LocalMimeMessage;
+import com.subgraph.sgmail.model.Model;
+import com.subgraph.sgmail.model.Preferences;
+import com.subgraph.sgmail.model.StoredMessage;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
@@ -23,13 +19,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import com.google.common.base.Charsets;
-import com.google.common.eventbus.Subscribe;
-import com.subgraph.sgmail.events.MessageStateChangedEvent;
-import com.subgraph.sgmail.model.LocalMimeMessage;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.model.Preferences;
-import com.subgraph.sgmail.model.StoredMessage;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 public class MessageViewer extends Composite {
 	private final static Logger logger = Logger.getLogger(MessageViewer.class.getName());
@@ -45,7 +39,8 @@ public class MessageViewer extends Composite {
 	}
 
 	private final Model model;
-	private final Message message;
+    private final Message rawMessage;
+    private final Message decryptedMessage;
 	private final MessageHeaderViewer headerViewer;
 	private volatile boolean isHighlighted;
 	
@@ -56,18 +51,19 @@ public class MessageViewer extends Composite {
 		cr.put("highlight", rgb);
 	}
 	
-	public MessageViewer(Composite parent, final RightPane pane, Message message, Model model) {
+	public MessageViewer(Composite parent, final RightPane pane, Message raw, Message decrypted, Model model) {
 		super(parent, SWT.NONE);
 		final GridLayout layout = new GridLayout();
 		layout.verticalSpacing = 0;
 		layout.marginHeight = layout.marginWidth = MARGIN_SIZE;
 		setLayout(layout);
-		this.message = message;
+        this.rawMessage = raw;
+        this.decryptedMessage = decrypted;
 		this.model = model;
 		
-		headerViewer = new MessageHeaderViewer(this, message);
+		headerViewer = new MessageHeaderViewer(this, rawMessage, decryptedMessage);
 		headerViewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		MessageBodyViewer body = new MessageBodyViewer(this, message);
+		MessageBodyViewer body = new MessageBodyViewer(this, decryptedMessage);
 		body.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		addPaintListener(new PaintListener() {
@@ -87,10 +83,10 @@ public class MessageViewer extends Composite {
 	
 	@Subscribe
 	public void onMessageStateChanged(MessageStateChangedEvent event) {
-		if(!(message instanceof LocalMimeMessage)) {
+		if(!(decryptedMessage instanceof LocalMimeMessage)) {
 			return;
 		}
-		if(((LocalMimeMessage) message).getStoredMessage() == event.getMessage()) {
+		if(((LocalMimeMessage) decryptedMessage).getStoredMessage() == event.getMessage()) {
 			updateHeaderViewer();
 		}
 	}
@@ -105,7 +101,7 @@ public class MessageViewer extends Composite {
 	}
 	
 	public Message getMessage() {
-		return message;
+		return decryptedMessage;
 	}
 
 	private static void addAllMouseListener(Composite c, MouseListener listener) {
@@ -134,17 +130,17 @@ public class MessageViewer extends Composite {
 		}
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try {
-			message.writeTo(out);
+			rawMessage.writeTo(out);
 			System.out.println(new String(out.toByteArray(), Charsets.UTF_8));
 		} catch (IOException | MessagingException e) {
 			logger.warning("exception dumping message: "+ e);
 		}
 	}
 	private void markMessageSeen() {
-		if(!(message instanceof LocalMimeMessage)) {
+		if(!(decryptedMessage instanceof LocalMimeMessage)) {
 			return;
 		}
-		final StoredMessage sm = ((LocalMimeMessage) message).getStoredMessage();
+		final StoredMessage sm = ((LocalMimeMessage) decryptedMessage).getStoredMessage();
 		if(sm.isNewMessage()) {
 			sm.addFlag(StoredMessage.FLAG_SEEN);
 			model.commit();
