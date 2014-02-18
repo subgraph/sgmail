@@ -17,11 +17,11 @@ public class HoverButton extends Composite {
         stack = new StackLayout();
         setLayout(stack);
 
-        label = new Label(this, SWT.NONE);
+        label = new Label(this, SWT.CENTER);
         label.setImage(ImageCache.getInstance().getDisabledImage(imageName));
         label.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
         label.addMouseTrackListener(createLabelMouseTrackListener());
-
+        
         button = new Button(this, SWT.FLAT);
         button.setImage(ImageCache.getInstance().getImage(imageName));
         button.setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
