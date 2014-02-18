@@ -1,11 +1,7 @@
 package com.subgraph.sgmail.ui.compose;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.eventbus.Subscribe;
 import com.google.common.net.InternetDomainName;
-import com.subgraph.sgmail.events.ContactPublicIdentityChangedEvent;
-import com.subgraph.sgmail.model.Contact;
-import com.subgraph.sgmail.model.Model;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
@@ -16,68 +12,40 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import javax.mail.Message;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 public class RecipientSection {
-    private final Logger logger = Logger.getLogger(RecipientSection.class.getName());
 
-    final static int TYPE_TO = 0;
-	final static int TYPE_CC = 1;
-	final static int TYPE_BCC = 2;
-	
-	final static Map<Integer, String> labels = 
-			ImmutableMap.of(TYPE_TO, "To", TYPE_CC, "CC", TYPE_BCC, "BCC");
+	final static Map<Message.RecipientType, String> labels =
+			ImmutableMap.of(
+                    Message.RecipientType.TO, "To",
+                    Message.RecipientType.CC, "CC",
+                    Message.RecipientType.BCC, "BCC");
 
-    private final Model model;
-    private final ComposerHeader headerSection;
-	private final int type;
+    private final MessageCompositionState state;
+	private final Message.RecipientType type;
 	private final Text textField;
-	private List<Contact> contactList;
-    private boolean haveKeysForAll;
 
-	RecipientSection(Model model, ComposerHeader headerSection, int type, ModifyListener modifyListener) {
-        this.model = model;
-        this.headerSection = headerSection;
+	RecipientSection(MessageCompositionState state, ComposerHeader headerSection, Message.RecipientType type, ModifyListener modifyListener) {
+        this.state = state;
 		this.type = type;
 		createLabel(headerSection, type);
 		textField = createTextField(headerSection, modifyListener);
-        contactList = new ArrayList<>();
-        haveKeysForAll = true;
-        model.registerEventListener(this);
 	}
-
-    @Subscribe
-    public void onContactPublicIdentityChanged(ContactPublicIdentityChangedEvent event) {
-        logger.info("Public identity changed for "+ event.getContact().getEmailAddress());
-        haveKeysForAll = true;
-        for(Contact c: contactList) {
-            if(c.getPublicIdentity() == null) {
-                haveKeysForAll = false;
-            }
-        }
-        headerSection.getDisplay().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                headerSection.updateRecipientKeyAvailability();
-            }
-        });
-    }
 
 	public void setText(String text) {
 		textField.setText(text);
 	}
 
-	public int getType() {
+	public Message.RecipientType getType() {
 		return type;
 	}
 
 	public boolean isValid() {
-		final boolean allowEmpty = (type != TYPE_TO);
+		final boolean allowEmpty = (type != Message.RecipientType.TO);
 		return isValid(allowEmpty);
 	}
 	
@@ -136,14 +104,14 @@ public class RecipientSection {
         return idn.hasPublicSuffix();
     }
 	
-	private Label createLabel(Composite composite, int type) {
+	private Label createLabel(Composite composite, Message.RecipientType type) {
 		final Label label = new Label(composite, SWT.NONE);
 		label.setText(getLabelText(type));
 		label.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, false));
 		return label;
 	}
 	
-	private String getLabelText(int type) {
+	private String getLabelText(Message.RecipientType type) {
 		if(labels.containsKey(type)) {
 			return labels.get(type) + ":";
 		} else {
@@ -164,31 +132,8 @@ public class RecipientSection {
         return new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                populateContacts();
+                state.setRecipientAddresses(type, getAddresses());
             }
         };
-    }
-
-
-    private void populateContacts() {
-        contactList.clear();
-        haveKeysForAll = true;
-        for(InternetAddress address :getAddresses()) {
-            Contact contact = model.getContactByEmailAddress(address.getAddress());
-            if(contact.getPublicIdentity() == null) {
-                haveKeysForAll = false;
-                contact.fetchPublicIdentity();
-            }
-            contactList.add(contact);
-        }
-        headerSection.updateRecipientKeyAvailability();
-    }
-
-    List<Contact> getContactList() {
-        return contactList;
-    }
-
-    boolean haveKeysForAllRecipients() {
-        return haveKeysForAll;
     }
 }

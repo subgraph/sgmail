@@ -1,24 +1,23 @@
 package com.subgraph.sgmail.ui.compose;
 
-import java.io.IOException;
-import java.security.SignatureException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.subgraph.sgmail.identity.OpenPGPException;
+import com.subgraph.sgmail.identity.PrivateIdentity;
+import com.subgraph.sgmail.identity.PublicIdentity;
+import com.subgraph.sgmail.model.Contact;
+import com.subgraph.sgmail.model.IMAPAccount;
+import com.subgraph.sgmail.model.Model;
+import com.subgraph.sgmail.openpgp.MessageProcessor;
+import org.bouncycastle.openpgp.PGPException;
 
 import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-
-import org.bouncycastle.openpgp.PGPException;
-
-import com.subgraph.sgmail.identity.OpenPGPException;
-import com.subgraph.sgmail.identity.PrivateIdentity;
-import com.subgraph.sgmail.identity.PublicIdentity;
-import com.subgraph.sgmail.model.IMAPAccount;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.openpgp.MessageProcessor;
+import java.io.IOException;
+import java.security.SignatureException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class OpenPGPProcessing {
 	private final MessageProcessor processor = new MessageProcessor();
@@ -131,7 +130,13 @@ public class OpenPGPProcessing {
 		if(!(recipient instanceof InternetAddress)) {
 			return Collections.emptyList();
 		}
-		final InternetAddress ia = (InternetAddress) recipient;
-		return model.findBestIdentitiesFor(ia.getAddress());
+        Contact c = model.getContactByEmailAddress(((InternetAddress) recipient).getAddress());
+        if(c.getPublicIdentity() != null) {
+            List<PublicIdentity> list = new ArrayList<>(1);
+            list.add(c.getPublicIdentity());
+            return list;
+        } else {
+            return c.getLocalPublicKeys();
+        }
 	}
 }

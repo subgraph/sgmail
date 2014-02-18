@@ -9,13 +9,17 @@ import com.subgraph.sgmail.events.ContactPublicIdentityChangedEvent;
 import com.subgraph.sgmail.identity.PublicIdentity;
 import com.subgraph.sgmail.identity.client.KeyLookupResult;
 
+import javax.mail.internet.InternetAddress;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class Contact extends AbstractActivatable {
     private final static Logger logger = Logger.getLogger(Contact.class.getName());
 
     private final String emailAddress;
+    private String personal;
 
     private StoredPublicIdentity publicIdentity;
     private long notFoundAt;
@@ -26,14 +30,34 @@ public class Contact extends AbstractActivatable {
         this.emailAddress = emailAddress;
     }
 
+    public Contact(String emailAddress, String personal) {
+        this.emailAddress = emailAddress;
+        this.personal = personal;
+    }
+
+    public InternetAddress toInternetAddress() throws UnsupportedEncodingException {
+        activate(ActivationPurpose.READ);
+        return new InternetAddress(emailAddress, personal);
+    }
+
     public String getEmailAddress() {
         activate(ActivationPurpose.READ);
         return emailAddress;
     }
 
+    public String getPersonal() {
+        activate(ActivationPurpose.READ);
+        return personal;
+    }
+
     public StoredPublicIdentity getPublicIdentity() {
         activate(ActivationPurpose.READ);
         return publicIdentity;
+    }
+
+    public List<PublicIdentity> getLocalPublicKeys() {
+        activate(ActivationPurpose.READ);
+        return model.findBestIdentitiesFor(emailAddress);
     }
 
     public synchronized void fetchPublicIdentity() {

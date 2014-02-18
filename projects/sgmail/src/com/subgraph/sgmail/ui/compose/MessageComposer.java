@@ -1,21 +1,12 @@
 package com.subgraph.sgmail.ui.compose;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-
+import com.google.common.base.Charsets;
+import com.subgraph.sgmail.model.IMAPAccount;
+import com.subgraph.sgmail.model.Model;
+import com.subgraph.sgmail.ui.MessageBodyUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.dnd.DND;
-import org.eclipse.swt.dnd.DropTarget;
-import org.eclipse.swt.dnd.DropTargetAdapter;
-import org.eclipse.swt.dnd.DropTargetEvent;
-import org.eclipse.swt.dnd.FileTransfer;
-import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -24,14 +15,17 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
 
-import com.google.common.base.Charsets;
-import com.subgraph.sgmail.model.IMAPAccount;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.ui.MessageBodyUtils;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 
 public class MessageComposer extends Composite {
 
 	private final Model model;
+    private final MessageCompositionState state;
 	
 	private final ComposeCloseListener closeListener;
 	private final ComposerButtons buttonSection;
@@ -45,13 +39,14 @@ public class MessageComposer extends Composite {
 	MessageComposer(Composite parent, Model model, Message replyMessage, boolean isReplyAll, ComposeCloseListener closeListener) {
 		super(parent, SWT.NONE);
 		this.model = model;
+        this.state = new MessageCompositionState(model, this, (MimeMessage)replyMessage);
 		this.closeListener = closeListener;
 		setLayout(createLayout());
 		
 		buttonSection = new ComposerButtons(this, createSendListener(), createCancelListener());
 		buttonSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
-		headerSection = new ComposerHeader(this, model, createHeaderValidityListener());
+		headerSection = new ComposerHeader(this, model, state);
 		headerSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		bodyText = createBody();
@@ -63,6 +58,7 @@ public class MessageComposer extends Composite {
 		}
 		
 		buttonSection.setSendButtonEnabled(headerSection.isHeaderValid());
+        headerSection.updateOpenPGPButtons();
 		createDropTarget();
 	}
 	
@@ -80,15 +76,6 @@ public class MessageComposer extends Composite {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				closeListener.closeEvent();
-			}
-		};
-	}
-
-	private HeaderValidityListener createHeaderValidityListener() {
-		return new HeaderValidityListener() {
-			@Override
-			public void headerValidityEvent(boolean isValid) {
-				buttonSection.setSendButtonEnabled(isValid);
 			}
 		};
 	}
@@ -127,22 +114,8 @@ public class MessageComposer extends Composite {
 	}
 	
 	private void sendMessage() throws MessagingException {
-		final Message msg = headerSection.createNewMessage(headerSection.getSelectedAccount());
-		msg.setText(bodyText.getText());
-
-		if(headerSection.isEncryptionRequested() || headerSection.isSigningRequested()) {
-			OpenPGPProcessing openpgp = new OpenPGPProcessing(model, headerSection.getSelectedAccount(),
-					(MimeMessage) msg, headerSection.isEncryptionRequested(), headerSection.isSigningRequested());
-			if(openpgp.process()) {
-				MimeMessage output = openpgp.getOutputMessage();
-				dumpMessage(output);
-				transmitMessage(output, headerSection.getSelectedAccount());
-			} else {
-				System.out.println("processing failed");
-			}
-		} else {
-			transmitMessage((MimeMessage) msg, headerSection.getSelectedAccount());
-		}
+        final MimeMessage msg = state.createMessage(bodyText.getText());
+        transmitMessage(msg, state.getSelectedAccount());
 	}
 
 	private void transmitMessage(MimeMessage message, IMAPAccount account) {
@@ -206,4 +179,14 @@ public class MessageComposer extends Composite {
 			}
 		});
 	}
+
+    public void updateOpenPGPButtons() {
+        if(headerSection != null) {
+            headerSection.updateOpenPGPButtons();
+        }
+    }
+
+    public void headerValidityChanged(boolean isHeaderValid) {
+        buttonSection.setSendButtonEnabled(isHeaderValid);
+    }
 }
