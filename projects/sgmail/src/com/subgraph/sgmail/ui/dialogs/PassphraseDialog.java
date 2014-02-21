@@ -14,8 +14,6 @@ import org.eclipse.swt.widgets.*;
 
 public class PassphraseDialog extends TitleAreaDialog {
 
-
-
     private final PrivateIdentity identity;
     private Text passphraseText;
 
