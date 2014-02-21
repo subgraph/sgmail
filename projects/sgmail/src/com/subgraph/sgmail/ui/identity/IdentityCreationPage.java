@@ -197,7 +197,6 @@ public class IdentityCreationPage extends WizardPage {
     }
 
     private void runKeyGeneration() {
-        System.out.println("runKeyGeneration()");
         final KeyGenerationParameters keyGenerationParameters = new KeyGenerationParameters();
         keyGenerationParameters.setEmailAddress(accountDetailsPage.getUsername() + "@" + accountDetailsPage.getDomain());
         keyGenerationParameters.setRealName(accountDetailsPage.getRealname());

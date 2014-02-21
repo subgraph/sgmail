@@ -67,7 +67,7 @@ public class ImageCache {
 			return getDisabledImage(USER_IMAGE);
 		}
 		final byte[] imageBytes = model.findAvatarImageDataForEmail(email);
-		if(imageBytes == null) {
+        if(imageBytes == null) {
 			return getDisabledImage(USER_IMAGE);
 		} else {
 			return createAvatarImage(imageBytes);
@@ -75,7 +75,7 @@ public class ImageCache {
 	}
 
 	public Image createAvatarImage(byte[] imageBytes) {
-		final ByteArrayInputStream input = new ByteArrayInputStream(imageBytes);
+        final ByteArrayInputStream input = new ByteArrayInputStream(imageBytes);
 		final ImageData data = new ImageData(input);
 		final Image image =  new Image(Display.getDefault(), data);
 		return resizeImage(image, 64, 64);

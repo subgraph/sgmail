@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ReceiveRegistrationEmailTask implements Callable<MimeMessage> {
@@ -46,6 +47,15 @@ public class ReceiveRegistrationEmailTask implements Callable<MimeMessage> {
 
     @Override
     public MimeMessage call() throws Exception {
+        try {
+            return runRegistrationTask();
+        } catch(Exception e) {
+            logger.log(Level.WARNING, "Unhandled exception in ReceiveRegistrationTask", e);
+            throw e;
+        }
+    }
+
+    private MimeMessage runRegistrationTask() throws Exception {
         logger.fine("Starting ReceiveRegistrationEmailTask");
         final IMAPStore store = openStore();
         try {
@@ -61,6 +71,8 @@ public class ReceiveRegistrationEmailTask implements Callable<MimeMessage> {
             store.close();
         }
     }
+
+
 
     private MimeMessage waitForMessage(IMAPFolder inbox) throws MessagingException {
         idleFolder = inbox;

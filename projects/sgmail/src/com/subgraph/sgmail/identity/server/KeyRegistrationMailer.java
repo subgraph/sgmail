@@ -7,6 +7,7 @@ import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.Properties;
+import java.util.UUID;
 
 public class KeyRegistrationMailer {
     public final static String SMTP_SERVER_PROPERTY = "com.subgraph.identity.smtpServer";
@@ -60,18 +61,28 @@ public class KeyRegistrationMailer {
     }
 
     private MimeMessage createMessageFor(KeyRegistrationState krs) throws MessagingException {
-        final MimeMessage message = new MimeMessage(session);
+        final MimeMessage message = new MimeMessage(session) {
+            protected void updateMessageID() throws MessagingException {
+                setHeader("Message-ID", generateMessageID());
+            }
+        };
+
         final Address from = new InternetAddress(fromAddress);
         final Address to = new InternetAddress(krs.getEmailAddress());
 
         message.setRecipient(Message.RecipientType.TO, to);
         message.setFrom(from);
-        message.setSubject("...");
-        message.setText("body text here");
+        message.setSubject("SGMail Identity Registration");
+        message.setText("This is an automated mail sent by the SGMail identity registration server.  ");
 
         message.addHeader("X-SGMAIL-IDENTITY-REGISTRATION", createRegistrationHeaderValue(krs));
 
         return message;
+    }
+
+    private String generateMessageID() {
+        final UUID uuid = UUID.randomUUID();
+        return "<"+ uuid + ">";
     }
 
     private String createRegistrationHeaderValue(KeyRegistrationState krs) {

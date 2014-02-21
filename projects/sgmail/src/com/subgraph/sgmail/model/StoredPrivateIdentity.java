@@ -70,6 +70,7 @@ public class StoredPrivateIdentity extends AbstractPrivateIdentity implements Pr
 
     @Override
     public void addImageData(byte[] imageData) {
+        activate(ActivationPurpose.WRITE);
         final PGPPublicKeyRing pkr = getPublicIdentity().getPGPPublicKeyRing();
         final PGPSecretKeyRing skr = getPGPSecretKeyRing();
         final OpenPGPKeyUtils keyUtils = new OpenPGPKeyUtils(pkr, skr, getPassphrase());
@@ -77,7 +78,6 @@ public class StoredPrivateIdentity extends AbstractPrivateIdentity implements Pr
             keyUtils.addImageAttribute(imageData);
             publicIdentity.updateKeyBytes(pkr.getEncoded());
             updateKeyBytes(skr.getEncoded());
-
         } catch (PGPException e) {
             e.printStackTrace();
         } catch (SignatureException e) {

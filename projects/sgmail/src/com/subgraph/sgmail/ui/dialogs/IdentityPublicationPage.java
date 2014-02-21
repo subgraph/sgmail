@@ -7,7 +7,9 @@ import com.subgraph.sgmail.identity.client.KeyRegistrationResult;
 import com.subgraph.sgmail.identity.client.KeyRegistrationTask;
 import com.subgraph.sgmail.model.Identity;
 import com.subgraph.sgmail.model.Model;
+import com.subgraph.sgmail.ui.Resources;
 import com.subgraph.sgmail.ui.identity.PublicIdentityPane;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -15,17 +17,15 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-
-import java.text.SimpleDateFormat;
+import org.eclipse.swt.widgets.Label;
 
 public class IdentityPublicationPage extends WizardPage {
-
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-DD");
 
     private final Model model;
     private final AccountDetailsPage accountDetailsPage;
     private Identity identity;
     private PublicIdentityPane publicIdentityPane;
+    private Label errorLabel;
     private Button publishButton;
     private Button registerButton;
 
@@ -48,12 +48,20 @@ public class IdentityPublicationPage extends WizardPage {
 		final Composite c = new Composite(parent, SWT.NONE);
 		c.setLayout(new GridLayout());
 
-        publicIdentityPane = new PublicIdentityPane(c, true);
+        publicIdentityPane = new PublicIdentityPane(c, model, true);
         publicIdentityPane.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        errorLabel = createErrorLabel(c);
         publishButton = createPublishButton(c);
         registerButton = createRegisterButton(c);
         setControl(c);
 	}
+
+    private Label createErrorLabel(Composite parent) {
+        final Label label = new Label(parent, SWT.NONE);
+        label.setForeground(JFaceResources.getColorRegistry().get(Resources.COLOR_ERROR_MESSAGE));
+        label.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        return label;
+    }
 
     private Button createPublishButton(Composite parent) {
         return createCheckButton(parent, "Publish this identity on identity server");
@@ -71,6 +79,7 @@ public class IdentityPublicationPage extends WizardPage {
         button.setSelection(true);
         return button;
     }
+
 
     public boolean canFlipToNextPage() {
         return isPageComplete();
@@ -99,18 +108,31 @@ public class IdentityPublicationPage extends WizardPage {
         return new FutureCallback<KeyRegistrationResult>() {
             @Override
             public void onSuccess(KeyRegistrationResult keyRegistrationResult) {
-                System.out.println("Keyregistration onSuccess");
                 if(!keyRegistrationResult.isError()) {
                     onKeyRegistrationSucceeded();
+                } else {
+                    asyncDisplayError(keyRegistrationResult.getErrorMessage());
                 }
             }
 
             @Override
-            public void onFailure(Throwable throwable) {
+            public void onFailure(final Throwable throwable) {
                 throwable.printStackTrace();
-                System.out.println("KeyRegistrationTask onFailure"+ throwable);
+                asyncDisplayError(throwable.getMessage());
             }
         };
+    }
+
+    private void asyncDisplayError(final String message) {
+        if(errorLabel == null || errorLabel.isDisposed()) {
+            return;
+        }
+        errorLabel.getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                errorLabel.setText(message);
+            }
+        });
     }
 
     private void onKeyRegistrationSucceeded() {

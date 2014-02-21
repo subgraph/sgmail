@@ -8,9 +8,11 @@ import com.subgraph.sgmail.identity.protocol.*;
 import com.subgraph.sgmail.model.Model;
 
 import javax.mail.internet.MimeMessage;
+import java.net.SocketException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class KeyRegistrationTask implements Callable<KeyRegistrationResult> {
@@ -33,8 +35,28 @@ public class KeyRegistrationTask implements Callable<KeyRegistrationResult> {
 
     @Override
     public KeyRegistrationResult call() throws Exception {
+        try {
+            return runRegistration();
+        } catch(Exception e) {
+            logger.log(Level.WARNING, "Unhandled exception running key registration", e);
+            throw e;
+        }
+    }
+
+    private KeyRegistrationResult runRegistration() throws Exception {
         logger.fine("Starting key registration task");
-        final IdentityServerConnection connection = model.getIdentityServerManager().getIdentityServerConnection();
+
+        IdentityServerConnection connection = null;
+        try {
+            connection = model.getIdentityServerManager().getIdentityServerConnection();
+        } catch(SocketException e) {
+            if(e.getMessage() != null && e.getMessage().contains("Connection refused")) {
+                return new KeyRegistrationResult("Failed to connect to identity server");
+            } else {
+                return new KeyRegistrationResult("SocketException connecting to identity server: "+ e.getMessage());
+            }
+        }
+
         final KeyRegistrationRequest request = new KeyRegistrationRequest(publicIdentity.getPGPPublicKeyRing().getEncoded(), emailAddress);
         final ListenableFuture<MimeMessage> future = model.submitTask(receiveRegistrationEmailTask);
 

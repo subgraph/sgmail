@@ -1,7 +1,10 @@
 package com.subgraph.sgmail.ui.dialogs;
 
 import com.google.common.net.InternetDomainName;
-import com.subgraph.sgmail.model.*;
+import com.subgraph.sgmail.model.IMAPAccount;
+import com.subgraph.sgmail.model.Model;
+import com.subgraph.sgmail.model.Preferences;
+import com.subgraph.sgmail.model.SMTPAccount;
 import com.subgraph.sgmail.servers.ServerInformation;
 import com.subgraph.sgmail.ui.Resources;
 import org.eclipse.jface.resource.JFaceResources;
@@ -12,7 +15,6 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -308,7 +310,6 @@ public class AccountDetailsPage extends WizardPage {
 	
 	public IWizardPage getNextPage() {
 		if(!verifyAccountDetails()) {
-			setPageComplete(false);
 			return null;
 		}
 		return super.getNextPage();
@@ -317,6 +318,7 @@ public class AccountDetailsPage extends WizardPage {
 	private boolean verifyAccountDetails() {
 		final AccountTestLoginTask task = createAccountLoginTest();
 		if(task == null) {
+            testPageComplete();
 			return false;
 		}
 		try {

@@ -3,24 +3,18 @@ package com.subgraph.sgmail.ui.identity;
 import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.identity.PublicIdentity;
 import com.subgraph.sgmail.identity.PublicKeyRenderer;
+import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.ui.ImageCache;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Label;
 
-import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,13 +29,14 @@ public class PublicIdentityPane extends Composite {
     private final Label keyImageLabel;
     private final Image defaultImage;
     private final Button editImageButton;
-
+    private final Model model;
     private PublicIdentity publicIdentity;
     private PrivateIdentity privateIdentity;
 
-    public PublicIdentityPane(Composite composite, boolean editImage) {
+    public PublicIdentityPane(Composite composite, Model model, boolean editImage) {
         super(composite, SWT.NONE);
         setLayout(new FillLayout());
+        this.model = model;
         final Group group = new Group(this, SWT.NONE);
         group.setText("Identity");
         group.setLayout(new GridLayout(2, false));
@@ -76,6 +71,7 @@ public class PublicIdentityPane extends Composite {
             byte[] converted = convertImage(bs);
             if(privateIdentity != null) {
                 privateIdentity.addImageData(converted);
+                model.commit();
             }
             keyImageLabel.setImage(ImageCache.getInstance().createAvatarImage(converted));
         } catch (IOException e) {

@@ -1,19 +1,14 @@
 package com.subgraph.sgmail.ui.dialogs;
 
-import java.util.Properties;
-import java.util.logging.Logger;
-
-import javax.mail.AuthenticationFailedException;
-import javax.mail.MessagingException;
-import javax.mail.NoSuchProviderException;
-import javax.mail.Session;
-import javax.mail.Store;
-
+import com.subgraph.sgmail.servers.ServerInformation;
+import com.subgraph.sgmail.servers.ServerInformation.SocketType;
+import com.sun.mail.util.MailConnectException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
-import com.subgraph.sgmail.servers.ServerInformation;
-import com.subgraph.sgmail.servers.ServerInformation.SocketType;
+import javax.mail.*;
+import java.util.Properties;
+import java.util.logging.Logger;
 
 public class AccountTestLoginTask implements IRunnableWithProgress {
 	private final static Logger logger = Logger.getLogger(AccountTestLoginTask.class.getName());
@@ -69,6 +64,9 @@ public class AccountTestLoginTask implements IRunnableWithProgress {
 			isSuccess = false;
 			errorMessage = e.getMessage();
 			logger.warning("Could not test login credentials: "+ e.getMessage());
+        } catch (MailConnectException e) {
+            isSuccess = false;
+            errorMessage = "Could not connect to "+ e.getHost();
 		} catch (MessagingException e) {
 			isSuccess = false;
 			errorMessage = e.getMessage();
@@ -79,12 +77,7 @@ public class AccountTestLoginTask implements IRunnableWithProgress {
 	private void setupSessionProperties(String protocol) {
 		
 		set("mail.store.protocol", protocol);
-        if(useTor && server.getOnionHostname() != null) {
-            logger.info("Using onion address for testing login credentials: "+ server.getOnionHostname());
-            set("mail."+ protocol + ".host", server.getOnionHostname());
-        } else {
-            set("mail."+ protocol +".host", server.getHostname());
-        }
+        set("mail."+ protocol + ".host", getConnectHostname());
 		set("mail."+ protocol +".port", Integer.toString(server.getPort()));
 		
 		if(server.getSocketType() == SocketType.STARTTLS) {
@@ -92,6 +85,15 @@ public class AccountTestLoginTask implements IRunnableWithProgress {
 			set("mail."+ protocol +".starttls.required", "true");
 		}
 	}
+
+    private String getConnectHostname() {
+        if(useTor && server.getOnionHostname() != null) {
+            logger.info("Using onion address for testing login credentials: "+ server.getOnionHostname());
+            return server.getOnionHostname();
+        } else {
+            return server.getHostname();
+        }
+    }
 
 	private void set(String name, String value) {
 		sessionProperties.setProperty(name, value);

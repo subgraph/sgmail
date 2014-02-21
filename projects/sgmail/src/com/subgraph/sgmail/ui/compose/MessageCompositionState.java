@@ -6,6 +6,7 @@ import com.google.common.eventbus.Subscribe;
 import com.subgraph.sgmail.events.ContactPublicIdentityChangedEvent;
 import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.model.*;
+import org.eclipse.swt.widgets.Display;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -36,11 +37,18 @@ public class MessageCompositionState {
         this.model = model;
         this.composer = composer;
         this.replyMessage = replyMessage;
+        this.model.registerEventListener(this);
     }
 
     @Subscribe
     public void onContactPublicIdentityChanged(ContactPublicIdentityChangedEvent event) {
-        updateRecipientKeysAvailable();
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                updateRecipientKeysAvailable();
+            }
+        });
+
     }
 
     MimeMessage getReplyMessage() {

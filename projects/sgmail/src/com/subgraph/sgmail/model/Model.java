@@ -258,8 +258,8 @@ public class Model {
 	}
 
 	public byte[] findAvatarImageDataForEmail(String emailAddress) {
-		for(PublicIdentity pk: findIdentitiesFor(emailAddress)) {
-			byte[] imageBytes = pk.getImageData();
+        for(PublicIdentity pk: findIdentitiesFor(emailAddress)) {
+            byte[] imageBytes = pk.getImageData();
 			if(imageBytes != null && imageBytes.length > 0) {
 				return imageBytes;
 			}

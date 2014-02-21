@@ -45,7 +45,12 @@ public class OpenPGPProcessing {
 	}
 
 	MimeMessage getOutputMessage() {
-		return outputMessage;
+        try {
+        outputMessage.saveChanges();
+        } catch(MessagingException e) {
+            e.printStackTrace();
+        }
+        return outputMessage;
 	}
 	boolean process() {
 		try {
@@ -85,7 +90,6 @@ public class OpenPGPProcessing {
 	}
 	
 	private boolean maybeSign() throws SignatureException, MessagingException, IOException, PGPException {
-		System.out.println("maybe sign");
 		if(!findSigningKey()) {
 			return false;
 		}

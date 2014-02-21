@@ -10,8 +10,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.logging.Logger;
 
 public class IdentityServerConnection {
+    private final static Logger logger = Logger.getLogger(IdentityServerConnection.class.getName());
+
     private final String serverAddress;
 
     private Socket socket;
@@ -32,7 +35,7 @@ public class IdentityServerConnection {
         if(isClosed) {
             throw new IllegalStateException("Closed");
         }
-
+        logger.info("Opening identity server connection to "+ serverAddress);
         socket = openSocket();
         messageReader = new MessageReader(socket.getInputStream());
         messageWriter = new MessageWriter(socket.getOutputStream());

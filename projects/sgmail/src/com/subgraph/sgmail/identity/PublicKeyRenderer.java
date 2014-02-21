@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat;
 
 public class PublicKeyRenderer {
 
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-DD");
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd");
 
     private final PublicIdentity publicIdentity;
 

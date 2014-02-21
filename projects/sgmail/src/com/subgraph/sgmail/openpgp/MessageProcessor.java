@@ -1,5 +1,16 @@
 package com.subgraph.sgmail.openpgp;
 
+import com.google.common.io.ByteStreams;
+import com.subgraph.sgmail.identity.OpenPGPException;
+import com.subgraph.sgmail.identity.PrivateIdentity;
+import com.subgraph.sgmail.identity.PublicIdentity;
+import org.bouncycastle.bcpg.ArmoredInputStream;
+import org.bouncycastle.openpgp.PGPException;
+
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Part;
+import javax.mail.internet.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -8,25 +19,6 @@ import java.security.SignatureException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Logger;
-
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Part;
-import javax.mail.internet.ContentType;
-import javax.mail.internet.InternetHeaders;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimePart;
-import javax.mail.internet.ParseException;
-
-import org.bouncycastle.bcpg.ArmoredInputStream;
-import org.bouncycastle.openpgp.PGPException;
-
-import com.google.common.io.ByteStreams;
-import com.subgraph.sgmail.identity.OpenPGPException;
-import com.subgraph.sgmail.identity.PrivateIdentity;
-import com.subgraph.sgmail.identity.PublicIdentity;
 
 public class MessageProcessor {
 	
@@ -110,8 +102,7 @@ public class MessageProcessor {
 	private MimeMessage duplicateMessage(MimeMessage message) throws MessagingException {
 		message.saveChanges();
 		final String originalMessageId = message.getMessageID();
-		
-		final MimeMessage newMessage = new MimeMessage(message.getSession()) {
+        final MimeMessage newMessage = new MimeMessage(message.getSession()) {
 			protected void updateMessageID() throws MessagingException {
 		    	setHeader("Message-ID", originalMessageId); 
 		    }
