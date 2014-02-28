@@ -52,7 +52,7 @@ public class Model {
 	private boolean isOpened;
 	private ObjectContainer db;
 
-    private Map<String, Contact> temporaryContactMap = new HashMap<>();
+    private final Map<String, Contact> temporaryContactMap = new HashMap<>();
 
 	public Model(File databaseDirectory) {
 		this(databaseDirectory, new Properties());
