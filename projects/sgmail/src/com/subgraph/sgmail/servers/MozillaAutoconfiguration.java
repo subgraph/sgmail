@@ -1,35 +1,38 @@
 package com.subgraph.sgmail.servers;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+
 public class MozillaAutoconfiguration {
 	private final static Logger logger = Logger.getLogger(MozillaAutoconfiguration.class.getName());
 	private final static String MOZILLA_AUTOCONF_URL = "https://live.mozillamessaging.com/autoconfig/v1.1/";
 
 	private final String domain;
+    private final AutoconfRetriever retriever;
 	private final List<ServerInformation> incomingServers;
 	private final List<ServerInformation> outgoingServers;
 
-	public MozillaAutoconfiguration(String domain) {
+    public MozillaAutoconfiguration(String domain) {
+        this(domain, new MozillaAutoconfRetriever());
+    }
+
+	public MozillaAutoconfiguration(String domain, AutoconfRetriever retriever) {
 		this.domain = domain;
+        this.retriever = retriever;
 		this.incomingServers = new ArrayList<>();
 		this.outgoingServers = new ArrayList<>();
 	}
@@ -55,7 +58,7 @@ public class MozillaAutoconfiguration {
 	}
 
 	private Document retrieveDocument() throws FileNotFoundException {
-		final InputStream input = openInputStream();
+		final InputStream input = retriever.lookupDomain(domain);
 		if(input == null) {
 			return null;
 		}
@@ -76,31 +79,6 @@ public class MozillaAutoconfiguration {
 			} catch (IOException e) {}
 		}
 		return null;
-	}
-	
-	private InputStream openInputStream() throws FileNotFoundException {
-		final URL url = getTargetUrl();
-		if(url != null) {
-			try {
-				return url.openStream();
-			} catch (FileNotFoundException e) {
-                throw e;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return null;
-	}
-
-	private URL getTargetUrl() {
-		try {
-			return new URL(MOZILLA_AUTOCONF_URL + domain);
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
 	}
 	
 	private boolean processDocument(Document document) {
