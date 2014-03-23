@@ -3,9 +3,13 @@ package com.subgraph.sgmail.ui.compose;
 
 import com.google.common.base.Preconditions;
 import com.google.common.eventbus.Subscribe;
+import com.subgraph.sgmail.accounts.IMAPAccount;
 import com.subgraph.sgmail.events.ContactPublicIdentityChangedEvent;
 import com.subgraph.sgmail.identity.PrivateIdentity;
-import com.subgraph.sgmail.model.*;
+import com.subgraph.sgmail.model.Contact;
+import com.subgraph.sgmail.model.Model;
+import com.subgraph.sgmail.model.Preferences;
+import com.subgraph.sgmail.model.StoredPreferences;
 import org.eclipse.swt.widgets.Display;
 
 import javax.mail.Message;

@@ -3,10 +3,7 @@ package com.subgraph.sgmail.ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
+import java.util.logging.*;
 
 public class LoggingConfiguration {
 
@@ -15,7 +12,7 @@ public class LoggingConfiguration {
         configure(new File(home, ".sgos"));
     }
     static public void configure(File logDirectory) {
-        System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s [%1$tc]%n");
+        System.setProperty("java.util.logging.SimpleFormatter.format", "[%1$tT] %4$s: %5$s%6$s%n");
         try {
             final FileHandler fileHandler = new FileHandler(logDirectory.getPath() + File.separator + "sgmail.log.%g", true);
             fileHandler.setFormatter(new SimpleFormatter());
@@ -23,6 +20,12 @@ public class LoggingConfiguration {
             Logger.getLogger("").addHandler(fileHandler);
         } catch (IOException e) {
             Logger.getLogger(LoggingConfiguration.class.getName()).warning("IOException configuring logging "+ e);
+        }
+    }
+
+    static public void close() {
+        for (Handler handler : Logger.getLogger("").getHandlers()) {
+            handler.close();
         }
     }
 }

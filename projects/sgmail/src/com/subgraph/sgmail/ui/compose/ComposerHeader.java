@@ -1,8 +1,8 @@
 package com.subgraph.sgmail.ui.compose;
 
 import com.google.common.base.Strings;
-import com.subgraph.sgmail.model.Account;
-import com.subgraph.sgmail.model.IMAPAccount;
+import com.subgraph.sgmail.accounts.Account;
+import com.subgraph.sgmail.accounts.IMAPAccount;
 import com.subgraph.sgmail.model.Model;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -98,7 +98,7 @@ public class ComposerHeader extends Composite {
 
 	private List<IMAPAccount> getAccountList(Model model) {
 		final List<IMAPAccount> accounts = new ArrayList<>();
-		for(Account a: model.getAccounts()) {
+		for(Account a: model.getAccountList().getAccounts()) {
 			if(a instanceof IMAPAccount) {
 				accounts.add((IMAPAccount) a);
 			}

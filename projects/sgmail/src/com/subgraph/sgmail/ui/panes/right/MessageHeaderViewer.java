@@ -1,6 +1,7 @@
 package com.subgraph.sgmail.ui.panes.right;
 
 import com.google.common.base.Charsets;
+import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.model.LocalMimeMessage;
 import com.subgraph.sgmail.ui.ImageCache;
 import com.subgraph.sgmail.ui.MessageUtils;
@@ -141,7 +142,7 @@ public class MessageHeaderViewer extends Composite {
 	void updateNewMessageIndicator() {
 		if(decryptedMessage instanceof LocalMimeMessage) {
 			final LocalMimeMessage msg = (LocalMimeMessage) decryptedMessage;
-			if(msg.getStoredMessage().isNewMessage()) {
+            if(!msg.getStoredMessage().isFlagSet(StoredMessage.FLAG_SEEN)) {
 				newMessageIndicator.setImage(ImageCache.getInstance().getImage(ImageCache.BLUE_DOT_IMAGE));
 			} else {
 				newMessageIndicator.setImage(null);

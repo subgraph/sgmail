@@ -1,10 +1,10 @@
 package com.subgraph.sgmail.model;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.db4o.activation.ActivationPurpose;
 import com.db4o.activation.Activator;
 import com.db4o.ta.Activatable;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class AbstractActivatable implements Activatable {
 	
@@ -14,7 +14,12 @@ public class AbstractActivatable implements Activatable {
 	
 	void onActivate(Model model) {
 		this.model = checkNotNull(model);
+        initialize();
 	}
+
+    protected void initialize() {
+
+    }
 	
 	public void commit() {
 		model.commit();

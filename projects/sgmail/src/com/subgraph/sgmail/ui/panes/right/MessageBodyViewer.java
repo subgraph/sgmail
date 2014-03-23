@@ -1,17 +1,15 @@
 package com.subgraph.sgmail.ui.panes.right;
 
-import javax.mail.Message;
-
+import com.subgraph.sgmail.ui.MessageBodyUtils;
+import com.subgraph.sgmail.ui.Resources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
-import com.subgraph.sgmail.ui.MessageBodyUtils;
-import org.eclipse.swt.widgets.Text;
+import javax.mail.Message;
 
 public class MessageBodyViewer extends Composite {
 
@@ -26,8 +24,9 @@ public class MessageBodyViewer extends Composite {
         layout.marginBottom = 10;
         setLayout(layout);
 
-        Text text = new Text(this, SWT.WRAP | SWT.READ_ONLY);
-		text.setFont(JFaceResources.getTextFont());
+        StyledText text = new StyledText(this, SWT.WRAP | SWT.READ_ONLY);
+
+		text.setFont(JFaceResources.getFont(Resources.FONT_MESSAGE_BODY));
         text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
 		final String body = MessageBodyUtils.getTextBody(message);

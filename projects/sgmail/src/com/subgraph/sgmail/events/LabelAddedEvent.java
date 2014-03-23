@@ -1,17 +1,17 @@
 package com.subgraph.sgmail.events;
 
+import com.subgraph.sgmail.messages.StoredMessageLabel;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.subgraph.sgmail.model.GmailLabel;
-
 public class LabelAddedEvent {
-	private final GmailLabel label;
-	
-	public LabelAddedEvent(GmailLabel label) {
+    private final StoredMessageLabel label;
+
+	public LabelAddedEvent(StoredMessageLabel label) {
 		this.label = checkNotNull(label);
 	}
 	
-	public GmailLabel getLabel() {
+	public StoredMessageLabel getLabel() {
 		return label;
 	}
 }

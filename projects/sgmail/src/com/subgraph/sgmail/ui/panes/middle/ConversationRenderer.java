@@ -1,31 +1,24 @@
 package com.subgraph.sgmail.ui.panes.middle;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.mail.Message;
-import javax.mail.MessagingException;
-
+import com.google.common.collect.Range;
+import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.messages.StoredMessage;
+import com.subgraph.sgmail.search.HighlightedString;
+import com.subgraph.sgmail.search.SearchResult;
+import com.subgraph.sgmail.search.impl.TextLineRenderer;
+import com.subgraph.sgmail.ui.ImageCache;
+import com.subgraph.sgmail.ui.MessageUtils;
 import com.subgraph.sgmail.ui.Resources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 
-import com.subgraph.sgmail.model.Conversation;
-import com.subgraph.sgmail.model.StoredMessage;
-import com.subgraph.sgmail.ui.ImageCache;
-import com.subgraph.sgmail.ui.MessageBodyUtils;
-import com.subgraph.sgmail.ui.MessageUtils;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import java.util.*;
 
 
 public class ConversationRenderer {
@@ -53,55 +46,104 @@ public class ConversationRenderer {
 	private final static int RIGHT_MARGIN = 4;
 	private final static int LINE_SPACE = 4;
 	
-	private enum Section { SENDER, DATE, SUBJECT, BODY, END };
+	private enum Section {
+        SENDER (Resources.FONT_SENDER, Resources.COLOR_SENDER_SECTION),
+        DATE (Resources.FONT_DATE, Resources.COLOR_DATE_SECTION),
+        SUBJECT (Resources.FONT_SUBJECT, Resources.COLOR_SUBJECT_SECTION),
+        BODY (Resources.FONT_BODY_SNIPPET, Resources.COLOR_BODY_SECTION);
+
+
+        private final String fontKey;
+        private final String colorKey;
+        private int yValue;
+
+        Section(String fontKey, String colorKey) {
+            this.fontKey = fontKey;
+            this.colorKey = colorKey;
+        }
+
+        Font getFont() {
+            return getFontByKey(fontKey);
+        }
+
+        Color getColor() {
+            return getColorByKey(colorKey);
+        }
+
+        int getYValue() {
+            return yValue;
+        }
+
+        void setYValue(int value) {
+            this.yValue = value;
+        }
+
+        int getFontHeight(GC gc) {
+            gc.setFont(getFont());
+            return gc.textExtent("").y;
+        }
+
+        int getStringWidth(GC gc, String s) {
+            gc.setFont(getFont());
+            return gc.textExtent(s).x;
+        }
+    };
 	
 	private final Display display;
+    private final int totalHeight;
+
+    private final Object searchLock = new Object();
+    private SearchResult searchResult;
 
 	/** Vertical offsets of each section, and Section.END is total height */
 	private final Map<Section, Integer> yMap = new HashMap<>();
 
 	public ConversationRenderer(Display display) {
 		this.display = display;
-        populateYMap();
+        totalHeight = populateYMap();
 	}
 
+    public void setSearchResult(SearchResult result) {
+        synchronized (searchLock) {
+            searchResult = result;
+        }
+    }
 
-	private void populateYMap() {
+	private int populateYMap() {
 		final Image image = new Image(display, 1,1);
 		final GC gc = new GC(image);
-        final int senderFontHeight = getFontHeight(Resources.FONT_SENDER, gc);
-        final int subjectFontHeight = getFontHeight(Resources.FONT_SUBJECT, gc);
-        final int bodyFontHeight = getFontHeight(Resources.FONT_BODY_SNIPPET, gc);
-
+        final int senderFontHeight = Section.SENDER.getFontHeight(gc);
+        final int subjectFontHeight = Section.SUBJECT.getFontHeight(gc);
+        final int bodyFontHeight = Section.BODY.getFontHeight(gc);
 		gc.dispose();
 		image.dispose();
 		
 		int y = TOP_MARGIN;
-		
-		yMap.put(Section.SENDER, y);
-		
-		y += senderFontHeight;
+
+        Section.SENDER.setYValue(y);
+        Section.DATE.setYValue(y);
+
+        y += senderFontHeight;
 		y += LINE_SPACE;
-		
-		yMap.put(Section.SUBJECT, y);
-		
+
+        Section.SUBJECT.setYValue(y);
+
 		y += subjectFontHeight;
 		y += LINE_SPACE;
-		
-		yMap.put(Section.BODY, y);
-		
+
+        Section.BODY.setYValue(y);
+
 		y += bodyFontHeight * 2;
 		y += BOTTOM_MARGIN;
-		
-		yMap.put(Section.END, y);
+
+        return y;
 	}
 
-    private int getFontHeight(String fontName, GC gc) {
-        gc.setFont(getFont(fontName));
-        return gc.textExtent("").y;
+    private static Color getColorByKey(String key) {
+        return JFaceResources.getColorRegistry().get(key);
     }
 
-    private Font getFont(String name) {
+    private static Font getFontByKey(String name) {
         final Font font = JFaceResources.getFontRegistry().get(name);
         if(font == null) {
             return Display.getDefault().getSystemFont();
@@ -110,168 +152,179 @@ public class ConversationRenderer {
         }
     }
 
-	Font getSenderFont() {
-        return getFont(Resources.FONT_SENDER);
-	}
-	
-	Font getDateFont() {
-        return getFont(Resources.FONT_DATE);
-	}
-	
-	Font getSubjectFont() {
-        return getFont(Resources.FONT_SUBJECT);
-	}
-	
-	Font getBodyFont() {
-        return getFont(Resources.FONT_BODY_SNIPPET);
-	}
-	
-	int getSenderY() {
-		return yMap.get(Section.SENDER);
-	}
-	
-	int getSubjectY() {
-		return yMap.get(Section.SUBJECT);
-	}
-	
-	int getBodyY() {
-		return yMap.get(Section.BODY);
-	}
-	
 	int getTotalHeight() {
-		return yMap.get(Section.END);
-	}
-	
-	void renderAll(Event event, RenderContext ctx, Conversation conversation) {
-		try {
-			final Message m = getTopMessage(conversation);
-			if(m == null) {
-				return;
-			}
-			if(conversation.getNewMessageCount() > 0) {
-				renderNewMessageDot(ctx);
-			}
-			renderSender(ctx, m);
-			renderDate(ctx, m);
-			renderSubject(ctx, m);
-			renderBody(ctx, m);
-			renderDividerLine(event, ctx.getBounds());
-		} catch (MessagingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
-	
-	private Message getTopMessage(Conversation conversation) throws MessagingException {
-		final StoredMessage msg = conversation.getLeadMessage();
-		if(msg == null) {
-			return null;
-		} else {
-			return msg.toMimeMessage();
-		}
-	}
-	
-	void renderAll(Event event, RenderContext ctx, Message message) {
-		try {
-			renderSender(ctx, message);
-			renderDate(ctx, message);
-			renderSubject(ctx, message);
-			renderBody(ctx, message);
-			renderDividerLine(event, ctx.getBounds());
-		} catch (MessagingException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	void renderNewMessageDot(RenderContext ctx) {
-		final Image image = ImageCache.getInstance().getImage(ImageCache.BLUE_DOT_IMAGE);
-		final Rectangle b = ctx.getBounds();
-		final int imageWidth = image.getImageData().width;
-		final int xoff = (LEFT_MARGIN / 2)  - (imageWidth / 2); 
-		final int x = b.x + xoff;
-		ctx.getGC().drawImage(image, x, getSubjectY() + b.y);
+        return totalHeight;
 	}
 
-	void renderSender(RenderContext ctx, Message message) throws MessagingException {
-		final Rectangle b = ctx.getBounds();
-		final int width = getDateX(ctx, message) - (b.x + LEFT_MARGIN);
-		ctx.startSenderSection();
-		final GC gc = ctx.getGC();
+    void renderAll(Event event, List<StoredMessage> messages) {
+       try {
+           if(messages.size() == 0 || !(messages.get(0) instanceof StoredIMAPMessage)) {
+               return;
+           }
+           final StoredIMAPMessage imapMessage = (StoredIMAPMessage) messages.get(0);
+           final MimeMessage mm = ((StoredIMAPMessage) messages.get(0)).toMimeMessage();
+           if(hasNewMessage(messages)) {
+               renderNewMessageDot(event);
+           }
+           synchronized (searchLock) {
+               if(searchResult != null && searchResult.resultContainsUID(imapMessage.getUniqueMessageId())) {
+                   renderHighlightedSubject(event, imapMessage);
+                   renderHighlightedBody(event, imapMessage);
+               } else {
+                   renderSubject(event, imapMessage.getSubject());
+                   renderBody(event, imapMessage.getDisplayText());
+               }
+           }
+           renderSender(event, mm);
+           renderDate(event, mm);
+           renderDividerLine(event);
+
+       } catch (MessagingException e) {
+
+       }
+
+    }
+
+    private Color getEventColor(Event event, Section section) {
+        if(isSelected(event)) {
+            return JFaceResources.getColorRegistry().get(Resources.COLOR_SELECTED_ELEMENT_FOREGROUND);
+        } else {
+            return section.getColor();
+        }
+    }
+
+    private void renderHighlightedSubject(Event event, StoredMessage msg) {
+        final HighlightedString highlightedSubject = searchResult.getHighlightedSubject(msg.getUniqueMessageId());
+        final Color foreground = getEventColor(event, Section.SUBJECT);
+        final Color highlightBackground = JFaceResources.getColorRegistry().get(Resources.COLOR_HIGHLIGHT_BACKGROUND);
+        final Color highlightForeground = JFaceResources.getColorRegistry().get(Resources.COLOR_HIGHLIGHT_FOREGROUND);
+        TextLineRenderer.TextStyle basic = TextLineRenderer.createStyle(Section.SUBJECT.getFont(), foreground);
+        TextLineRenderer.TextStyle highlighted = TextLineRenderer.createStyle(JFaceResources.getFont(Resources.FONT_SUBJECT_BOLD), highlightForeground, highlightBackground);
+        final String trimmed = MessageUtils.trimToMaxWidth(event.gc, highlightedSubject.getString(), event.width - (LEFT_MARGIN + RIGHT_MARGIN));
+
+        final TextLineRenderer renderer = TextLineRenderer.createHighlighted(trimmed, highlightedSubject.getHighlightedRanges(), basic, highlighted);
+        final int x = event.x + LEFT_MARGIN;
+        final int y = event.y + Section.SUBJECT.getYValue();
+        renderer.render(event.gc, x, y);
+    }
+
+    private void renderHighlightedBody(Event event, StoredIMAPMessage msg) {
+        final HighlightedString highlightedBody = searchResult.getHighlightedBody(msg.getUniqueMessageId());
+        final BodySnippetGenerator gen = new BodySnippetGenerator(highlightedBody.getString(), event.width - (LEFT_MARGIN + RIGHT_MARGIN), event.gc);
+        final List<Range<Integer>> ranges = gen.generateSnippetRanges();
+        final Color foreground = getEventColor(event, Section.BODY);
+        final Color highlightBackground = JFaceResources.getColorRegistry().get(Resources.COLOR_HIGHLIGHT_BACKGROUND);
+        final Color highlightForeground = JFaceResources.getColorRegistry().get(Resources.COLOR_HIGHLIGHT_FOREGROUND);
+        final TextLineRenderer.TextStyle basic = TextLineRenderer.createStyle(Section.BODY.getFont(), foreground);
+        final TextLineRenderer.TextStyle highlighted = TextLineRenderer.createStyle(JFaceResources.getFont(Resources.FONT_BODY_SNIPPET_BOLD), highlightForeground, highlightBackground);
+        final int x = event.x + LEFT_MARGIN;
+        int y = event.y + Section.BODY.getYValue();
+        for(Range<Integer> r: ranges) {
+            TextLineRenderer renderer = TextLineRenderer.createHighlighted(highlightedBody.getString(), r, highlightedBody.getHighlightedRanges(), basic, highlighted);
+            renderer.render(event.gc, x, y);
+            y += Section.BODY.getFontHeight(event.gc);
+        }
+    }
+
+    boolean hasNewMessage(List<StoredMessage> messages) {
+        for(StoredMessage msg: messages) {
+            if(isNewMessage(msg)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isNewMessage(StoredMessage msg) {
+        return ((msg.getConversationId() & StoredMessage.FLAG_SEEN) == 0);
+    }
+
+
+    void renderNewMessageDot(Event event) {
+		final Image image = ImageCache.getInstance().getImage(ImageCache.BLUE_DOT_IMAGE);
+		final int imageWidth = image.getImageData().width;
+		final int xoff = (LEFT_MARGIN / 2)  - (imageWidth / 2);
+        final int x = event.x + xoff;
+        event.gc.drawImage(image, x, Section.SUBJECT.getYValue() + event.y);
+	}
+
+	void renderSender(Event event, Message message) throws MessagingException {
+        final int width = getDateX(event, message) - (event.x + LEFT_MARGIN);
+        setFontAndColor(event, Section.SENDER);
+        final int x = event.x + LEFT_MARGIN;
+        final int y = event.y + Section.SENDER.getYValue();
 		final String sender = MessageUtils.getSender(message);
 		if(sender != null) {
-			final String s = MessageUtils.trimToMaxWidth(gc, sender, width);
-			gc.drawText(s, b.x + LEFT_MARGIN, b.y + getSenderY());
+            final String s = MessageUtils.trimToMaxWidth(event.gc, sender, width);
+			event.gc.drawText(s, x, y);
 		}
-		ctx.restore();
-	}
-	
-	void renderDate(RenderContext ctx, Message message) throws MessagingException {
-		ctx.startDateSection();
-		final Rectangle b = ctx.getBounds();
-		final GC gc = ctx.getGC();
-		final String dateString = MessageUtils.getSentDate(message);
-		final Point sz = gc.textExtent(dateString);
-		final int x = (b.x + b.width) - (RIGHT_MARGIN + sz.x);
-		final int y = b.y + getSenderY();
-		gc.drawText(dateString, x, y, true);
-		ctx.restore();
-	}
-	
-	private int getDateX(RenderContext ctx, Message message) {
-		ctx.startDateSection();
-		final String dateString = MessageUtils.getSentDate(message);
-		final Point sz = ctx.getGC().textExtent(dateString);
-		final Rectangle b = ctx.getBounds();
-		ctx.restore();
-		return (b.x + b.width) - (RIGHT_MARGIN + sz.x);
-	}
-	
-	void renderSubject(RenderContext ctx, Message message) throws MessagingException {
-		final GC gc = ctx.getGC();
-		final int x = ctx.getBounds().x + LEFT_MARGIN;
-		final int y = ctx.getBounds().y + getSubjectY();
-		ctx.startSubjectSection();
-		final String subject = MessageUtils.getSubject(message);
-		final String trimmed = MessageUtils.trimToMaxWidth(gc, subject, ctx.getBounds().width - (LEFT_MARGIN + RIGHT_MARGIN));
-		
-		gc.drawText(trimmed, x, y, true);
-		ctx.restore();
-	}
-	
-	void renderBody(RenderContext ctx, Message message) throws MessagingException {
-		ctx.startBodySection();
-		final GC gc = ctx.getGC();
-		final Rectangle b = ctx.getBounds();
-		final int x = b.x + LEFT_MARGIN;
-		final int y1 = b.y + getBodyY();
-        final int y2 = y1 + getFontHeight(Resources.FONT_BODY_SNIPPET, gc);
-		final String[] lines = getLinesForBody(message, gc, b);
-		gc.drawText(lines[0], x, y1, true);
-		if(!lines[1].isEmpty()) {
-			gc.drawText(lines[1], x, y2, true);
-		}
-		ctx.restore();
 	}
 
-	private String[] getLinesForBody(Message message, GC gc, Rectangle bounds) throws MessagingException {
+    private void setFontAndColor(Event event, Section section) {
+        event.gc.setFont(section.getFont());
+        if(isSelected(event)) {
+            event.gc.setForeground(JFaceResources.getColorRegistry().get(Resources.COLOR_SELECTED_ELEMENT_FOREGROUND));
+        } else {
+            event.gc.setForeground(section.getColor());
+        }
+
+    }
+
+    private boolean isSelected(Event event) {
+        return (event.detail & SWT.SELECTED) == SWT.SELECTED;
+    }
+	
+	void renderDate(Event event, Message message) throws MessagingException {
+        setFontAndColor(event, Section.DATE);
+		final String dateString = MessageUtils.getSentDate(message);
+		final Point sz = event.gc.textExtent(dateString);
+		final int x = (event.x + event.width) - (RIGHT_MARGIN + sz.x);
+		final int y = event.y + Section.DATE.getYValue();
+		event.gc.drawText(dateString, x, y, true);
+	}
+	
+	private int getDateX(Event event, Message message) {
+        final String dateString = MessageUtils.getSentDate(message);
+        final int stringWidth = Section.DATE.getStringWidth(event.gc, dateString);
+
+		return (event.x + event.width) - (RIGHT_MARGIN + stringWidth);
+	}
+	
+	void renderSubject(Event event, String subject) throws MessagingException {
+		final int x = event.x + LEFT_MARGIN;
+		final int y = event.y + Section.SUBJECT.getYValue();
+        setFontAndColor(event, Section.SUBJECT);
+		final String trimmed = MessageUtils.trimToMaxWidth(event.gc, subject, event.width - (LEFT_MARGIN + RIGHT_MARGIN));
+		event.gc.drawText(trimmed, x, y, true);
+    }
+	
+	void renderBody(Event event, String body) throws MessagingException {
+        setFontAndColor(event, Section.BODY);
+		final int x = event.x + LEFT_MARGIN;
+		final int y1 = event.y + Section.BODY.getYValue();
+        final int y2 = y1 + Section.BODY.getFontHeight(event.gc);
+        final String[] lines = getLinesForBody(event, body);
+		event.gc.drawText(lines[0], x, y1, true);
+		if(!lines[1].isEmpty()) {
+			event.gc.drawText(lines[1], x, y2, true);
+		}
+	}
+
+	private String[] getLinesForBody(Event event, String body) throws MessagingException {
 		
 		final String[] result = new String[] { "", "" };
 
-		final String body = MessageUtils.trimToMaxLength(
-				MessageBodyUtils.getTextBody(message), 1000);
-		
-		int maxWidth = bounds.width - (LEFT_MARGIN + RIGHT_MARGIN);
-		String[] words = body.split("\\s+", 200);
+        final String trimmed = MessageUtils.trimToMaxLength(body, 1000);
+
+		int maxWidth = event.width - (LEFT_MARGIN + RIGHT_MARGIN);
+		String[] words = trimmed.split("\\s+", 200);
 		if(words.length == 0) {
 			return result;
 		}
 		List<String> wordsList = new ArrayList<String>(Arrays.asList(words));
-		result[0] = getBodyLine(gc, wordsList, maxWidth, false);
-		result[1] = getBodyLine(gc, wordsList, maxWidth, true);
+		result[0] = getBodyLine(event.gc, wordsList, maxWidth, false);
+		result[1] = getBodyLine(event.gc, wordsList, maxWidth, true);
 		return result;
-		
-	
 	}
 
 	private String getBodyLine(GC gc, List<String> words, int maxWidth, boolean lastLine) {
@@ -319,11 +372,11 @@ public class ConversationRenderer {
 		return gc.textExtent(s).x;
 	}
 	
-	private void renderDividerLine(Event event, Rectangle bounds) {
+	private void renderDividerLine(Event event) {
 		GC gc = event.gc;
 		gc.setForeground(gc.getDevice().getSystemColor(SWT.COLOR_GRAY));
 		final int x1 = event.x;
-		final int x2 = event.x + bounds.width;
+		final int x2 = event.x + event.width;
 		final int y = event.y;
 		gc.drawLine(x1, y, x2, y);
 	}

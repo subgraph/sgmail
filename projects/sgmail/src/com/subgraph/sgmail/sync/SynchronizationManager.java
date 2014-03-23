@@ -1,20 +1,18 @@
 package com.subgraph.sgmail.sync;
 
+import com.google.common.eventbus.Subscribe;
+import com.subgraph.sgmail.accounts.Account;
+import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.events.AccountAddedEvent;
+import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.model.Model;
+
+import javax.mail.Flags.Flag;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import javax.mail.Flags.Flag;
-
-import com.google.common.eventbus.Subscribe;
-import com.subgraph.sgmail.events.AccountAddedEvent;
-import com.subgraph.sgmail.model.Account;
-import com.subgraph.sgmail.model.IMAPAccount;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.model.StoredMessage;
-import com.sun.mail.imap.IMAPStore;
 
 public class SynchronizationManager {
 	
@@ -32,7 +30,7 @@ public class SynchronizationManager {
 
 	private void initializeSynchronizers() {
 		synchronized(synchronizers) {
-			for(Account account: model.getAccounts()) {
+			for(Account account: model.getAccountList().getAccounts()) {
 				addAccount(account);
 			}
 		}
@@ -52,7 +50,7 @@ public class SynchronizationManager {
 		}
 	}
 
-	public void updateFlag(IMAPAccount account, StoredMessage message, Flag flag, boolean isSet) {
+	public void updateFlag(IMAPAccount account, StoredIMAPMessage message, Flag flag, boolean isSet) {
 		synchronized(synchronizers) {
 			if(synchronizers.containsKey(account)) {
 				synchronizers.get(account).updateFlags(message, flag, isSet);
@@ -96,7 +94,8 @@ public class SynchronizationManager {
 		}
 		isRunning = false;
 	}
-	
+
+    /*
 	public IMAPStore getStoreForAccount(IMAPAccount account) {
 		synchronized(synchronizers) {
 			final AccountSynchronizer as = synchronizers.get(account);
@@ -107,4 +106,5 @@ public class SynchronizationManager {
 			}
 		}
 	}
+	*/
 }

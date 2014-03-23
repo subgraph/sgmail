@@ -1,10 +1,12 @@
 package com.subgraph.sgmail.ui.panes.left;
 
-import com.subgraph.sgmail.model.*;
+import com.subgraph.sgmail.accounts.Account;
+import com.subgraph.sgmail.messages.StoredIMAPFolder;
+import com.subgraph.sgmail.messages.StoredMessageLabel;
+import com.subgraph.sgmail.ui.ImageCache;
 import com.subgraph.sgmail.ui.Resources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.OwnerDrawLabelProvider;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -13,20 +15,21 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 
-import com.subgraph.sgmail.ui.ImageCache;
-
 public class LabelProvider extends OwnerDrawLabelProvider {
 
 	@Override
 	protected void measure(Event event, Object element) {
         event.width = getWidth(event);
 		event.height = event.gc.getFontMetrics().getHeight() + 4;
+        if(event.width == 0 && getText(element) != null) {
+            event.width = event.gc.textExtent(getText(element)).x;
+        }
     }
 	
 	private int getWidth(Event event) {
 		final TreeItem item = (TreeItem) event.item;
 		final Tree tree = item.getParent();
-		return tree.getClientArea().width;
+        return tree.getClientArea().width;
 	}
 	
 
@@ -84,13 +87,13 @@ public class LabelProvider extends OwnerDrawLabelProvider {
 	}
 	
 	private String getText(Object element) {
-        if(element instanceof StoredFolder) {
-			final StoredFolder folder = (StoredFolder) element;
-			return folder.getFullName();
+        if(element instanceof StoredIMAPFolder) {
+			final StoredIMAPFolder folder = (StoredIMAPFolder) element;
+			return folder.getName();
 		} else if(element instanceof Account) {
 			return ((Account)element).getLabel();
-		} else if(element instanceof GmailLabel) { 
-			String label = ((GmailLabel) element).getName();
+		} else if(element instanceof StoredMessageLabel) {
+			String label = ((StoredMessageLabel) element).getName();
 			if(label.startsWith("\\")) {
 				return label.substring(1);
 			} else {
@@ -102,19 +105,22 @@ public class LabelProvider extends OwnerDrawLabelProvider {
 	}
 	
 	private int getNewMessageCount(Object element) {
-		if(element instanceof ConversationSource) {
+        /*
+		if(element instanceof com.subgraph.sgmail.conversations.ConversationSource) {
 			return ((ConversationSource) element).getNewMessageCount();
 		} else {
 			return 0;
 		}
+		*/
+        return 0;
 	}
 
 	private Image getImage(Object element) {
 		if(element instanceof Account) {
 			return ImageCache.getInstance().getImage(ImageCache.INBOX_IMAGE);
-		} else if(element instanceof StoredFolder) {
+		} else if(element instanceof com.subgraph.sgmail.messages.StoredFolder) {
 			return ImageCache.getInstance().getImage(ImageCache.FOLDER_IMAGE);
-		} else if(element instanceof GmailLabel) { 
+		} else if(element instanceof StoredMessageLabel) {
 			return ImageCache.getInstance().getImage(ImageCache.TAG_IMAGE);
 		} else {
 			return null;

@@ -3,10 +3,11 @@ package com.subgraph.sgmail.ui.panes.right;
 import com.google.common.base.Charsets;
 import com.google.common.eventbus.Subscribe;
 import com.subgraph.sgmail.events.MessageStateChangedEvent;
+import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.model.LocalMimeMessage;
 import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.model.Preferences;
-import com.subgraph.sgmail.model.StoredMessage;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
@@ -57,6 +58,7 @@ public class MessageViewer extends Composite {
 		layout.verticalSpacing = 0;
 		layout.marginHeight = layout.marginWidth = MARGIN_SIZE;
 		setLayout(layout);
+        setBackground(getDisplay().getSystemColor(SWT.COLOR_WHITE));
         this.rawMessage = raw;
         this.decryptedMessage = decrypted;
 		this.model = model;
@@ -140,9 +142,9 @@ public class MessageViewer extends Composite {
 		if(!(decryptedMessage instanceof LocalMimeMessage)) {
 			return;
 		}
-		final StoredMessage sm = ((LocalMimeMessage) decryptedMessage).getStoredMessage();
-		if(sm.isNewMessage()) {
-			sm.addFlag(StoredMessage.FLAG_SEEN);
+		final StoredIMAPMessage sm = ((LocalMimeMessage) decryptedMessage).getStoredMessage();
+        if(!sm.isFlagSet(StoredMessage.FLAG_SEEN)) {
+            sm.addFlag(StoredMessage.FLAG_SEEN);
 			model.commit();
 			headerViewer.updateNewMessageIndicator();
 			model.postEvent(new MessageStateChangedEvent(sm));
@@ -171,7 +173,7 @@ public class MessageViewer extends Composite {
 		final int bottom = area.y + area.height - offset - 1;
 		
 		gc.drawLine(left, top, right, top);
-		gc.drawLine(right, top, right, bottom);
+        gc.drawLine(right, top, right, bottom);
 		gc.drawLine(left, bottom, right, bottom);
 		gc.drawLine(left, bottom, left, top);
 

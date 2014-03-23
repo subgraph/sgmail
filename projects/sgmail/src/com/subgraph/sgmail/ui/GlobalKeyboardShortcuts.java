@@ -1,14 +1,5 @@
 package com.subgraph.sgmail.ui;
 
-import java.util.Map;
-
-import org.eclipse.jface.window.ApplicationWindow;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
-
 import com.google.common.collect.ImmutableMap;
 import com.subgraph.sgmail.events.DeleteMessageEvent;
 import com.subgraph.sgmail.events.NextMessageEvent;
@@ -16,8 +7,16 @@ import com.subgraph.sgmail.events.PreviousMessageEvent;
 import com.subgraph.sgmail.events.ReplyMessageEvent;
 import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.ui.compose.ComposeWindow;
+import org.eclipse.jface.window.ApplicationWindow;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.*;
+
+import java.util.Map;
 
 public class GlobalKeyboardShortcuts {
+
+
+    public final static String DISABLE_KEYS_WHEN_FOCUSED = "com.subgraph.sgmail.disableShortcuts";
 
 	private final static Map<Character, Object> eventMap = createEventMap();
 	
@@ -53,14 +52,30 @@ public class GlobalKeyboardShortcuts {
 		display.addFilter(SWT.KeyDown, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
-				if(event.display.getActiveShell() == mainWindowShell) {
-					if(handleKey(event.character)) {
-						event.doit = false;
-					}
-				}
+                if(!shouldProcessKeyEvent(event)) {
+                    return;
+                }
+                if(handleKey(event.character)) {
+                    event.doit = false;
+                }
 			}
 		});
 	}
+
+    private boolean shouldProcessKeyEvent(Event event) {
+        if(event.display.getActiveShell() != mainWindow.getShell()) {
+            return false;
+        }
+        return !doesControlDisableShortcuts(event.display.getFocusControl());
+    }
+
+    private boolean doesControlDisableShortcuts(Control c) {
+        if(c == null) {
+            return false;
+        }
+        final Object ob = c.getData(DISABLE_KEYS_WHEN_FOCUSED);
+        return Boolean.TRUE.equals(ob);
+    }
 	
 	private boolean handleKey(char c) {
 		if(eventMap.containsKey(c)) {
@@ -68,7 +83,7 @@ public class GlobalKeyboardShortcuts {
 			return true;
 		}
 		if(c == 'c') {
-            if(!model.getAccounts().isEmpty()) {
+            if(!model.getAccountList().getAccounts().isEmpty()) {
                 ComposeWindow compose = new ComposeWindow(Display.getDefault().getActiveShell(), model);
                 compose.open();
                 return true;

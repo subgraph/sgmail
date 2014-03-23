@@ -1,18 +1,19 @@
 package com.subgraph.sgmail.model;
 
+import com.subgraph.sgmail.accounts.Account;
+
 public class StoredAccountPreferences extends StoredPreferences {
 	
-	public static StoredAccountPreferences create(Account account, Model model) {
-		final StoredAccountPreferences preferences = new StoredAccountPreferences(account, model);
+	public static StoredAccountPreferences create(Account account) {
+		final StoredAccountPreferences preferences = new StoredAccountPreferences(account);
 		Preferences.initializeAccountPreferences(preferences);
 		return preferences;
 	}
 
 	final Account account;
 	
-	private StoredAccountPreferences(Account account, Model model) {
+	private StoredAccountPreferences(Account account) {
 		this.account = account;
-		this.model = model;
 	}
 	
 	public Account getAccount() {

@@ -1,11 +1,12 @@
 package com.subgraph.sgmail.ui.compose;
 
+import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.accounts.SMTPAccount;
+
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
-
-import com.subgraph.sgmail.model.IMAPAccount;
 
 public class SendMailTask implements Runnable {
 
@@ -24,7 +25,8 @@ public class SendMailTask implements Runnable {
 		final Session session = message.getSession();
 		try {
 			Transport transport = session.getTransport("smtps");
-			transport.connect(account.getSMTPHostname(), account.getSMTPPort(), account.getSMTPUsername(), account.getSMTPPassword());
+            final SMTPAccount smtpAccount = account.getSMTPAccount();
+            transport.connect(smtpAccount.getHostname(), smtpAccount.getPort(), smtpAccount.getUsername(), smtpAccount.getPassword());
 			composer.onMailSendProgress("Connected...");
 			transport.sendMessage(message, message.getAllRecipients());
 			composer.onMailSendSuccess();

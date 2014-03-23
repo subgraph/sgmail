@@ -1,18 +1,21 @@
 package com.subgraph.sgmail.events;
 
+import ca.odell.glazedlists.GroupingList;
+import com.subgraph.sgmail.messages.StoredMessage;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.subgraph.sgmail.model.ConversationSource;
-
 public class ConversationSourceSelectedEvent {
-	
-	private final ConversationSource source;
-	
-	public ConversationSourceSelectedEvent(ConversationSource source) {
-		this.source = checkNotNull(source);
+
+
+    private final GroupingList<StoredMessage> conversationList;
+
+
+	public ConversationSourceSelectedEvent(GroupingList<StoredMessage> conversationList) {
+        this.conversationList = checkNotNull(conversationList);
 	}
-	
-	public ConversationSource getSelectedSource() {
-		return source;
-	}
+
+    public GroupingList<StoredMessage> getSelectedSource() {
+        return conversationList;
+    }
 }

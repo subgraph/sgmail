@@ -23,7 +23,7 @@ public class ComposeMessageAction extends Action {
 	}
 	
 	public void run() {
-        if(model.getAccounts().isEmpty()) {
+        if(model.getAccountList().getAccounts().isEmpty()) {
             return;
         }
 		ComposeWindow compose = new ComposeWindow(Display.getDefault().getActiveShell(), model);

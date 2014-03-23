@@ -1,10 +1,10 @@
 package com.subgraph.sgmail.ui.identity;
 
 import com.google.common.util.concurrent.*;
+import com.subgraph.sgmail.accounts.IMAPAccount;
 import com.subgraph.sgmail.identity.KeyGenerationParameters;
 import com.subgraph.sgmail.identity.KeyGenerationResult;
 import com.subgraph.sgmail.identity.KeyGenerationTask;
-import com.subgraph.sgmail.model.IMAPAccount;
 import com.subgraph.sgmail.model.Model;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;

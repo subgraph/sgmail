@@ -1,6 +1,6 @@
 package com.subgraph.sgmail.ui.dialogs;
 
-import com.subgraph.sgmail.model.IMAPAccount;
+import com.subgraph.sgmail.accounts.IMAPAccount;
 import com.subgraph.sgmail.model.Identity;
 import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.ui.identity.IdentityCreationPage;
@@ -56,7 +56,7 @@ public class NewAccountWizard extends Wizard {
 	@Override
 	public boolean performFinish() {
         final IMAPAccount imapAccount = accountDetailsPage.createIMAPAccount();
-        model.addAccount(imapAccount);
+        model.getAccountList().addAccount(imapAccount);
         final Identity identity = identityCreationPage.getIdentity();
         if(identity != null) {
             imapAccount.setIdentity(identity);

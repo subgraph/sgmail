@@ -1,7 +1,7 @@
 package com.subgraph.sgmail.ui.compose;
 
 import com.google.common.base.Charsets;
-import com.subgraph.sgmail.model.IMAPAccount;
+import com.subgraph.sgmail.accounts.IMAPAccount;
 import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.ui.MessageBodyUtils;
 import org.eclipse.swt.SWT;

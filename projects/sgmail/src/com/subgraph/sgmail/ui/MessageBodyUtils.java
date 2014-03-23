@@ -1,10 +1,7 @@
 package com.subgraph.sgmail.ui;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.google.common.base.Splitter;
+import com.subgraph.sgmail.messages.StoredIMAPMessage;
 
 import javax.mail.BodyPart;
 import javax.mail.Message;
@@ -12,12 +9,24 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-
-import com.google.common.base.Splitter;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MessageBodyUtils {
 	private final static Logger logger = Logger.getLogger(MessageBodyUtils.class.getName());
-	
+
+    public static String getTextBody(StoredIMAPMessage message) {
+        try {
+            return getTextBody(message.toMimeMessage());
+        } catch (MessagingException e) {
+            logger.warning("Error converting to mime message "+ e);
+            return "";
+        }
+    }
+
 	public static String getTextBody(Message message) {
 		if(!(message instanceof MimeMessage)) {
 			logger.warning("Message is not expected type of MimeMessage");

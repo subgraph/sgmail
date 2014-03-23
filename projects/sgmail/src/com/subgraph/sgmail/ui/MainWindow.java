@@ -1,19 +1,21 @@
 package com.subgraph.sgmail.ui;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.security.Security;
-import java.util.Properties;
-
+import com.google.common.primitives.Ints;
 import com.subgraph.sgmail.identity.server.Server;
+import com.subgraph.sgmail.model.Model;
+import com.subgraph.sgmail.model.Preferences;
+import com.subgraph.sgmail.model.StoredUserInterfaceState;
+import com.subgraph.sgmail.ui.actions.ComposeMessageAction;
+import com.subgraph.sgmail.ui.actions.NewAccountAction;
+import com.subgraph.sgmail.ui.actions.OpenPreferencesAction;
+import com.subgraph.sgmail.ui.actions.RunSynchronizeAction;
+import com.subgraph.sgmail.ui.panes.left.LeftPane;
+import com.subgraph.sgmail.ui.panes.middle.GlazedMiddlePane;
+import com.subgraph.sgmail.ui.panes.right.RightPane;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.window.ApplicationWindow;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -21,25 +23,18 @@ import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import com.google.common.primitives.Ints;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.model.Preferences;
-import com.subgraph.sgmail.model.StoredUserInterfaceState;
-import com.subgraph.sgmail.ui.actions.ComposeMessageAction;
-import com.subgraph.sgmail.ui.actions.NewAccountAction;
-import com.subgraph.sgmail.ui.actions.NewIdentityAction;
-import com.subgraph.sgmail.ui.actions.OpenPreferencesAction;
-import com.subgraph.sgmail.ui.actions.RunSynchronizeAction;
-import com.subgraph.sgmail.ui.panes.left.LeftPane;
-import com.subgraph.sgmail.ui.panes.middle.MiddlePane;
-import com.subgraph.sgmail.ui.panes.right.RightPane;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.security.Security;
+import java.util.Properties;
 
 public class MainWindow extends ApplicationWindow {
 	
@@ -58,7 +53,7 @@ public class MainWindow extends ApplicationWindow {
 		this.savedState = model.getStoredUserInterfaceState();
 		
 		setBlockOnOpen(true);
-		//addToolBar( SWT.WRAP | SWT.FLAT);
+		addToolBar( SWT.WRAP | SWT.FLAT);
 		addMenuBar();
 		
 		setDefaultImage(ImageCache.getInstance().getDisabledImage(ImageCache.USER_IMAGE));
@@ -93,7 +88,7 @@ public class MainWindow extends ApplicationWindow {
 		final Composite left = new LeftPane(sashForm, model);
 		left.setFocus();
 		
-		final Composite middle = new MiddlePane(sashForm, this, model);
+		final Composite middle = new GlazedMiddlePane(sashForm, model);
 		final Composite right = new RightPane(sashForm, model);
 	    
 	    
@@ -131,9 +126,12 @@ public class MainWindow extends ApplicationWindow {
 	@Override
 	protected ToolBarManager createToolBarManager(int style) { 		
 		ToolBarManager toolBarManager = new ToolBarManager(style);
-		//toolBarManager.add(new ComposeMessageAction(model));
-		//toolBarManager.add(new NewIdentityAction(model));
-		return toolBarManager; 	
+        SearchBarContribution search = new SearchBarContribution(model);
+        toolBarManager.add(new ComposeMessageAction(model));
+        //toolBarManager.add(new NewIdentityAction(model));
+        toolBarManager.add(new SpacerContribution(30));
+        toolBarManager.add(search);
+		return toolBarManager;
 	}
 
 	protected void configureShell(Shell shell) {
@@ -146,6 +144,7 @@ public class MainWindow extends ApplicationWindow {
 		return new ControlAdapter() {
 			@Override
 			public void controlResized(ControlEvent e) {
+                getToolBarManager().update(true);
 				final Rectangle bounds = getShell().getBounds();
 				savedState.setShellSize("main", bounds.width, bounds.height);
 			}
@@ -179,11 +178,12 @@ public class MainWindow extends ApplicationWindow {
 		Display.setAppName("Mail");
 
 		final MainWindow w = new MainWindow(createModel());
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown(w.model)));
 		w.setBlockOnOpen(true);
 		w.create();
         Resources.initialize();
 		w.open();
-		w.model.close();
+        shutdown(w.model);
 
 		final Display d = Display.getCurrent();
 		if(d != null) {
@@ -191,6 +191,20 @@ public class MainWindow extends ApplicationWindow {
 		}
 		
 	}
+
+    private final static Object shutdownLock = new Object();
+    private static boolean isShutdown = false;
+    private static void shutdown(Model model) {
+        synchronized (shutdownLock) {
+            if(isShutdown) {
+                return;
+            }
+            model.close();
+            LoggingConfiguration.close();
+            isShutdown = true;
+        }
+
+    }
 
     private static void startServer(String propertyFile) {
         try {

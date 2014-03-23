@@ -1,18 +1,16 @@
 package com.subgraph.sgmail.sync;
 
-import static com.google.common.base.Preconditions.checkState;
-
-import java.util.concurrent.Executor;
-import java.util.logging.Logger;
+import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.model.Model;
+import com.sun.mail.imap.IMAPStore;
 
 import javax.mail.Flags.Flag;
 import javax.mail.MessagingException;
+import java.util.concurrent.Executor;
+import java.util.logging.Logger;
 
-import com.subgraph.sgmail.model.GmailIMAPAccount;
-import com.subgraph.sgmail.model.IMAPAccount;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.model.StoredMessage;
-import com.sun.mail.imap.IMAPStore;
+import static com.google.common.base.Preconditions.checkState;
 
 public class AccountSynchronizer {
 	private final Logger logger = Logger.getLogger(AccountSynchronizer.class.getName());
@@ -57,8 +55,8 @@ public class AccountSynchronizer {
 		
 		isRunning = true;
 	}
-	
-	public void updateFlags(StoredMessage message, Flag flag, boolean isSet) {
+
+	public void updateFlags(StoredIMAPMessage message, Flag flag, boolean isSet) {
 		final UpdateFlagsTask task = new UpdateFlagsTask(remoteStore, message, flag, isSet);
 		executor.execute(task);
 	}

@@ -1,15 +1,13 @@
 package com.subgraph.sgmail.ui.preferences;
 
-import com.subgraph.sgmail.model.Preferences;
+import com.subgraph.sgmail.accounts.Account;
+import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.model.Model;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.preference.PreferenceNode;
 import org.eclipse.swt.widgets.Shell;
-
-import com.subgraph.sgmail.model.Account;
-import com.subgraph.sgmail.model.IMAPAccount;
-import com.subgraph.sgmail.model.Model;
 
 import java.util.List;
 
@@ -23,7 +21,7 @@ public class PreferenceDialogFactory {
 		manager.addToRoot(debugNode);
         manager.addToRoot(torNode);
 
-        addAccountsNodes(manager, model.getAccounts());
+        addAccountsNodes(manager, model.getAccountList().getAccounts());
 
 
 		final PreferenceDialog dialog = new PreferenceDialog(shell, manager);

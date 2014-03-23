@@ -1,22 +1,20 @@
 package com.subgraph.sgmail.sync;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
+import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.messages.StoredIMAPFolder;
+import com.subgraph.sgmail.model.Model;
+import com.sun.mail.imap.IMAPFolder;
+import com.sun.mail.imap.IMAPStore;
+import com.sun.mail.imap.ResyncData;
 
 import javax.mail.Folder;
 import javax.mail.MessagingException;
 import javax.mail.Store;
 import javax.mail.event.MailEvent;
-
-import com.subgraph.sgmail.model.GmailIMAPAccount;
-import com.subgraph.sgmail.model.IMAPAccount;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.model.StoredFolder;
-import com.sun.mail.imap.IMAPFolder;
-import com.sun.mail.imap.IMAPStore;
-import com.sun.mail.imap.ResyncData;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 
 public class SynchronizeTask implements Runnable {
 	private final static Logger logger = Logger.getLogger(SynchronizeTask.class.getName());
@@ -24,7 +22,6 @@ public class SynchronizeTask implements Runnable {
 	private final Model model;
 	private final IMAPAccount account;
 	private final Store remoteStore;
-	private final boolean isGmail;
 	private final AtomicBoolean stopFlag = new AtomicBoolean();
 	
 	private IMAPFolder idleFolder;
@@ -33,7 +30,6 @@ public class SynchronizeTask implements Runnable {
 		this.model = model;
 		this.account = account;
 		this.remoteStore = remoteStore;
-		this.isGmail = account instanceof GmailIMAPAccount;
 	}
 	
 	void stop() {
@@ -67,20 +63,19 @@ public class SynchronizeTask implements Runnable {
 		if(!remoteStore.isConnected()) {
 			remoteStore.connect();
 		}
-		
+
 		final List<IMAPFolder> folders = getFoldersToSynchronize();
 		
 		for(IMAPFolder f: folders) {
-			System.out.println("folder: "+ f.getFullName());
-			synchronizeFolder(f);
-			
+            if((f.getType() & Folder.HOLDS_MESSAGES) != 0) {
+                synchronizeFolder(f);
+            }
 		}
-		if(isGmail) {
+        if(account.isGmailAccount()) {
 			idleFolderByName(folders, "[Gmail]/All Mail");
 		} else {
             idleFolderByName(folders, "INBOX");
         }
-		//synchronizeFolder("[Gmail]/All Mail");
 	}
 
 	private void idleFolderByName(List<IMAPFolder> folders, String name) throws MessagingException {
@@ -108,7 +103,7 @@ public class SynchronizeTask implements Runnable {
 	}
 	
 	private void addIMAPFolder(List<IMAPFolder> folderList, IMAPFolder folder) throws MessagingException {
-		if(isGmail) {
+		if(account.isGmailAccount()) {
 			if(folder.getFullName().startsWith("[Gmail]/")) {
 				folderList.add(folder);
 			}
@@ -124,10 +119,8 @@ public class SynchronizeTask implements Runnable {
 	}
 
 	private void synchronizeFolder(IMAPFolder remoteFolder) throws MessagingException {
-		final StoredFolder localFolder = account.getFolder(remoteFolder.getFullName());
-		
-		//final IMAPFolder remoteFolder = (IMAPFolder) remoteStore.getFolder(folderName);
-		
+		final StoredIMAPFolder localFolder = account.getFolderByName(remoteFolder.getFullName());
+
 		openRemote(remoteFolder);
 		final ClientToServerSynchronize c2s = new ClientToServerSynchronize(localFolder, remoteFolder);
 		c2s.run();
@@ -142,7 +135,7 @@ public class SynchronizeTask implements Runnable {
 	}
 	
 	private void idleFolder(IMAPFolder remoteFolder) throws MessagingException {
-		final StoredFolder localFolder = account.getFolder(remoteFolder.getFullName());
+		final StoredIMAPFolder localFolder = account.getFolderByName(remoteFolder.getFullName());
 		openRemote(remoteFolder);
 		final ServerToClientFolderSynchronize s2c = new ServerToClientFolderSynchronize(model, account, remoteFolder, localFolder, stopFlag);
 		idleFolder = remoteFolder;
@@ -174,5 +167,4 @@ public class SynchronizeTask implements Runnable {
 		final IMAPStore store = (IMAPStore) remoteFolder.getStore();
 		return store.hasCapability("CONDSTORE");
 	}
-	
 }

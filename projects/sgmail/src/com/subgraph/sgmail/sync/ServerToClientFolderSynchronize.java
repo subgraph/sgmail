@@ -1,10 +1,18 @@
 package com.subgraph.sgmail.sync;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
+import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.events.MessageStateChangedEvent;
+import com.subgraph.sgmail.messages.StoredIMAPFolder;
+import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.messages.StoredMessages;
+import com.subgraph.sgmail.messages.impl.FlagUtils;
+import com.subgraph.sgmail.model.Model;
+import com.sun.mail.gimap.GmailFolder;
+import com.sun.mail.imap.IMAPFolder;
+import com.sun.mail.imap.IMAPFolder.FetchProfileItem;
+import com.sun.mail.imap.IMAPMessage;
+import com.sun.mail.imap.IMAPStore;
+import com.sun.mail.imap.ModifiedSinceTerm;
 
 import javax.mail.FetchProfile;
 import javax.mail.Message;
@@ -12,17 +20,13 @@ import javax.mail.MessagingException;
 import javax.mail.UIDFolder;
 import javax.mail.event.MessageCountEvent;
 import javax.mail.event.MessageCountListener;
-
-import com.subgraph.sgmail.events.MessageStateChangedEvent;
-import com.subgraph.sgmail.model.IMAPAccount;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.model.StoredFolder;
-import com.subgraph.sgmail.model.StoredMessage;
-import com.sun.mail.gimap.GmailFolder;
-import com.sun.mail.imap.IMAPFolder;
-import com.sun.mail.imap.IMAPFolder.FetchProfileItem;
-import com.sun.mail.imap.IMAPStore;
-import com.sun.mail.imap.ModifiedSinceTerm;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ServerToClientFolderSynchronize  {
 	private final static Logger logger = Logger.getLogger(ServerToClientFolderSynchronize.class.getName());
@@ -30,10 +34,10 @@ public class ServerToClientFolderSynchronize  {
 	private final Model model;
 	private final IMAPAccount account;
 	private final IMAPFolder remoteFolder;
-	private final StoredFolder localFolder;
+	private final StoredIMAPFolder localFolder;
 	private final AtomicBoolean stopFlag;
 	
-	public ServerToClientFolderSynchronize(Model model, IMAPAccount account, IMAPFolder remoteFolder, StoredFolder localFolder, AtomicBoolean stopFlag) {
+	public ServerToClientFolderSynchronize(Model model, IMAPAccount account, IMAPFolder remoteFolder, StoredIMAPFolder localFolder, AtomicBoolean stopFlag) {
 		this.model = model;
 		this.account = account;
 		this.remoteFolder = remoteFolder;
@@ -137,15 +141,33 @@ public class ServerToClientFolderSynchronize  {
 	
 	private void appendMessagesToLocal(Message[] messages) throws MessagingException {
 		fetchDetails(messages);
-		for(Message m: messages) {
+        for(Message m: messages) {
 			if(stopFlag.get()) {
 				return;
 			}
-			StoredMessage sm = StoredMessage.createFromJavamailMessage(account, m, remoteFolder.getUID(m));
-			localFolder.addMessage(sm);
-			model.postEvent(new MessageStateChangedEvent(sm));
+            if(!(m instanceof IMAPMessage)) {
+               logger.warning("Message is not an IMAPMessage "+ m);
+            } else {
+                storeNewMessage((IMAPMessage) m);
+            }
 		}
+        model.getMessageSearchIndex().commit();
 	}
+
+    private void storeNewMessage(IMAPMessage message) throws MessagingException {
+        final StoredIMAPMessage storedMessage = StoredMessages.createIMAPMessage(account, message, remoteFolder.getUID(message));
+        localFolder.addMessage(storedMessage);
+        indexNewMessage(storedMessage);
+        model.postEvent(new MessageStateChangedEvent(storedMessage));
+    }
+
+    private void indexNewMessage(StoredIMAPMessage msg) {
+        try {
+            model.getMessageSearchIndex().addMessage(msg);
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "IOException indexing incoming message " + e.getMessage(), e);
+        }
+    }
 	
 	private void fetchDetails(Message[] messages) throws MessagingException {
 		final FetchProfile fp = new FetchProfile();
@@ -248,8 +270,8 @@ public class ServerToClientFolderSynchronize  {
 		if(localFolder.getMessageCount() < m.getMessageNumber()) {
 			return;
 		}
-		final StoredMessage localMessage = localFolder.getMessage(m.getMessageNumber());
-		final long flagBits = StoredMessage.getFlagsFromMessage(m);
+		final StoredIMAPMessage localMessage = localFolder.getMessageByMessageNumber(m.getMessageNumber());
+        final long flagBits = FlagUtils.getFlagsFromMessage(m);
 		if(localMessage.getFlags() != flagBits) {
 			localMessage.setFlags(flagBits);
 			model.postEvent(new MessageStateChangedEvent(localMessage));

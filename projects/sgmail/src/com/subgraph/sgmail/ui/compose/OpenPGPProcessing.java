@@ -1,10 +1,10 @@
 package com.subgraph.sgmail.ui.compose;
 
+import com.subgraph.sgmail.accounts.IMAPAccount;
 import com.subgraph.sgmail.identity.OpenPGPException;
 import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.identity.PublicIdentity;
 import com.subgraph.sgmail.model.Contact;
-import com.subgraph.sgmail.model.IMAPAccount;
 import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.openpgp.MessageProcessor;
 import org.bouncycastle.openpgp.PGPException;
@@ -102,7 +102,6 @@ public class OpenPGPProcessing {
 			signingKey = account.getIdentity().getPrivateIdentity();
 		} else {
 			signingKey = model.findPrivateIdentity(account.getEmailAddress());
-			System.out.println("searched for "+ account.getEmailAddress());
 		}
 		if(signingKey != null) {
 			try {

@@ -1,33 +1,12 @@
 package com.subgraph.sgmail.ui.panes.middle;
 
-import org.eclipse.jface.layout.TableColumnLayout;
-import org.eclipse.jface.viewers.ColumnWeightData;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-
-import com.google.common.eventbus.Subscribe;
-import com.subgraph.sgmail.events.ConversationAddedEvent;
-import com.subgraph.sgmail.events.ConversationSelectedEvent;
-import com.subgraph.sgmail.events.ConversationSourceSelectedEvent;
-import com.subgraph.sgmail.events.MessageStateChangedEvent;
-import com.subgraph.sgmail.events.NextConversationEvent;
-import com.subgraph.sgmail.model.Conversation;
-import com.subgraph.sgmail.model.ConversationSource;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.ui.MainWindow;
 
 public class MiddlePane extends Composite {
+    public MiddlePane(Composite parent, int style) {
+        super(parent, style);
+    }
+    /*
 	private final TableViewer tableViewer;
 	
 	private ConversationSource currentSource;
@@ -46,14 +25,15 @@ public class MiddlePane extends Composite {
 		
 		createColumns(tableComposite, tableViewer);
 		tableViewer.setContentProvider(new ContentProvider());
-		tableViewer.setLabelProvider(new ConversationLabelProvider(tableViewer));
+		//tableViewer.setLabelProvider(new ConversationLabelProvider(tableViewer));
 		tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				final StructuredSelection ss = (StructuredSelection) event.getSelection();
 				final Object ob = ss.getFirstElement();
-				if(ob instanceof Conversation) {
-					model.postEvent(new ConversationSelectedEvent((Conversation) ob));
+                System.out.println("ob: "+ ob);
+                if(ob instanceof EventList) {
+					model.postEvent(new ConversationSelectedEvent((EventList<StoredMessage>) ob));
 				}
 			}
 		});
@@ -78,25 +58,7 @@ public class MiddlePane extends Composite {
 			}
 		});
 	}
-	
-	@Subscribe
-	public void onConversationAdded(final ConversationAddedEvent event) {
-		if(event.getSource() == currentSource) {
-			getDisplay().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					tableViewer.setInput(event.getSource());
-				}
-			});
-		}
-	}
 
-	@Subscribe
-	public void onConversationSourceSelected(ConversationSourceSelectedEvent event) {
-		currentSource = event.getSelectedSource();
-		tableViewer.setInput(event.getSelectedSource());
-	}
-	
 	@Subscribe
 	public void onNextConversation(NextConversationEvent event) {
 		getDisplay().syncExec(new Runnable() {
@@ -125,7 +87,7 @@ public class MiddlePane extends Composite {
 			if(c == current) {
 				seenCurrent = true;
 			} else {
-				if(seenCurrent && c.hasUndeletedMessages()) {
+				if(seenCurrent && c.getMessageCount() > 0) {
 					return c;
 				}
 			}
@@ -142,4 +104,5 @@ public class MiddlePane extends Composite {
 		layout.setColumnData(tc, new ColumnWeightData(100));
 		tc.setText("Convs");
 	}
+	*/
 }

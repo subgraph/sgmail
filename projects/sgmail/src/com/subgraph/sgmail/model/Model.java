@@ -4,7 +4,8 @@ import com.db4o.Db4oEmbedded;
 import com.db4o.ObjectContainer;
 import com.db4o.ObjectSet;
 import com.db4o.config.EmbeddedConfiguration;
-import com.db4o.events.*;
+import com.db4o.events.EventRegistry;
+import com.db4o.events.EventRegistryFactory;
 import com.db4o.query.Predicate;
 import com.db4o.ta.DeactivatingRollbackStrategy;
 import com.db4o.ta.TransparentPersistenceSupport;
@@ -13,12 +14,12 @@ import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.subgraph.sgmail.events.AccountAddedEvent;
 import com.subgraph.sgmail.events.PreferenceChangedEvent;
 import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.identity.PublicIdentity;
 import com.subgraph.sgmail.identity.PublicIdentityCache;
 import com.subgraph.sgmail.identity.client.IdentityServerManager;
+import com.subgraph.sgmail.search.MessageSearchIndex;
 import com.subgraph.sgmail.sync.SynchronizationManager;
 
 import javax.mail.Session;
@@ -48,6 +49,8 @@ public class Model {
 	private SynchronizationManager synchronizationManager;
 	private IdentityServerManager identityServerManager;
     private ListeningExecutorService executor;
+    private MessageSearchIndex messageSearchIndex;
+    private AccountList accountList;
 
 	private boolean isOpened;
 	private ObjectContainer db;
@@ -80,6 +83,13 @@ public class Model {
         return identityServerManager;
     }
 
+    public synchronized MessageSearchIndex getMessageSearchIndex() {
+        if(messageSearchIndex == null) {
+            messageSearchIndex = MessageSearchIndex.create(new File(databaseDirectory, "index"));
+        }
+        return messageSearchIndex;
+    }
+
 	@Subscribe
 	public void onPreferenceChanged(PreferenceChangedEvent event) {
 		if(event.isPreferenceName(Preferences.IMAP_DEBUG_OUTPUT)) {
@@ -108,19 +118,6 @@ public class Model {
 	public void commit() {
 		checkOpened();
 		db.commit();
-	}
-
-	public void addAccount(Account account) {
-		checkOpened();
-		if(account instanceof IMAPAccount) {
-            final IMAPAccount imapAccount = (IMAPAccount) account;
-            db.store(imapAccount.getSmtpAccount());
-            imapAccount.onActivate(this);
-		}
-        db.store(account);
-        db.commit();
-        System.out.println("account added in model.addAccount()");
-		eventBus.post(new AccountAddedEvent(account));
 	}
 
 	public void postEvent(Object event) {
@@ -153,6 +150,11 @@ public class Model {
 			db.close();
 			isOpened = false;
 		}
+        synchronized (this) {
+            if (messageSearchIndex != null) {
+                messageSearchIndex.close();
+            }
+        }
 	}
 
     public synchronized ListeningExecutorService getExecutor() {
@@ -168,12 +170,8 @@ public class Model {
 
 	private void registerEvents(final ObjectContainer db) {
 		final EventRegistry er = EventRegistryFactory.forObjectContainer(db);
-		er.activated().addListener(new EventListener4<ObjectInfoEventArgs>() {
-			@Override
-			public void onEvent(Event4<ObjectInfoEventArgs> events,	ObjectInfoEventArgs eventArgs) {
-				onActivateObject(eventArgs.object());
-			}
-		});
+		er.activated().addListener((events, eventArgs) -> onActivateObject(eventArgs.object()));
+        er.created().addListener((events, eventArgs) -> onCreateObject(eventArgs.object()));
 	}
 
 	private void onActivateObject(Object ob) {
@@ -181,6 +179,12 @@ public class Model {
 			((AbstractActivatable) ob).onActivate(this);
 		}
 	}
+
+    private void onCreateObject(Object ob) {
+        if(ob instanceof AbstractActivatable) {
+            ((AbstractActivatable) ob).onActivate(this);
+        }
+    }
 	
 	public void store(Object ob) {
 		checkOpened();
@@ -190,12 +194,6 @@ public class Model {
 		}
 		db.store(ob);
 	}
-
-	public List<Account> getAccounts() {
-		checkOpened();
-		return db.query(Account.class);
-	}
-
 
     public Contact getContactByEmailAddress(final String emailAddress) {
         final ObjectSet<Contact> result = db.query(new Predicate<Contact>() {
@@ -250,7 +248,21 @@ public class Model {
 		return (result != null) ? (result) 
 				: (storeNewObject(new StoredUserInterfaceState()));
 	}
-	
+
+    public synchronized AccountList getAccountList() {
+        checkOpened();
+        if(accountList == null) {
+            final AccountList result = getModelSingleton(AccountList.class);
+            if(result == null) {
+                accountList = storeNewObject(new AccountList());
+                commit();
+            } else {
+                accountList = result;
+            }
+        }
+        return accountList;
+    }
+
 	public StoredPreferences getRootStoredPreferences() {
 		final StoredPreferences result = getModelSingleton(StoredRootPreferences.class);
 		return (result != null) ? (result) 
@@ -276,7 +288,7 @@ public class Model {
 	private <T> T getModelSingleton(Class<T> klass) {
 		checkOpened();
 		final ObjectSet<T> result = db.query(klass);
-		if(result.size() == 0) {
+        if(result.size() == 0) {
 			return null;
 		} else if(result.size() > 1) {
 			logger.warning("Found multiple instances of singleton class: "+ klass.getName() +" ignoring duplicates");

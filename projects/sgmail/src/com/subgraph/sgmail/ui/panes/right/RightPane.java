@@ -1,10 +1,14 @@
 package com.subgraph.sgmail.ui.panes.right;
 
 import com.google.common.eventbus.Subscribe;
+import com.subgraph.sgmail.accounts.Account;
 import com.subgraph.sgmail.events.*;
 import com.subgraph.sgmail.identity.OpenPGPException;
 import com.subgraph.sgmail.identity.PrivateIdentity;
-import com.subgraph.sgmail.model.*;
+import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.messages.StoredMessage;
+import com.subgraph.sgmail.model.LocalMimeMessage;
+import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.openpgp.MessageProcessor;
 import com.subgraph.sgmail.ui.compose.ComposeWindow;
 import com.subgraph.sgmail.ui.dialogs.PassphraseDialog;
@@ -40,7 +44,7 @@ public class RightPane extends Composite {
 	private Composite composite;
 	private ScrolledComposite scrolled;
 	
-	private Conversation currentConversation;
+	private List<StoredMessage> currentConversation;
 	private DisplayConversationTask currentTask;
 	
 	private List<MessageViewer> messageViewers = new ArrayList<MessageViewer>();
@@ -84,8 +88,8 @@ public class RightPane extends Composite {
 				return;
 			}
 			final Message m = mv.getMessage();
-			final StoredMessage sm = ((LocalMimeMessage)m).getStoredMessage();
-			sm.addFlag(StoredMessage.FLAG_DELETED);
+			final StoredIMAPMessage sm = ((LocalMimeMessage)m).getStoredMessage();
+			//sm.addFlag(StoredMessage.FLAG_DELETED);
 			model.commit();
 
 			messageViewers.remove(mv);
@@ -178,7 +182,7 @@ public class RightPane extends Composite {
 	
 	@Subscribe
 	public void onConversationSelected(ConversationSelectedEvent event) {
-		final Conversation c = event.getSelectedConversation();
+        final List<StoredMessage> c = event.getSelectedConversation();
 		if(currentConversation == c) {
 			return;
 		}
@@ -210,10 +214,10 @@ public class RightPane extends Composite {
 	
 	private class DisplayConversationTask implements Runnable {
 		private final Composite composite;
-		private final Conversation conversation;
+		private final List<StoredMessage> conversation;
 		private volatile boolean finished;
 		
-		public DisplayConversationTask(Conversation conversation, Composite composite) {
+		public DisplayConversationTask(List<StoredMessage> conversation, Composite composite) {
 			this.conversation = conversation;
 			this.composite = composite;
 		}
@@ -230,12 +234,12 @@ public class RightPane extends Composite {
 			}
 			
 			int idx = 0;
-			for(StoredMessage m: conversation.getMessages()) {
+			for(StoredMessage m: conversation) {
 				if(finished) {
 					return;
 				}
 				if(!m.isFlagSet(StoredMessage.FLAG_DELETED)) {
-					MimeMessage raw = getMimeMessage(m);
+					MimeMessage raw = getMimeMessage((StoredIMAPMessage) m);
                     MimeMessage decrypted = maybeDecryptMessage(raw);
 					addMessageViewer(raw, decrypted, idx);
 					idx += 1;
@@ -258,7 +262,7 @@ public class RightPane extends Composite {
                 }
             }
 
-            for(Account account: model.getAccounts()) {
+            for(Account account: model.getAccountList().getAccounts()) {
                 if(account.getIdentity() != null) {
                     PrivateIdentity privateIdentity = account.getIdentity().getPrivateIdentity();
                     if(testPrivateIdentity(privateIdentity, keyIds)) {
@@ -298,7 +302,7 @@ public class RightPane extends Composite {
             return result[0] == Window.OK;
         }
 
-		private MimeMessage getMimeMessage(StoredMessage sm) {
+		private MimeMessage getMimeMessage(StoredIMAPMessage sm) {
 			try {
                 return sm.toMimeMessage();
 			} catch (MessagingException e) {

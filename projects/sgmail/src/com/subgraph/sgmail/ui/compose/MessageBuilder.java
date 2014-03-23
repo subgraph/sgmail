@@ -1,7 +1,7 @@
 package com.subgraph.sgmail.ui.compose;
 
+import com.subgraph.sgmail.accounts.IMAPAccount;
 import com.subgraph.sgmail.model.Contact;
-import com.subgraph.sgmail.model.IMAPAccount;
 
 import javax.mail.Address;
 import javax.mail.Message;

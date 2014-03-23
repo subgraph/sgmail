@@ -1,29 +1,33 @@
 package com.subgraph.sgmail.ui.panes.left;
 
+import ca.odell.glazedlists.GroupingList;
+import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.events.ConversationSourceSelectedEvent;
+import com.subgraph.sgmail.messages.StoredFolder;
+import com.subgraph.sgmail.messages.StoredMessage;
+import com.subgraph.sgmail.messages.StoredMessageLabel;
+import com.subgraph.sgmail.model.Model;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-
-import com.google.common.eventbus.Subscribe;
-import com.subgraph.sgmail.events.AccountAddedEvent;
-import com.subgraph.sgmail.events.ConversationSourceSelectedEvent;
-import com.subgraph.sgmail.events.LabelAddedEvent;
-import com.subgraph.sgmail.events.MessageStateChangedEvent;
-import com.subgraph.sgmail.model.ConversationSource;
-import com.subgraph.sgmail.model.Model;
 
 public class LeftPane extends Composite {
 
 	private final Model model;
 	
 	private final TreeViewer accountsTree;
-	
+    private final SearchMatcherEditor searchMatcherEditor;
+
+    private EventListStack currentStack;
+
 	public LeftPane(Composite parent, Model model) {
 		super(parent, SWT.NONE);
 		this.model = model;
@@ -33,24 +37,24 @@ public class LeftPane extends Composite {
 		label.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		accountsTree = createTreeViewer(this);
-		model.registerEventListener(this);
+        addControlListener(new ControlAdapter() {
+            @Override
+            public void controlMoved(ControlEvent e) {
+
+            }
+
+            @Override
+            public void controlResized(ControlEvent e) {
+                accountsTree.getTree().redraw();
+                accountsTree.refresh(true);
+
+            }
+        });
+        layout();
+        accountsTree.setInput(model.getAccountList());
+        searchMatcherEditor = SearchMatcherEditor.create(model);
 	}
-	
-	@Subscribe
-	public void onMessageStateChanged(MessageStateChangedEvent event) {
-		refreshTree();
-	}
-	
-	@Subscribe
-	public void onAccountAdded(AccountAddedEvent event) {
-		refreshTree();
-	}
-	
-	@Subscribe
-	public void onLabelAdded(LabelAddedEvent event) {
-		refreshTree();
-	}
-	
+
 	private void refreshTree() {
 		getDisplay().asyncExec(new Runnable() {
 			@Override
@@ -65,19 +69,53 @@ public class LeftPane extends Composite {
 		tv.getTree().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		tv.setContentProvider(new AccountsContentProvider());
 		tv.setLabelProvider(new LabelProvider());
-		tv.setInput(model);
 		tv.addSelectionChangedListener(new ISelectionChangedListener() {
-			
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				final StructuredSelection ss = (StructuredSelection) event.getSelection();
-				final Object ob = ss.getFirstElement();
-				if(ob instanceof ConversationSource) {
-					model.postEvent(new ConversationSourceSelectedEvent((ConversationSource) ob));
-				}
-			}
-		});
+
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                final StructuredSelection ss = (StructuredSelection) event.getSelection();
+                final Object ob = ss.getFirstElement();
+                if (ob instanceof IMAPAccount) {
+                    onIMAPAccountSelected((IMAPAccount) ob);
+                } else if (ob instanceof StoredFolder) {
+                    onStoredFolderSelected((StoredFolder) ob);
+                } else if (ob instanceof StoredMessageLabel) {
+                    onStoredMessageLabelSelected((StoredMessageLabel) ob);
+                }
+            }
+        });
 		return tv;
 	}
 
+    private void onIMAPAccountSelected(IMAPAccount imapAccount) {
+        final EventListStack els = new EventListStack(imapAccount.getMessageEventList());
+        els.addSearchFilter(searchMatcherEditor);
+        newEventListStack(els);
+    }
+
+    private void onStoredFolderSelected(StoredFolder folder) {
+        final EventListStack els = new EventListStack(folder.getMessageEventList());
+        els.addSearchFilter(searchMatcherEditor);
+        newEventListStack(els);
+    }
+
+    private void onStoredMessageLabelSelected(StoredMessageLabel label) {
+        if(!(label.getAccount() instanceof IMAPAccount)) {
+            return;
+        }
+        final IMAPAccount imapAccount = (IMAPAccount) label.getAccount();
+        final EventListStack els = new EventListStack(imapAccount.getMessageEventList());
+        els.addLabelFilter(label);
+        els.addSearchFilter(searchMatcherEditor);
+        newEventListStack(els);
+    }
+
+    private void newEventListStack(EventListStack els) {
+        final GroupingList<StoredMessage> group = els.addGroupingList();
+        model.postEvent(new ConversationSourceSelectedEvent(group));
+        if(currentStack != null) {
+            currentStack.dispose();
+        }
+        currentStack = els;
+    }
 }

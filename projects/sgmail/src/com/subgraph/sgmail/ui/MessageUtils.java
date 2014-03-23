@@ -1,5 +1,16 @@
 package com.subgraph.sgmail.ui;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
+import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import org.eclipse.swt.graphics.GC;
+
+import javax.mail.Address;
+import javax.mail.Message;
+import javax.mail.Message.RecipientType;
+import javax.mail.MessagingException;
+import javax.mail.Part;
+import javax.mail.internet.InternetAddress;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,18 +19,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Logger;
 
-import javax.mail.Address;
-import javax.mail.Message;
-import javax.mail.Message.RecipientType;
-import javax.mail.MessagingException;
-import javax.mail.Part;
-import javax.mail.internet.InternetAddress;
-
-import org.eclipse.swt.graphics.GC;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.CharStreams;
-
 public class MessageUtils {
 	private final static Logger logger = Logger.getLogger(MessageUtils.class.getName());
 	
@@ -27,7 +26,16 @@ public class MessageUtils {
 	
 	private final static SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
 	private final static SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd");
-	
+
+    public static String getSubject(StoredIMAPMessage message) {
+        try {
+            return getSubject(message.toMimeMessage());
+        } catch (MessagingException e) {
+            logger.warning("Error converting to Mime message "+ e);
+            return "";
+        }
+    }
+
 	public static String getSubject(Message message) {
 		
 		try {

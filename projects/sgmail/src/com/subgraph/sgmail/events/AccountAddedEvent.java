@@ -1,8 +1,8 @@
 package com.subgraph.sgmail.events;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.subgraph.sgmail.accounts.Account;
 
-import com.subgraph.sgmail.model.Account;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class AccountAddedEvent {
 	

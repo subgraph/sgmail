@@ -1,14 +1,13 @@
 package com.subgraph.sgmail.ui.actions;
 
+import com.subgraph.sgmail.accounts.Account;
+import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.model.Model;
+import com.subgraph.sgmail.ui.identity.NewIdentityWizard;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-
-import com.subgraph.sgmail.model.Account;
-import com.subgraph.sgmail.model.IMAPAccount;
-import com.subgraph.sgmail.model.Model;
-import com.subgraph.sgmail.ui.identity.NewIdentityWizard;
 
 public class NewIdentityAction extends Action {
 	
@@ -31,7 +30,7 @@ public class NewIdentityAction extends Action {
 	}
 	
 	private IMAPAccount findAccount() {
-		for(Account account: model.getAccounts()) {
+		for(Account account: model.getAccountList().getAccounts()) {
 			if(account instanceof IMAPAccount) {
 				return (IMAPAccount) account;
 			}

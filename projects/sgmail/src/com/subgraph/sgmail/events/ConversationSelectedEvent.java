@@ -1,18 +1,20 @@
 package com.subgraph.sgmail.events;
 
+import com.subgraph.sgmail.messages.StoredMessage;
+
+import java.util.List;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.subgraph.sgmail.model.Conversation;
-
 public class ConversationSelectedEvent {
+
+    private final List<StoredMessage> conversationList;
 	
-	private final Conversation conversation;
-	
-	public ConversationSelectedEvent(Conversation conversation) {
-		this.conversation = checkNotNull(conversation);
+	public ConversationSelectedEvent(List<StoredMessage> conversationList) {
+        this.conversationList = checkNotNull(conversationList);
 	}
-	
-	public Conversation getSelectedConversation() {
-		return conversation;
-	}
+
+    public List<StoredMessage> getSelectedConversation() {
+        return conversationList;
+    }
 }

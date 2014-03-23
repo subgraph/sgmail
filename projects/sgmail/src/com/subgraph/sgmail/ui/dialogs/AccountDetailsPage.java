@@ -1,10 +1,13 @@
 package com.subgraph.sgmail.ui.dialogs;
 
 import com.google.common.net.InternetDomainName;
-import com.subgraph.sgmail.model.IMAPAccount;
+import com.subgraph.sgmail.accounts.Accounts;
+import com.subgraph.sgmail.accounts.AuthenticationCredentials;
+import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.accounts.SMTPAccount;
+import com.subgraph.sgmail.accounts.impl.IMAPAccountImpl;
 import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.model.Preferences;
-import com.subgraph.sgmail.model.SMTPAccount;
 import com.subgraph.sgmail.servers.ServerInformation;
 import com.subgraph.sgmail.ui.Resources;
 import org.eclipse.jface.resource.JFaceResources;
@@ -147,19 +150,19 @@ public class AccountDetailsPage extends WizardPage {
     IMAPAccount createIMAPAccount() {
         final ServerInformation imapServer = getIncomingServer();
         final boolean isGmail = imapServer.getHostname().endsWith(".googlemail.com");
-        return new IMAPAccount.Builder()
-                .gmail(isGmail)
+        final AuthenticationCredentials auth = Accounts.createPasswordCredential(getIncomingLogin(), getPassword());
+
+        return new IMAPAccountImpl.Builder()
                 .login(getIncomingLogin())
+                .emailAddress(addressField.getText())
                 .label(addressField.getText())
-                .domain(getDomain())
-                .smtp(createSMTPAccount())
+                .smtpAccount(createSMTPAccount())
                 .hostname(imapServer.getHostname())
                 .onion(imapServer.getOnionHostname())
                 .port(imapServer.getPort())
-                .username(getUsername())
                 .realname(getRealname())
                 .password(getPassword())
-                .build(model);
+                .build();
     }
 
     private SMTPAccount createSMTPAccount() {
@@ -168,7 +171,7 @@ public class AccountDetailsPage extends WizardPage {
         final int port = smtpServer.getPort();
         final String login = getOutgoingLogin();
         final String password = getPassword();
-        return new SMTPAccount(hostname, port, login, password);
+        return Accounts.createSMTPAccount(hostname,port, login, password);
     }
 	
 	@Override

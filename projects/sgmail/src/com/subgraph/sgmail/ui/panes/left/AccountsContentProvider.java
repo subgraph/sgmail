@@ -1,19 +1,23 @@
 package com.subgraph.sgmail.ui.panes.left;
 
-import com.subgraph.sgmail.model.*;
+import ca.odell.glazedlists.event.ListEvent;
+import ca.odell.glazedlists.event.ListEventListener;
+import com.subgraph.sgmail.accounts.Account;
+import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.messages.StoredIMAPFolder;
+import com.subgraph.sgmail.model.AccountList;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
-import javax.mail.Folder;
-import javax.mail.MessagingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class AccountsContentProvider implements ITreeContentProvider {
+public class AccountsContentProvider implements ITreeContentProvider, ListEventListener<Account> {
 	private final static Logger logger = Logger.getLogger(AccountsContentProvider.class.getName());
-	
-	private Model model;
+
+    private AccountList accountList;
+    private Viewer accountsViewer;
 
 	@Override
 	public void dispose() {
@@ -22,65 +26,62 @@ public class AccountsContentProvider implements ITreeContentProvider {
 
 	@Override
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		this.model = (Model) newInput;
+        if(accountList != null) {
+            accountList.getAccounts().removeListEventListener(this);
+        }
+
+        accountList = (AccountList) newInput;
+
+        if(accountList != null) {
+            accountList.getAccounts().addListEventListener(this);
+        }
+
+        accountsViewer = viewer;
+        accountsViewer.refresh();
 	}
 
 	@Override
 	public Object[] getElements(Object inputElement) {
-        if(model == null) {
-			return new Object[0];
-		} else {
-			return getRootElements();
-			//return model.getAccounts().toArray();
-		}
+        return getRootElements();
 	}
+
+    private void addLabelsFromIMAPAccount(IMAPAccount account, List<Object> elements) {
+        elements.addAll(account.getMessageLabels());
+    }
 	
 	private Object[] getRootElements() {
+        if(accountList == null) {
+            return new Object[0];
+        }
 		final List<Object> elems = new ArrayList<>();
-		for(Account a: model.getAccounts()) {
+        for(Account a: accountList.getAccounts()) {
             elems.add(a);
-			if(a instanceof GmailIMAPAccount) {
-				elems.addAll(((GmailIMAPAccount) a).getLabels());
-			}
-		}
-		return elems.toArray();
+            if(a instanceof IMAPAccount) {
+                addLabelsFromIMAPAccount((IMAPAccount) a, elems);
+            }
+        }
+        return elems.toArray();
 	}
 
 	@Override
 	public Object[] getChildren(Object parentElement) {
-        if(parentElement instanceof Model) {
+        if(parentElement instanceof AccountList) {
 			return getRootElements();
-			//return ((Model) parentElement).getAccounts().toArray();
 		} else if(parentElement instanceof IMAPAccount) {
 			return getChildrenOfAccount((IMAPAccount) parentElement);
-		} else if(parentElement instanceof Folder) {
-			return getChildrenOfFolder((Folder) parentElement);
 		} else {
 			return null;
 		}
 	}
 
 	private Object[] getChildrenOfAccount(IMAPAccount account) {
-		final List<Object> result = new ArrayList<>();
-
-		for(StoredFolder f: account.getFolders()) {
+        final List<Object> result = new ArrayList<>();
+		for(StoredIMAPFolder f: account.getFolders()) {
 			result.add(f);
 		}
-
-		//if(account instanceof GmailIMAPAccount) {
-//			result.addAll(((GmailIMAPAccount)account).getLabels());
-		//}
 		return result.toArray();
 	}
 	
-	private Object[] getChildrenOfFolder(Folder folder) {
-		try {
-			return folder.list();
-		} catch (MessagingException e) {
-			logger.warning("Exception retrieving child elements of Folder "+ e);
-			return new Object[0];
-		}
-	}
 
 	@Override
 	public Object getParent(Object element) {
@@ -89,14 +90,26 @@ public class AccountsContentProvider implements ITreeContentProvider {
 
 	@Override
 	public boolean hasChildren(Object element) {
-        if(element instanceof Model) {
-			return !((Model)element).getAccounts().isEmpty();
+        if(element instanceof AccountList) {
+            return !(accountList == null || accountList.getAccounts().isEmpty());
 		} else if(element instanceof IMAPAccount) {
 			return getChildrenOfAccount((IMAPAccount) element).length > 0;
-		} else if(element instanceof Folder) {
-			return getChildrenOfFolder((Folder) element).length > 0;
 		} else {
 			return false;
 		}
 	}
+
+    @Override
+    public void listChanged(ListEvent<Account> listChanges) {
+        if(accountsViewer != null) {
+            accountsViewer.getControl().getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    if(!accountsViewer.getControl().isDisposed()) {
+                        accountsViewer.refresh();
+                    }
+                }
+            });
+        }
+    }
 }
