@@ -21,7 +21,6 @@
     <orderEntry type="library" name="lucene-analyzers-common-4.7.0" level="project" />
     <orderEntry type="library" name="glazedlists_java15" level="project" />
     <orderEntry type="library" name="javamail" level="project" />
-    <orderEntry type="library" name="javamaildir-0.6" level="project" />
     <orderEntry type="library" name="lucene-highlighter-4.7.0" level="project" />
     <orderEntry type="module-library" scope="TEST">
       <library name="JUnit4">
