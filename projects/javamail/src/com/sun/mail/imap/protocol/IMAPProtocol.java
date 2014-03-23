@@ -830,6 +830,19 @@ public class IMAPProtocol extends Protocol {
 	id(gmap);
     }
 
+    public void startCompression() {
+        try {
+            Argument args = new Argument();
+            args.writeAtom("DEFLATE");
+           simpleCommand("COMPRESS", args);
+            enableCompression(CompressionType.COMPRESS_DEFLATE);
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * STARTTLS Command.
      * 

@@ -40,13 +40,20 @@
 
 package com.sun.mail.iap;
 
-import java.util.Vector;
-import java.util.Properties;
-import java.io.*;
-import java.net.*;
-import java.util.logging.Level;
-import javax.net.ssl.SSLSocket;
 import com.sun.mail.util.*;
+
+import javax.net.ssl.SSLSocket;
+import java.io.*;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Properties;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 
 /**
  * General protocol handling code for IMAP-like protocols. <p>
@@ -59,6 +66,8 @@ import com.sun.mail.util.*;
  */
 
 public class Protocol {
+    public enum CompressionType { COMPRESS_DEFLATE, COMPRESS_NONE };
+
     protected String host;
     private Socket socket;
     // in case we turn on TLS, we'll need these later
@@ -78,6 +87,8 @@ public class Protocol {
     private int tagCounter = 0;
 
     private String localHostName;
+
+    private CompressionType compressionType = CompressionType.COMPRESS_NONE;
 
     /*
      * handlers is a Vector, initialized here,
@@ -138,14 +149,35 @@ public class Protocol {
     }
 
     private void initStreams() throws IOException {
-	traceInput = new TraceInputStream(socket.getInputStream(), traceLogger);
+	traceInput = new TraceInputStream(getSocketInput(), traceLogger);
 	traceInput.setQuote(quote);
 	input = new ResponseInputStream(traceInput);
 
 	traceOutput =
-	    new TraceOutputStream(socket.getOutputStream(), traceLogger);
+	    new TraceOutputStream(getSocketOutput(), traceLogger);
 	traceOutput.setQuote(quote);
 	output = new DataOutputStream(new BufferedOutputStream(traceOutput));
+    }
+
+    private InputStream getSocketInput() throws IOException {
+        if(isCompressDeflateEnabled()) {
+            final Inflater inflater = new Inflater(true);
+            return new InflaterInputStream(socket.getInputStream(), inflater);
+        } else {
+            return socket.getInputStream();
+        }
+    }
+
+    private OutputStream getSocketOutput() throws IOException {
+        if(isCompressDeflateEnabled()) {
+            final Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION, true);
+            return new DeflaterOutputStream(socket.getOutputStream(), deflater, true);
+        } else {
+            return socket.getOutputStream();
+        }
+    }
+    private boolean isCompressDeflateEnabled() {
+        return compressionType == CompressionType.COMPRESS_DEFLATE;
     }
 
     /**
@@ -397,6 +429,22 @@ public class Protocol {
      */
     public boolean isSSL() {
 	return socket instanceof SSLSocket;
+    }
+
+    public CompressionType getCompressionType() {
+        return compressionType;
+    }
+
+    public void enableCompression(CompressionType enableType) throws IOException {
+        if(compressionType != CompressionType.COMPRESS_NONE) {
+            throw new IllegalStateException("Compression has already been enabled.");
+        }
+        if(enableType != CompressionType.COMPRESS_DEFLATE) {
+            throw new UnsupportedOperationException("Only COMPRESS_DEFLATE is supported.");
+        }
+        compressionType = CompressionType.COMPRESS_DEFLATE;
+        output.flush();
+        initStreams();
     }
 
     /**

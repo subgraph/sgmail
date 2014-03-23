@@ -40,9 +40,11 @@
 
 package com.sun.mail.iap;
 
-import java.io.*;
-import com.sun.mail.iap.ByteArray;
 import com.sun.mail.util.ASCIIUtility;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  *
@@ -65,7 +67,7 @@ public class ResponseInputStream {
      * Constructor.
      */
     public ResponseInputStream(InputStream in) {
-	bin = new BufferedInputStream(in, 2 * 1024);
+    bin = new BufferedInputStream(in, 2 * 1024);
     }
 
     /**

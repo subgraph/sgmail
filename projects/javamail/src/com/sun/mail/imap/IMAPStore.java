@@ -40,27 +40,23 @@
 
 package com.sun.mail.imap;
 
-import java.lang.reflect.*;
-import java.util.Vector;
-import java.util.StringTokenizer;
-import java.util.Locale;
-import java.io.PrintStream;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.logging.Level;
+import com.sun.mail.iap.*;
+import com.sun.mail.imap.protocol.IMAPProtocol;
+import com.sun.mail.imap.protocol.ListInfo;
+import com.sun.mail.imap.protocol.Namespaces;
+import com.sun.mail.util.MailConnectException;
+import com.sun.mail.util.MailLogger;
+import com.sun.mail.util.PropUtil;
+import com.sun.mail.util.SocketConnectException;
 
 import javax.mail.*;
-import javax.mail.event.*;
-
-import com.sun.mail.iap.*;
-import com.sun.mail.imap.protocol.*;
-import com.sun.mail.util.PropUtil;
-import com.sun.mail.util.MailLogger;
-import com.sun.mail.util.SocketConnectException;
-import com.sun.mail.util.MailConnectException;
+import javax.mail.event.StoreEvent;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.logging.Level;
 
 /**
  * This class provides access to an IMAP message store. <p>
@@ -220,6 +216,7 @@ public class IMAPStore extends Store
     private boolean forcePasswordRefresh = false;
     // enable notification of IMAP responses
     private boolean enableImapEvents = false;
+    private boolean allowIMAPCompress = false;  // Take advantage of COMPRESS=DEFLATE
     private String guid;			// for Yahoo! Mail IMAP
 
     /*
@@ -604,6 +601,8 @@ public class IMAPStore extends Store
 	    }
 	}
 
+    allowIMAPCompress = PropUtil.getBooleanSessionProperty(session, "mail."+ name + ".allowcompress", true);
+
 	pool = new ConnectionPool(name, logger, session);
     }
 
@@ -639,7 +638,7 @@ public class IMAPStore extends Store
 	} else {
 	    port = PropUtil.getIntSessionProperty(session,
 					"mail." + name + ".port", port);
-	} 
+	}
 	
 	// use the default if needed
 	if (port == -1) {
@@ -663,6 +662,10 @@ public class IMAPStore extends Store
 				", user=" + traceUser(user) +
 				", password=" + tracePassword(password));
 	        login(protocol, user, password);
+
+            if(allowIMAPCompress && protocol.hasCapability("COMPRESS=DEFLATE")) {
+                protocol.startCompression();
+            }
 
 	        protocol.addResponseHandler(this);
 
