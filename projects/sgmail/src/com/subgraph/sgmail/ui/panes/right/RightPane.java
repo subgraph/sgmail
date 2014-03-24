@@ -31,6 +31,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,6 +50,7 @@ public class RightPane extends Composite {
 	
 	private List<MessageViewer> messageViewers = new ArrayList<MessageViewer>();
 	private int currentIndex = 0;
+    private List<String> currentHighlightTerms;
 	
 	public RightPane(Composite parent, Model model) {
 		super(parent, SWT.NONE);
@@ -131,6 +133,30 @@ public class RightPane extends Composite {
 			}
 		}
 	}
+
+    @Subscribe
+    public void onSearchQueryChanged(SearchQueryChangedEvent event) {
+       synchronized (messageViewers) {
+           currentHighlightTerms = extractSearchTerms(event);
+           for (MessageViewer mv : messageViewers) {
+               mv.highlightTerms(currentHighlightTerms);
+           }
+       }
+    }
+
+    private List<String> extractSearchTerms(SearchQueryChangedEvent event) {
+        if(event.getSearchQuery() == null || event.getSearchQuery().isEmpty()) {
+            return Collections.emptyList();
+        }
+        final String[] parts = event.getSearchQuery().split("[\\s\\W]+");
+        final List<String> termList = new ArrayList<>();
+        for (String term : parts) {
+            if(!term.isEmpty()) {
+                termList.add(term);
+            }
+        }
+        return termList;
+    }
 	
 	private void selectMessage(int index, boolean display) {
 		if(index == currentIndex || index < 0 || index >= messageViewers.size()) {
@@ -355,6 +381,9 @@ public class RightPane extends Composite {
 					}
 					synchronized (messageViewers) {
 						messageViewers.add(mv);
+                        if(currentHighlightTerms != null) {
+                            mv.highlightTerms(currentHighlightTerms);
+                        }
 					}
 					if(idx == 0) {
 						mv.setHighlighted(true);

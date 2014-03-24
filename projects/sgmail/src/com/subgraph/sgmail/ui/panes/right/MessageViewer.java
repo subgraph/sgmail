@@ -24,6 +24,7 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class MessageViewer extends Composite {
@@ -43,6 +44,7 @@ public class MessageViewer extends Composite {
     private final Message rawMessage;
     private final Message decryptedMessage;
 	private final MessageHeaderViewer headerViewer;
+    private final MessageBodyViewer bodyViewer;
 	private volatile boolean isHighlighted;
 	
 	
@@ -65,15 +67,15 @@ public class MessageViewer extends Composite {
 		
 		headerViewer = new MessageHeaderViewer(this, rawMessage, decryptedMessage);
 		headerViewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		MessageBodyViewer body = new MessageBodyViewer(this, decryptedMessage);
-		body.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		
+		bodyViewer = new MessageBodyViewer(this, decryptedMessage);
+		bodyViewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
 		addPaintListener(new PaintListener() {
-			@Override
-			public void paintControl(PaintEvent e) {
-				onPaintControl(e);
-			}
-		});
+            @Override
+            public void paintControl(PaintEvent e) {
+                onPaintControl(e);
+            }
+        });
 		
 		addAllMouseListener(this, new MouseAdapter() {
 			@Override
@@ -105,6 +107,10 @@ public class MessageViewer extends Composite {
 	public Message getMessage() {
 		return decryptedMessage;
 	}
+
+    public void highlightTerms(List<String> terms) {
+        bodyViewer.highlightTerms(terms);
+    }
 
 	private static void addAllMouseListener(Composite c, MouseListener listener) {
 		c.addMouseListener(listener);
