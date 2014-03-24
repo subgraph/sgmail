@@ -216,6 +216,7 @@ public abstract class AbstractMailAccount extends AbstractActivatable implements
             writeLockMessageEventList().add(message);
         } finally {
             writeUnlockMessageEventList();
+            model.commit();
         }
         getPropertyChangeSupport().firePropertyChange("allMessages", null, null);
     }
