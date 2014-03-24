@@ -145,7 +145,6 @@ public class TextLineRenderer {
         }
         final String text = s.getSectionString();
         final int textWidth = gc.textExtent(text, 0).x;
-        System.out.println("("+ x +", "+ y +") "+ text);
         gc.drawText(text, x, y, 0);
         if(savedBackground != null) {
             gc.setBackground(savedBackground);
