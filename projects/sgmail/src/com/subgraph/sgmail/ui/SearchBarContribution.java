@@ -13,12 +13,26 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SearchBarContribution extends ControlContribution {
 
     private final static Logger logger = Logger.getLogger(SearchBarContribution.class.getName());
+
+    private final static int SEARCH_DELAY_MS = 300;
+
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final Object lock = new Object();
+
+    private ScheduledFuture<?> launchSearchFuture;
+    private ListenableFuture<SearchResult> pendingSearchFuture;
+    private boolean isPendingSearchValid;
+    private SearchResult lastResult;
 
     private final Model model;
     private Text searchText;
@@ -49,10 +63,23 @@ public class SearchBarContribution extends ControlContribution {
                 if(!s.isEmpty()) {
                     onTextChanged(s);
                 } else {
-                    model.postEvent(SearchFilterEvent.createFilterClearEvent());
+                    clearSearch();
                 }
             }
         };
+    }
+    private void cancelPendingSearch() {
+        synchronized (lock) {
+            if(launchSearchFuture != null) {
+                launchSearchFuture.cancel(false);
+                launchSearchFuture = null;
+            }
+            if(pendingSearchFuture != null) {
+                pendingSearchFuture.cancel(false);
+                pendingSearchFuture = null;
+                isPendingSearchValid = false;
+            }
+        }
     }
 
     private SelectionListener createSelectionListener() {
@@ -61,25 +88,52 @@ public class SearchBarContribution extends ControlContribution {
             public void widgetDefaultSelected(SelectionEvent e) {
                 if(e.detail == SWT.CANCEL) {
                     // Cancel icon clicked
-                    model.postEvent(SearchFilterEvent.createFilterClearEvent());
+                    clearSearch();
                 }
             }
         };
     }
 
+    private void clearSearch() {
+        synchronized (lock) {
+            cancelPendingSearch();
+            lastResult = null;
+        }
+        model.postEvent(SearchFilterEvent.createFilterClearEvent());
+    }
+
     private void onTextChanged(String searchText) {
+        synchronized (lock) {
+            cancelPendingSearch();
+            launchSearchFuture = scheduler.schedule(() -> launchSearch(searchText), SEARCH_DELAY_MS, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private void launchSearch(String searchText) {
         final SearchTask task = new SearchTask(model.getMessageSearchIndex(), searchText);
-        final ListenableFuture<SearchResult> future = model.submitTask(task);
-        Futures.addCallback(future, createFutureCallback());
+        synchronized (lock) {
+            isPendingSearchValid = true;
+            pendingSearchFuture = model.submitTask(task);
+            Futures.addCallback(pendingSearchFuture, createFutureCallback());
+        }
     }
 
     private FutureCallback<SearchResult> createFutureCallback() {
         return new FutureCallback<SearchResult>() {
             @Override
             public void onSuccess(SearchResult searchResult) {
-                System.out.println("Search: '"+ searchResult.getQueryText() +"'");
-                System.out.println("Search completed successfully with "+ searchResult.getMatchCount() + " matches");
-                System.out.println(searchResult);
+                synchronized (lock) {
+                    if(!isPendingSearchValid) {
+                        return;
+                    }
+                    if(lastResult != null && lastResult.getMatchCount() > 0) {
+                        if(searchResult.getMatchCount() == 0) {
+                            return;
+                        }
+                    }
+                    lastResult = searchResult;
+                }
+
                 model.postEvent(SearchFilterEvent.create(searchResult));
             }
 
