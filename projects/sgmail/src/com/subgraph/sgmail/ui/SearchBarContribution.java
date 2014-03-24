@@ -4,19 +4,19 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.subgraph.sgmail.events.SearchFilterEvent;
+import com.subgraph.sgmail.events.SearchQueryChangedEvent;
 import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.search.SearchResult;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,11 +35,14 @@ public class SearchBarContribution extends ControlContribution {
     private SearchResult lastResult;
 
     private final Model model;
+    private final FutureCallback<SearchResult> searchCompletedCallback;
+
     private Text searchText;
 
     public SearchBarContribution(Model model) {
         super("search");
         this.model = model;
+        this.searchCompletedCallback = createFutureCallback();
     }
 
     @Override
@@ -47,7 +50,7 @@ public class SearchBarContribution extends ControlContribution {
         searchText = new Text(parent, SWT.SEARCH | SWT.SINGLE | SWT.BORDER | SWT.ICON_CANCEL | SWT.ICON_SEARCH);
         searchText.setData(GlobalKeyboardShortcuts.DISABLE_KEYS_WHEN_FOCUSED, Boolean.TRUE);
         searchText.addSelectionListener(createSelectionListener());
-        searchText.addModifyListener(createModifyListener());
+        searchText.addModifyListener(e -> onTextModify());
         return searchText;
     }
 
@@ -55,19 +58,23 @@ public class SearchBarContribution extends ControlContribution {
         return 200;
     }
 
-    private ModifyListener createModifyListener() {
-        return new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                final String s = searchText.getText();
-                if(!s.isEmpty()) {
-                    onTextChanged(s);
-                } else {
-                    clearSearch();
-                }
-            }
-        };
+    private void onTextModify() {
+        final String s = searchText.getText();
+        if(s.isEmpty()) {
+            clearSearch();
+        } else {
+            delayLaunchSearch(s);
+        }
+        model.postEvent(new SearchQueryChangedEvent(s));
     }
+
+    private void delayLaunchSearch(String searchQuery) {
+        synchronized (lock) {
+            cancelPendingSearch();
+            launchSearchFuture = scheduler.schedule(() -> launchSearch(searchQuery), SEARCH_DELAY_MS, TimeUnit.MILLISECONDS);
+        }
+    }
+
     private void cancelPendingSearch() {
         synchronized (lock) {
             if(launchSearchFuture != null) {
@@ -114,31 +121,38 @@ public class SearchBarContribution extends ControlContribution {
         synchronized (lock) {
             isPendingSearchValid = true;
             pendingSearchFuture = model.submitTask(task);
-            Futures.addCallback(pendingSearchFuture, createFutureCallback());
+            Futures.addCallback(pendingSearchFuture, searchCompletedCallback);
         }
+    }
+
+
+    private void onSearchComplete(SearchResult searchResult) {
+        synchronized (lock) {
+            if(!isPendingSearchValid) {
+                return;
+            }
+            if(lastResult != null && lastResult.getMatchCount() > 0) {
+                if(searchResult.getMatchCount() == 0) {
+                    return;
+                }
+            }
+            lastResult = searchResult;
+        }
+        model.postEvent(SearchFilterEvent.create(searchResult));
     }
 
     private FutureCallback<SearchResult> createFutureCallback() {
         return new FutureCallback<SearchResult>() {
             @Override
             public void onSuccess(SearchResult searchResult) {
-                synchronized (lock) {
-                    if(!isPendingSearchValid) {
-                        return;
-                    }
-                    if(lastResult != null && lastResult.getMatchCount() > 0) {
-                        if(searchResult.getMatchCount() == 0) {
-                            return;
-                        }
-                    }
-                    lastResult = searchResult;
-                }
-
-                model.postEvent(SearchFilterEvent.create(searchResult));
+                onSearchComplete(searchResult);
             }
 
             @Override
             public void onFailure(Throwable throwable) {
+                if(throwable instanceof CancellationException) {
+                   return;
+                }
                 logger.log(Level.WARNING, "Search query failed with exception "+ throwable.getMessage(), throwable);
             }
         };
