@@ -35,7 +35,7 @@ public class Resources {
         final String red = "255,0,0";
         final String black = "0,0,0";
         final String greyish = "119,136,153";
-        final String neonYellow = "243,243,21";
+        final String neonYellow = "255,255,122";
 
         addColor(COLOR_ERROR_MESSAGE, red);
         addColor(COLOR_SENDER_SECTION, black);
@@ -45,7 +45,6 @@ public class Resources {
         addColor(COLOR_SELECTED_ELEMENT_FOREGROUND, black);
         addColor(COLOR_HIGHLIGHT_BACKGROUND, neonYellow);
         addColor(COLOR_HIGHLIGHT_FOREGROUND, black);
-
 
         addColor(COLOR_NEW_MESSAGE_BADGE, new RGB(0xC7,0xCC,0xD6));
 
