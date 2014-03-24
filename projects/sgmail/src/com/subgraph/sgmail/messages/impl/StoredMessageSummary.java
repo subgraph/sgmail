@@ -90,9 +90,5 @@ public class StoredMessageSummary extends AbstractActivatable {
         Builder sender(MessageUser value) { sender = value; return this; }
         Builder addRecipient(MessageUser value) { recipients.add(value); return this; }
         Builder addAttachment(MessageAttachment value) { attachments.add(value); return this; }
-
-        StoredMessageSummary build() {
-            return new StoredMessageSummary(this);
-        }
     }
 }
