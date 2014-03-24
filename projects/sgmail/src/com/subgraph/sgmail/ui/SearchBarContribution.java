@@ -130,18 +130,25 @@ public class SearchBarContribution extends ControlContribution {
 
 
     private void onSearchComplete(SearchResult searchResult) {
+        final SearchResult disposeResult;
         synchronized (lock) {
             if(!isPendingSearchValid) {
+                searchResult.dispose();
                 return;
             }
             if(lastResult != null && lastResult.getMatchCount() > 0) {
                 if(searchResult.getMatchCount() == 0) {
+                    searchResult.dispose();
                     return;
                 }
             }
+            disposeResult = lastResult;
             lastResult = searchResult;
         }
         model.postEvent(SearchFilterEvent.create(searchResult));
+        if(disposeResult != null) {
+            disposeResult.dispose();
+        }
     }
 
     private FutureCallback<SearchResult> createFutureCallback() {

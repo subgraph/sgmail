@@ -43,13 +43,8 @@ public class MessageSearchIndexImpl implements MessageSearchIndex {
 
     public SearchResult search(String queryString) throws IOException {
         getSearcherManager().maybeRefresh();
-        final IndexSearcher searcher = getSearcherManager().acquire();
-        try {
-            final Query query = createQuery(queryString);
-            return SearchResultImpl.runQuery(queryString, query, searcher);
-        } finally {
-            getSearcherManager().release(searcher);
-        }
+        final Query query = createQuery(queryString);
+        return SearchResultImpl.runQuery(queryString, query, getSearcherManager());
     }
 
     private Query createQuery(String input) {

@@ -6,4 +6,5 @@ public interface SearchResult {
     boolean resultContainsUID(long uid);
     HighlightedString getHighlightedSubject(long uid);
     HighlightedString getHighlightedBody(long uid);
+    void dispose();
 }

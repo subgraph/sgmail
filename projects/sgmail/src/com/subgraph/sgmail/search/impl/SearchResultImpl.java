@@ -3,10 +3,7 @@ package com.subgraph.sgmail.search.impl;
 import com.subgraph.sgmail.search.HighlightedString;
 import com.subgraph.sgmail.search.SearchResult;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.*;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -19,12 +16,18 @@ import java.util.logging.Logger;
 class SearchResultImpl implements SearchResult {
     private final static Logger logger = Logger.getLogger(SearchResultImpl.class.getName());
 
-    public static SearchResultImpl runQuery(String queryInput, Query query, IndexSearcher searcher) throws IOException {
-        final TopDocs topDocs = searcher.search(query, Integer.MAX_VALUE);
-        final Set<Long> uidSet = new HashSet<>();
-        final Map<Long, Integer> documentIdMap = new HashMap<>();
-        populate(searcher, topDocs, uidSet, documentIdMap);
-        return new SearchResultImpl(queryInput, query, searcher, documentIdMap, uidSet);
+    public static SearchResultImpl runQuery(String queryInput, Query query, SearcherManager searcherManager) throws IOException {
+        final IndexSearcher searcher = searcherManager.acquire();
+        try {
+            final TopDocs topDocs = searcher.search(query, Integer.MAX_VALUE);
+            final Set<Long> uidSet = new HashSet<>();
+            final Map<Long, Integer> documentIdMap = new HashMap<>();
+            populate(searcher, topDocs, uidSet, documentIdMap);
+            return new SearchResultImpl(queryInput, query, searcher, searcherManager, documentIdMap, uidSet);
+        } catch (Exception e) {
+           searcherManager.release(searcher);
+           throw e;
+        }
     }
 
     private static void populate(IndexSearcher searcher, TopDocs topDocs, Set<Long> uidSet, Map<Long, Integer> documentIdMap) throws IOException {
@@ -43,15 +46,17 @@ class SearchResultImpl implements SearchResult {
 
     private final String queryText;
     private final Query query;
+    private final SearcherManager searcherManager;
     private final IndexSearcher searcher;
 
     private final Map<Long, Integer> documentIdMap;
     private final Set<Long> uidSet;
     private final Map<Long, HighlightedString[]> highlightMap = new HashMap<>();
 
-    public SearchResultImpl(String queryText, Query query, IndexSearcher searcher, Map<Long, Integer> documentIdMap, Set<Long> uidSet) {
+    public SearchResultImpl(String queryText, Query query, IndexSearcher searcher, SearcherManager searcherManager, Map<Long, Integer> documentIdMap, Set<Long> uidSet) {
         this.queryText = queryText;
         this.query = query;
+        this.searcherManager = searcherManager;
         this.searcher = searcher;
         this.documentIdMap = documentIdMap;
         this.uidSet = uidSet;
@@ -75,6 +80,15 @@ class SearchResultImpl implements SearchResult {
 
     public HighlightedString getHighlightedBody(long uid) {
         return getHighlightsByUID(uid)[1];
+    }
+
+    @Override
+    public void dispose() {
+        try {
+            searcherManager.release(searcher);
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "IOException releasing searcher: "+ e, e);
+        }
     }
 
     private HighlightedString[] getHighlightsByUID(Long uid) {
