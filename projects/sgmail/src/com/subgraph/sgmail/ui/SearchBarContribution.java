@@ -3,6 +3,7 @@ package com.subgraph.sgmail.ui;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.subgraph.sgmail.events.SearchFilterEvent;
 import com.subgraph.sgmail.events.SearchQueryChangedEvent;
 import com.subgraph.sgmail.model.Model;
@@ -26,7 +27,9 @@ public class SearchBarContribution extends ControlContribution {
 
     private final static int SEARCH_DELAY_MS = 300;
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService scheduler =
+            MoreExecutors.getExitingScheduledExecutorService((ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1));
+
     private final Object lock = new Object();
 
     private ScheduledFuture<?> launchSearchFuture;
