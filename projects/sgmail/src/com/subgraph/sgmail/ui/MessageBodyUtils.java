@@ -1,7 +1,6 @@
 package com.subgraph.sgmail.ui;
 
 import com.google.common.base.Splitter;
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
 
 import javax.mail.BodyPart;
 import javax.mail.Message;
@@ -17,15 +16,6 @@ import java.util.logging.Logger;
 
 public class MessageBodyUtils {
 	private final static Logger logger = Logger.getLogger(MessageBodyUtils.class.getName());
-
-    public static String getTextBody(StoredIMAPMessage message) {
-        try {
-            return getTextBody(message.toMimeMessage());
-        } catch (MessagingException e) {
-            logger.warning("Error converting to mime message "+ e);
-            return "";
-        }
-    }
 
 	public static String getTextBody(Message message) {
 		if(!(message instanceof MimeMessage)) {
@@ -51,9 +41,8 @@ public class MessageBodyUtils {
 			logger.warning("Could not convert message body of type "+ content.getClass().getName() +" into text representation");
 			return "";
 		}
-		
 	}
-	
+
 	private static String getTextBodyFromMimeMultipart(MimeMultipart multi) throws MessagingException {
 		StringBuilder sb = new StringBuilder();
 		
@@ -64,23 +53,27 @@ public class MessageBodyUtils {
 				if(bodyText != null) {
 					sb.append(bodyText);
 				}
-			}
+            }
 		}
 		return sb.toString();
 	}
-	
+
+
+    private static String lowercaseUnlessNull(String s) {
+        return (s == null) ? (null) : (s.toLowerCase());
+    }
 	private static String getTextBodyFromBodyPart(MimeBodyPart part) throws MessagingException {
-		final String type = part.getContentType();
-		//if(type == null || !type.contains("text/plain")) {
-			//return null;
-		//}
-		
+        final String type = lowercaseUnlessNull(part.getContentType());
+        final String disposition = lowercaseUnlessNull(part.getDisposition());
+
 		try {
 			final Object content = part.getContent();
 			if(content instanceof String) {
-				if(type != null && type.contains("text/plain")) {
-					return (String) content;
-				}
+                if(includeStringForTypeAndDisposition(type, disposition)) {
+                    return (String) content;
+                } else {
+                    return null;
+                }
 			} else if(content instanceof MimeMultipart) {
 				return getTextBodyFromMimeMultipart((MimeMultipart) content);
 			}
@@ -89,6 +82,13 @@ public class MessageBodyUtils {
 		}
 		return null;
 	}
+
+    private static boolean includeStringForTypeAndDisposition(String type, String disposition) {
+        if(type == null || !type.contains("text/plain")) {
+            return false;
+        }
+        return disposition == null || disposition.equals("inline");
+    }
 	
 	public static String createQuotedBody(Message message) throws MessagingException {
 		final StringBuilder sb = new StringBuilder();
@@ -107,8 +107,7 @@ public class MessageBodyUtils {
 		}
 		return sb.toString();
 	}
-	
-	
+
 	private final static DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG);
 	private final static DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.LONG);
 	
