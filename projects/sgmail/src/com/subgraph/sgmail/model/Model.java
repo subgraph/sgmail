@@ -154,6 +154,9 @@ public class Model {
             if (messageSearchIndex != null) {
                 messageSearchIndex.close();
             }
+            if(executor != null) {
+                executor.shutdown();
+            }
         }
 	}
 
