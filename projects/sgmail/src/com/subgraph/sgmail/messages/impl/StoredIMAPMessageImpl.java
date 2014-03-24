@@ -3,13 +3,15 @@ package com.subgraph.sgmail.messages.impl;
 import com.db4o.activation.ActivationPurpose;
 import com.subgraph.sgmail.messages.StoredFolder;
 import com.subgraph.sgmail.messages.StoredIMAPFolder;
+import com.subgraph.sgmail.messages.StoredIMAPMessage;
 import com.subgraph.sgmail.model.LocalMimeMessage;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.ByteArrayInputStream;
 
-public class StoredIMAPMessageImpl extends StoredMessageImpl implements com.subgraph.sgmail.messages.StoredIMAPMessage {
+public class StoredIMAPMessageImpl extends StoredMessageImpl implements StoredIMAPMessage {
+
 
     private final StoredIMAPMessageSummary imapSummary;
 
@@ -61,4 +63,6 @@ public class StoredIMAPMessageImpl extends StoredMessageImpl implements com.subg
         }
         return cachedMimeMessage;
     }
+
+
 }

@@ -85,8 +85,8 @@ public class SynchronizeTask implements Runnable {
 				return;
 			}
 		}
-		
 	}
+
 	private List<IMAPFolder> getFoldersToSynchronize() throws MessagingException {
 		IMAPFolder defaultFolder = (IMAPFolder) remoteStore.getDefaultFolder();
 		final List<IMAPFolder> folders = new ArrayList<>();
