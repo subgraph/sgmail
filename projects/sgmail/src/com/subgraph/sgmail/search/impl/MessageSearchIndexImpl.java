@@ -10,6 +10,8 @@ import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
 import java.io.File;
@@ -24,7 +26,7 @@ public class MessageSearchIndexImpl implements MessageSearchIndex {
     private final Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
 
     private MessageIndexWriter writer;
-    private MessageIndexReader reader;
+    private SearcherManager searcherManager;
     private boolean isClosed;
 
     public MessageSearchIndexImpl(File indexDirectory) {
@@ -40,21 +42,25 @@ public class MessageSearchIndexImpl implements MessageSearchIndex {
     }
 
     public SearchResult search(String queryString) throws IOException {
-        final IndexSearcher searcher = getReader().getIndexSearcher();
-        final Query query = createQuery(queryString);
-        return SearchResultImpl.runQuery(queryString, query, searcher);
+        getSearcherManager().maybeRefresh();
+        final IndexSearcher searcher = getSearcherManager().acquire();
+        try {
+            final Query query = createQuery(queryString);
+            return SearchResultImpl.runQuery(queryString, query, searcher);
+        } finally {
+            getSearcherManager().release(searcher);
+        }
     }
 
     private Query createQuery(String input) {
         try {
             return createQueryParser().parse(input);
         } catch (ParseException e) {
-            e.printStackTrace();
+            final BooleanQuery query = new BooleanQuery();
+            query.add(new TermQuery(new Term("body", input.toLowerCase())), BooleanClause.Occur.SHOULD);
+            query.add(new TermQuery(new Term("subject", input.toLowerCase())), BooleanClause.Occur.SHOULD);
+            return query;
         }
-        final BooleanQuery query = new BooleanQuery();
-        query.add(new TermQuery(new Term("body", input.toLowerCase())), BooleanClause.Occur.SHOULD);
-        query.add(new TermQuery(new Term("subject", input.toLowerCase())), BooleanClause.Occur.SHOULD);
-        return query;
     }
 
     private QueryParser createQueryParser() {
@@ -78,22 +84,16 @@ public class MessageSearchIndexImpl implements MessageSearchIndex {
         if(writer != null) {
             writer.closeIndex();
         }
-        if(reader != null) {
-            reader.closeIndex();
+        if(searcherManager != null) {
+            try {
+                searcherManager.close();
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "IOException closing SearchManager: " + e, e);
+            }
         }
     }
 
-    synchronized  MessageIndexReader getReader() throws IOException {
-        if(isClosed) {
-            throw new IOException("Index has been closed");
-        }
-        if(reader == null) {
-            reader = new MessageIndexReader(getWriter().getIndexWriter());
-        }
-        return reader;
-    }
-
-    synchronized MessageIndexWriter getWriter() throws IOException {
+    private synchronized MessageIndexWriter getWriter() throws IOException {
         if(isClosed) {
             throw new IOException("Index has been closed");
         }
@@ -101,5 +101,16 @@ public class MessageSearchIndexImpl implements MessageSearchIndex {
             writer = MessageIndexWriter.openIndexWriter(indexDirectory, false);
         }
         return writer;
+    }
+
+    private synchronized SearcherManager getSearcherManager() throws IOException {
+        if(isClosed) {
+            throw new IOException("Index has been closed");
+        }
+        if(searcherManager == null) {
+            final Directory directory = FSDirectory.open(indexDirectory);
+            searcherManager = new SearcherManager(getWriter().getIndexWriter(), false, null);
+        }
+        return searcherManager;
     }
 }
