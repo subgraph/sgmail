@@ -22,7 +22,6 @@ public class MessageSearchIndexImpl implements MessageSearchIndex {
 
     private final File indexDirectory;
     private final Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
-    private final QueryParser queryParser = new MultiFieldQueryParser(Version.LUCENE_47, new String[] {"body", "subject"}, analyzer);
 
     private MessageIndexWriter writer;
     private MessageIndexReader reader;
@@ -48,7 +47,7 @@ public class MessageSearchIndexImpl implements MessageSearchIndex {
 
     private Query createQuery(String input) {
         try {
-            return queryParser.parse(input);
+            return createQueryParser().parse(input);
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -56,6 +55,10 @@ public class MessageSearchIndexImpl implements MessageSearchIndex {
         query.add(new TermQuery(new Term("body", input.toLowerCase())), BooleanClause.Occur.SHOULD);
         query.add(new TermQuery(new Term("subject", input.toLowerCase())), BooleanClause.Occur.SHOULD);
         return query;
+    }
+
+    private QueryParser createQueryParser() {
+        return new MultiFieldQueryParser(Version.LUCENE_47, new String[] { "body", "subject" }, analyzer);
     }
 
     public void commit() {
@@ -99,6 +102,4 @@ public class MessageSearchIndexImpl implements MessageSearchIndex {
         }
         return writer;
     }
-
-
 }
