@@ -194,6 +194,7 @@ public class MainWindow extends ApplicationWindow {
 
     private final static Object shutdownLock = new Object();
     private static boolean isShutdown = false;
+
     private static void shutdown(Model model) {
         synchronized (shutdownLock) {
             if(isShutdown) {

@@ -31,7 +31,6 @@ public class Resources {
     public final static String FONT_MESSAGE_BODY = "com.subgraph.sgmail.fonts.message";
 
     public static void initialize() {
-        System.out.println("initialize resources");
         final String red = "255,0,0";
         final String black = "0,0,0";
         final String greyish = "119,136,153";

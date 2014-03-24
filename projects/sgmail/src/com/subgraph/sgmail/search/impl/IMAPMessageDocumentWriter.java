@@ -36,7 +36,6 @@ class IMAPMessageDocumentWriter {
         uidField.setLongValue(message.getUniqueMessageId());
         subjectField.setStringValue(Objects.requireNonNull(message.getSubject()));
         bodyField.setStringValue(Objects.requireNonNull(message.getDisplayText()));
-        System.out.println("Indexing message "+ Long.toUnsignedString(message.getUniqueMessageId()));
         writer.addDocument(document);
     }
 }
