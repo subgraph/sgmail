@@ -4,7 +4,6 @@ import com.subgraph.sgmail.accounts.IMAPAccount;
 import com.subgraph.sgmail.events.MessageStateChangedEvent;
 import com.subgraph.sgmail.messages.StoredIMAPFolder;
 import com.subgraph.sgmail.messages.StoredIMAPMessage;
-import com.subgraph.sgmail.messages.StoredMessages;
 import com.subgraph.sgmail.messages.impl.FlagUtils;
 import com.subgraph.sgmail.model.Model;
 import com.sun.mail.gimap.GmailFolder;
@@ -20,12 +19,13 @@ import javax.mail.MessagingException;
 import javax.mail.UIDFolder;
 import javax.mail.event.MessageCountEvent;
 import javax.mail.event.MessageCountListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ServerToClientFolderSynchronize  {
@@ -36,8 +36,9 @@ public class ServerToClientFolderSynchronize  {
 	private final IMAPFolder remoteFolder;
 	private final StoredIMAPFolder localFolder;
 	private final AtomicBoolean stopFlag;
-	
-	public ServerToClientFolderSynchronize(Model model, IMAPAccount account, IMAPFolder remoteFolder, StoredIMAPFolder localFolder, AtomicBoolean stopFlag) {
+    private final StoredIMAPMessageFactory imapMessageFactory = new StoredIMAPMessageFactory();
+
+    public ServerToClientFolderSynchronize(Model model, IMAPAccount account, IMAPFolder remoteFolder, StoredIMAPFolder localFolder, AtomicBoolean stopFlag) {
 		this.model = model;
 		this.account = account;
 		this.remoteFolder = remoteFolder;
@@ -141,34 +142,43 @@ public class ServerToClientFolderSynchronize  {
 	
 	private void appendMessagesToLocal(Message[] messages) throws MessagingException {
 		fetchDetails(messages);
-        for(Message m: messages) {
-			if(stopFlag.get()) {
-				return;
-			}
-            if(!(m instanceof IMAPMessage)) {
-               logger.warning("Message is not an IMAPMessage "+ m);
-            } else {
-                storeNewMessage((IMAPMessage) m);
+        final ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            for (Message m : messages) {
+                if (stopFlag.get()) {
+                    return;
+                }
+                if (!(m instanceof IMAPMessage)) {
+                    logger.warning("Message is not an IMAPMessage " + m);
+                } else {
+                    storeNewMessage(executor, (IMAPMessage) m);
+                }
             }
-		}
-        model.getMessageSearchIndex().commit();
+        } finally {
+            shutdownExecutor(executor);
+            model.getMessageSearchIndex().commit();
+        }
 	}
 
-    private void storeNewMessage(IMAPMessage message) throws MessagingException {
-        final StoredIMAPMessage storedMessage = StoredMessages.createIMAPMessage(account, message, remoteFolder.getUID(message));
-        localFolder.addMessage(storedMessage);
-        indexNewMessage(storedMessage);
-        model.postEvent(new MessageStateChangedEvent(storedMessage));
-    }
-
-    private void indexNewMessage(StoredIMAPMessage msg) {
+    private void shutdownExecutor(ExecutorService executor) {
+        final int WAIT_SECONDS = 120;
+        executor.shutdown();
         try {
-            model.getMessageSearchIndex().addMessage(msg);
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "IOException indexing incoming message " + e.getMessage(), e);
+            if(!executor.awaitTermination(WAIT_SECONDS, TimeUnit.SECONDS)) {
+                logger.warning("Search index executor didn't finish processing after "+ WAIT_SECONDS + " seconds.");
+                return;
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
-	
+
+    private void storeNewMessage(ExecutorService executor, IMAPMessage message) throws MessagingException {
+        final StoredIMAPMessage storedMessage = imapMessageFactory.createFromJavamailMessage(account, message, remoteFolder.getUID(message));
+        executor.submit(new StoreMessageTask(storedMessage, localFolder, model.getMessageSearchIndex()));
+    }
+
 	private void fetchDetails(Message[] messages) throws MessagingException {
 		final FetchProfile fp = new FetchProfile();
 		fp.add(IMAPFolder.FetchProfileItem.FLAGS);
