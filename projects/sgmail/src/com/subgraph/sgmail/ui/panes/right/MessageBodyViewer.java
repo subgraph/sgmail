@@ -36,6 +36,7 @@ public class MessageBodyViewer extends Composite {
 
 		styledText.setFont(JFaceResources.getFont(Resources.FONT_MESSAGE_BODY));
         styledText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        styledText.setCaret(null);
 		
 		final String body = MessageBodyUtils.getTextBody(message);
 		if(body != null) {
