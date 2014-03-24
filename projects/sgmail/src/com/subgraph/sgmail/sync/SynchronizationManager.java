@@ -10,14 +10,10 @@ import com.subgraph.sgmail.model.Model;
 import javax.mail.Flags.Flag;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class SynchronizationManager {
 	
 	private final Model model;
-	private final ExecutorService executor = Executors.newCachedThreadPool();
 	private final Map<IMAPAccount, AccountSynchronizer> synchronizers = new HashMap<>();
 	
 	private boolean isRunning;
@@ -39,7 +35,7 @@ public class SynchronizationManager {
 	private void addAccount(Account account) {
 		if(account instanceof IMAPAccount) {
 			final IMAPAccount imap = (IMAPAccount) account;
-			synchronizers.put(imap, new AccountSynchronizer(executor, model, imap));
+			synchronizers.put(imap, new AccountSynchronizer(model, imap));
 		}
 	}
 
@@ -77,12 +73,14 @@ public class SynchronizationManager {
 
 	public synchronized void close() {
 		stop();
-		executor.shutdownNow();
+		//executor.shutdownNow();
+        /*
 		try {
 			executor.awaitTermination(5, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		*/
 	}
 
 	public synchronized void stop() {

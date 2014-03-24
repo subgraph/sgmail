@@ -7,7 +7,6 @@ import com.sun.mail.imap.IMAPStore;
 
 import javax.mail.Flags.Flag;
 import javax.mail.MessagingException;
-import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -15,7 +14,6 @@ import static com.google.common.base.Preconditions.checkState;
 public class AccountSynchronizer {
 	private final Logger logger = Logger.getLogger(AccountSynchronizer.class.getName());
 	
-	private final Executor executor;
 	private final Model model;
 	private final IMAPAccount account;
 	private final IMAPStore remoteStore;
@@ -23,8 +21,7 @@ public class AccountSynchronizer {
 	private boolean isRunning;
 	private SynchronizeTask runningTask;
 	
-	public AccountSynchronizer(Executor executor, Model model, IMAPAccount account) {
-		this.executor = executor;
+	public AccountSynchronizer(Model model, IMAPAccount account) {
 		this.model = model;
 		this.account = account;
 		this.remoteStore = (IMAPStore) account.getRemoteStore();
@@ -51,14 +48,14 @@ public class AccountSynchronizer {
 		checkState(runningTask == null);
 
 		runningTask = new SynchronizeTask(model, remoteStore, account);
-		executor.execute(runningTask);
-		
+        model.getExecutor().execute(runningTask);
+
 		isRunning = true;
 	}
 
 	public void updateFlags(StoredIMAPMessage message, Flag flag, boolean isSet) {
 		final UpdateFlagsTask task = new UpdateFlagsTask(remoteStore, message, flag, isSet);
-		executor.execute(task);
+        model.getExecutor().execute(task);
 	}
 
 	IMAPStore getRemoteStore() {
