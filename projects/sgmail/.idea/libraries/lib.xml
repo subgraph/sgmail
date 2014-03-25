@@ -16,6 +16,7 @@
     <JAVADOC />
     <SOURCES>
       <root url="jar://$PROJECT_DIR$/lib/src/bcpg-jdk15on-150/src.zip!/" />
+      <root url="jar://$PROJECT_DIR$/lib/src/swt-src.zip!/" />
     </SOURCES>
   </library>
 </component>
