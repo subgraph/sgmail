@@ -210,8 +210,9 @@ public class ConversationRenderer {
 
     private void renderHighlightedBody(Event event, StoredIMAPMessage msg) {
         final HighlightedString highlightedBody = searchResult.getHighlightedBody(msg.getUniqueMessageId());
+        final int snippetStart = getSnippetStart(highlightedBody, 80);
         final BodySnippetGenerator gen = new BodySnippetGenerator(highlightedBody.getString(), event.width - (LEFT_MARGIN + RIGHT_MARGIN), event.gc);
-        final List<Range<Integer>> ranges = gen.generateSnippetRanges();
+        final List<Range<Integer>> ranges = gen.generateSnippetRanges(snippetStart);
         final Color foreground = getEventColor(event, Section.BODY);
         final Color highlightBackground = JFaceResources.getColorRegistry().get(Resources.COLOR_HIGHLIGHT_BACKGROUND);
         final Color highlightForeground = JFaceResources.getColorRegistry().get(Resources.COLOR_HIGHLIGHT_FOREGROUND);
@@ -224,6 +225,27 @@ public class ConversationRenderer {
             renderer.render(event.gc, x, y);
             y += Section.BODY.getFontHeight(event.gc);
         }
+    }
+
+    private int getSnippetStart(HighlightedString highlightedBody, int minOffset) {
+        if(highlightedBody.getHighlightedRanges().isEmpty()) {
+            return 0;
+        }
+        final int firstHighlightOffset = highlightedBody.getHighlightedRanges().span().lowerEndpoint();
+        if(firstHighlightOffset < minOffset) {
+            return 0;
+        }
+        final String str = highlightedBody.getString();
+
+        for(int i = firstHighlightOffset - minOffset; i < firstHighlightOffset; i++) {
+            if(Character.isWhitespace(str.charAt(i))) {
+                while(Character.isWhitespace(str.charAt(i)) && i < firstHighlightOffset) {
+                   i++;
+                }
+                return i;
+            }
+        }
+        return firstHighlightOffset - minOffset;
     }
 
     boolean hasNewMessage(List<StoredMessage> messages) {

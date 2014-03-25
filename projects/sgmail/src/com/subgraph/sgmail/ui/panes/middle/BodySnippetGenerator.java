@@ -28,7 +28,11 @@ public class BodySnippetGenerator {
     }
 
     public List<Range<Integer>> generateSnippetRanges() {
+       return generateSnippetRanges(0);
+    }
+    public List<Range<Integer>> generateSnippetRanges(int offset) {
         final List<Range<Integer>> ranges = new ArrayList<>();
+        currentOffset = offset;
         for(int i = 0; i < lineCount; i++) {
             ranges.add(generateNextRange());
         }
