@@ -47,7 +47,7 @@ class SearchResultImpl implements SearchResult {
     private final String queryText;
     private final Query query;
     private final SearcherManager searcherManager;
-    private final IndexSearcher searcher;
+    private IndexSearcher searcher;
 
     private final Map<Long, Integer> documentIdMap;
     private final Set<Long> uidSet;
@@ -86,6 +86,7 @@ class SearchResultImpl implements SearchResult {
     public void dispose() {
         try {
             searcherManager.release(searcher);
+            searcher = null;
         } catch (IOException e) {
             logger.log(Level.WARNING, "IOException releasing searcher: "+ e, e);
         }
