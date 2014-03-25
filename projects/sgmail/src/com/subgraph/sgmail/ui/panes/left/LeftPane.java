@@ -1,6 +1,7 @@
 package com.subgraph.sgmail.ui.panes.left;
 
 import ca.odell.glazedlists.GroupingList;
+import ca.odell.glazedlists.impl.matchers.TrueMatcher;
 import com.subgraph.sgmail.accounts.IMAPAccount;
 import com.subgraph.sgmail.events.ConversationSourceSelectedEvent;
 import com.subgraph.sgmail.messages.StoredFolder;
@@ -19,12 +20,16 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class LeftPane extends Composite {
 
 	private final Model model;
 	
 	private final TreeViewer accountsTree;
     private final SearchMatcherEditor searchMatcherEditor;
+    private final Map<Object, EventListStack> eventListStackMap = new HashMap<>();
 
     private EventListStack currentStack;
 
@@ -52,7 +57,7 @@ public class LeftPane extends Composite {
         });
         layout();
         accountsTree.setInput(model.getAccountList());
-        searchMatcherEditor = SearchMatcherEditor.create(model);
+        searchMatcherEditor = new SearchMatcherEditor(model);
 	}
 
 	private void refreshTree() {
@@ -68,47 +73,21 @@ public class LeftPane extends Composite {
 		final TreeViewer tv = new TreeViewer(parent);
 		tv.getTree().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		tv.setContentProvider(new AccountsContentProvider());
-		tv.setLabelProvider(new LabelProvider());
+		tv.setLabelProvider(new LabelProvider(this));
 		tv.addSelectionChangedListener(new ISelectionChangedListener() {
 
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 final StructuredSelection ss = (StructuredSelection) event.getSelection();
                 final Object ob = ss.getFirstElement();
-                if (ob instanceof IMAPAccount) {
-                    onIMAPAccountSelected((IMAPAccount) ob);
-                } else if (ob instanceof StoredFolder) {
-                    onStoredFolderSelected((StoredFolder) ob);
-                } else if (ob instanceof StoredMessageLabel) {
-                    onStoredMessageLabelSelected((StoredMessageLabel) ob);
+                if (ob != null) {
+                    final EventListStack els = getEventListStackFor(ob);
+                    model.postEvent(new ConversationSourceSelectedEvent(els.getGroupingList()));
                 }
             }
         });
 		return tv;
 	}
-
-    private void onIMAPAccountSelected(IMAPAccount imapAccount) {
-        final EventListStack els = new EventListStack(imapAccount.getMessageEventList());
-        els.addSearchFilter(searchMatcherEditor);
-        newEventListStack(els);
-    }
-
-    private void onStoredFolderSelected(StoredFolder folder) {
-        final EventListStack els = new EventListStack(folder.getMessageEventList());
-        els.addSearchFilter(searchMatcherEditor);
-        newEventListStack(els);
-    }
-
-    private void onStoredMessageLabelSelected(StoredMessageLabel label) {
-        if(!(label.getAccount() instanceof IMAPAccount)) {
-            return;
-        }
-        final IMAPAccount imapAccount = (IMAPAccount) label.getAccount();
-        final EventListStack els = new EventListStack(imapAccount.getMessageEventList());
-        els.addLabelFilter(label);
-        els.addSearchFilter(searchMatcherEditor);
-        newEventListStack(els);
-    }
 
     private void newEventListStack(EventListStack els) {
         final GroupingList<StoredMessage> group = els.addGroupingList();
@@ -117,5 +96,32 @@ public class LeftPane extends Composite {
             currentStack.dispose();
         }
         currentStack = els;
+    }
+
+    public boolean isSearchActive() {
+        return !(searchMatcherEditor.getMatcher() instanceof TrueMatcher);
+    }
+
+    public EventListStack getEventListStackFor(Object ob) {
+        synchronized (eventListStackMap) {
+            if(!eventListStackMap.containsKey(ob)) {
+                final EventListStack els = generateEventListStackFor(ob);
+                els.getNewMessageCounter().addPropertyChangeListener(e -> refreshTree());
+                eventListStackMap.put(ob, els);
+            }
+        }
+        return eventListStackMap.get(ob);
+    }
+
+    private EventListStack generateEventListStackFor(Object ob) {
+        if(ob instanceof IMAPAccount) {
+            return EventListStack.createForIMAPAccount((IMAPAccount) ob, searchMatcherEditor);
+        } else if(ob instanceof StoredFolder) {
+            return EventListStack.createForFolder((StoredFolder) ob, searchMatcherEditor);
+        } else if(ob instanceof StoredMessageLabel) {
+            return EventListStack.createForLabel((StoredMessageLabel) ob, searchMatcherEditor);
+        } else {
+            throw new IllegalArgumentException("Cannot produce EventListStack for "+ ob.getClass());
+        }
     }
 }

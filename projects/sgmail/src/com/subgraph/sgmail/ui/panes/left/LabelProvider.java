@@ -7,15 +7,20 @@ import com.subgraph.sgmail.ui.ImageCache;
 import com.subgraph.sgmail.ui.Resources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.OwnerDrawLabelProvider;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 
 public class LabelProvider extends OwnerDrawLabelProvider {
+
+    private enum BadgeType { BADGE_NEW_COUNT, BADGE_SEARCH_MATCHES };
+
+    private final LeftPane pane;
+
+    LabelProvider(LeftPane pane) {
+        this.pane = pane;
+    }
 
 	@Override
 	protected void measure(Event event, Object element) {
@@ -49,20 +54,23 @@ public class LabelProvider extends OwnerDrawLabelProvider {
 		Point extent = event.gc.textExtent(text);
 		x += extent.x + 5;
 		
-		
-		final int newMessageCount = getNewMessageCount(element);
-		if(newMessageCount > 0) {
-			paintBadge(event.gc, b, getWidth(event), x, newMessageCount);
+
+        final int searchMatches = getSearchMatchCount(element);
+        final int newMessageCount = getNewMessageCount(element);
+        if(searchMatches > 0) {
+            paintBadge(event.gc, b, getWidth(event), x, searchMatches, BadgeType.BADGE_SEARCH_MATCHES);
+        } else if(newMessageCount > 0) {
+            paintBadge(event.gc, b, getWidth(event), x, newMessageCount, BadgeType.BADGE_NEW_COUNT);
 		}
 	}
 
-	private void paintBadge(GC gc, Rectangle bounds, int width, int minX, int n) {
+	private void paintBadge(GC gc, Rectangle bounds, int width, int minX, int n, BadgeType badgeType) {
 		String number = Integer.toString(n);
 		Point p = gc.textExtent(number);
 		final int badgeHeight = p.y;
 		final int badgeWidth = p.x + 20;
 		final int x = calculateBadgeX(width, badgeWidth, minX);
-		paintBadge(gc, x, bounds.y + 2, badgeWidth, badgeHeight, number);
+		paintBadge(gc, x, bounds.y + 2, badgeWidth, badgeHeight, number, badgeType);
 	}
 	
 	private int calculateBadgeX(int width, int badgeWidth, int minX) {
@@ -70,10 +78,10 @@ public class LabelProvider extends OwnerDrawLabelProvider {
 		return (x < minX) ? minX : x;
 	}
 	
-	private void paintBadge(GC gc, int x, int y, int width, int height, String number) {
-		
-		gc.setBackground(JFaceResources.getColorRegistry().get(Resources.COLOR_NEW_MESSAGE_BADGE));
-                gc.fillOval(x, y, height, height);
+	private void paintBadge(GC gc, int x, int y, int width, int height, String number, BadgeType badgeType) {
+        gc.setForeground(JFaceResources.getColorRegistry().get(Resources.COLOR_SELECTED_ELEMENT_FOREGROUND));
+        gc.setBackground(getBadgeBackground(badgeType));
+        gc.fillOval(x, y, height, height);
 		gc.fillOval(x + width - height, y, height, height);
 		gc.fillRectangle(x + (height/2), y, width - height, height);
 		
@@ -81,6 +89,17 @@ public class LabelProvider extends OwnerDrawLabelProvider {
 		int nx = x + (width / 2) - (p.x / 2);
 		gc.drawText(number, nx, y);
 	}
+
+    private Color getBadgeBackground(BadgeType badgeType) {
+        switch (badgeType) {
+            case BADGE_NEW_COUNT:
+                return JFaceResources.getColorRegistry().get(Resources.COLOR_NEW_MESSAGE_BADGE);
+
+            case BADGE_SEARCH_MATCHES:
+                return JFaceResources.getColorRegistry().get(Resources.COLOR_HIGHLIGHT_BACKGROUND);
+        }
+        throw new IllegalStateException("Unknown badge type");
+    }
 	
 	protected void erase(Event event, Object element) {
 		
@@ -105,15 +124,16 @@ public class LabelProvider extends OwnerDrawLabelProvider {
 	}
 	
 	private int getNewMessageCount(Object element) {
-        /*
-		if(element instanceof com.subgraph.sgmail.conversations.ConversationSource) {
-			return ((ConversationSource) element).getNewMessageCount();
-		} else {
-			return 0;
-		}
-		*/
-        return 0;
+        return pane.getEventListStackFor(element).getNewMessageCounter().getValue();
 	}
+
+    private int getSearchMatchCount(Object element) {
+        if(pane.isSearchActive()) {
+            return pane.getEventListStackFor(element).getSearchMatchCounter().getValue();
+        } else {
+            return -1;
+        }
+    }
 
 	private Image getImage(Object element) {
 		if(element instanceof Account) {

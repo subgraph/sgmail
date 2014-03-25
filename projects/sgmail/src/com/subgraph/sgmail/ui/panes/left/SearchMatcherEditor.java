@@ -9,11 +9,6 @@ import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.search.SearchResult;
 
 public class SearchMatcherEditor extends AbstractMatcherEditor<StoredMessage> {
-    public static SearchMatcherEditor create(Model model) {
-        final SearchMatcherEditor sme = new SearchMatcherEditor();
-        model.registerEventListener(sme);
-        return sme;
-    }
 
     private class SearchMatcher implements Matcher<StoredMessage> {
         private final SearchResult searchResult;
@@ -26,8 +21,15 @@ public class SearchMatcherEditor extends AbstractMatcherEditor<StoredMessage> {
         }
     }
 
-    private SearchMatcherEditor() {
+    private final Model model;
 
+    public SearchMatcherEditor(Model model) {
+        this.model = model;
+        model.registerEventListener(this);
+    }
+
+    public void dispose() {
+        model.unregisterEventListener(this);
     }
 
     @Subscribe
