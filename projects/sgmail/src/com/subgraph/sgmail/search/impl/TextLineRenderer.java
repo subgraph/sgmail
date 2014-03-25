@@ -2,6 +2,7 @@ package com.subgraph.sgmail.search.impl;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
@@ -139,13 +140,15 @@ public class TextLineRenderer {
         gc.setFont(s.style.font);
         gc.setForeground(s.style.foreground);
         Color savedBackground = null;
+        int drawFlags = SWT.DRAW_TRANSPARENT;
         if(s.style.background != null) {
             savedBackground = gc.getBackground();
             gc.setBackground(s.style.background);
+            drawFlags &= ~SWT.DRAW_TRANSPARENT;
         }
         final String text = s.getSectionString();
         final int textWidth = gc.textExtent(text, 0).x;
-        gc.drawText(text, x, y, 0);
+        gc.drawText(text, x, y, drawFlags);
         if(savedBackground != null) {
             gc.setBackground(savedBackground);
         }

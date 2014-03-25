@@ -84,7 +84,8 @@ public class MainWindow extends ApplicationWindow {
 	protected Control createContents(Composite parent) {
 		sashForm = new SashForm(parent, SWT.HORIZONTAL | SWT.BORDER);
 		sashForm.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_GRAY));
-		
+        sashForm.setSashWidth(1);
+
 		final Composite left = new LeftPane(sashForm, model);
 		left.setFocus();
 		
@@ -179,9 +180,9 @@ public class MainWindow extends ApplicationWindow {
 
 		final MainWindow w = new MainWindow(createModel());
         Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown(w.model)));
+        Resources.initialize();
 		w.setBlockOnOpen(true);
 		w.create();
-        Resources.initialize();
 		w.open();
         shutdown(w.model);
 

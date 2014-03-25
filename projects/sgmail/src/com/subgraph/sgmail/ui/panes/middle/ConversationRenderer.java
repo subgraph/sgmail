@@ -278,7 +278,7 @@ public class ConversationRenderer {
 		final String sender = MessageUtils.getSender(message);
 		if(sender != null) {
             final String s = MessageUtils.trimToMaxWidth(event.gc, sender, width);
-			event.gc.drawText(s, x, y);
+			event.gc.drawText(s, x, y, true);
 		}
 	}
 

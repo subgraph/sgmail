@@ -56,9 +56,9 @@ public class RightPane extends Composite {
 		super(parent, SWT.NONE);
 		this.model = model;
 		setLayout(new FillLayout());
-		
-		scrolled = new ScrolledComposite(this, SWT.BORDER | SWT.V_SCROLL);
-		
+
+		scrolled = new ScrolledComposite(this, SWT.V_SCROLL);
+
 		scrolled.setExpandHorizontal(true);
 		scrolled.setExpandVertical(true);
 		

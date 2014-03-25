@@ -4,7 +4,6 @@ package com.subgraph.sgmail.ui;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.StringConverter;
-import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.RGB;
@@ -21,7 +20,10 @@ public class Resources {
     public final static String COLOR_SELECTED_ELEMENT_FOREGROUND = "com.subgraph.sgmail.colors.selected";
     public final static String COLOR_HIGHLIGHT_BACKGROUND = "com.subgraph.sgmail.colors.highlight.background";
     public final static String COLOR_HIGHLIGHT_FOREGROUND = "com.subgraph.sgmail.colors.highlight.foreground";
+    public final static String COLOR_WHITE = "com.subgraph.colors.white";
+    public final static String COLOR_HEADER = "com.subgraph.sgmail.colors.header";
 
+    public final static String FONT_HEADER = "com.subgraph.sgmail.fonts.header";
     public final static String FONT_SENDER = "com.subgraph.sgmail.fonts.sender";
     public final static String FONT_DATE = "com.subgraph.sgmail.fonts.date";
     public final static String FONT_SUBJECT = "com.subgraph.sgmail.fonts.subject";
@@ -44,8 +46,10 @@ public class Resources {
         addColor(COLOR_SELECTED_ELEMENT_FOREGROUND, black);
         addColor(COLOR_HIGHLIGHT_BACKGROUND, neonYellow);
         addColor(COLOR_HIGHLIGHT_FOREGROUND, black);
+        addColor(COLOR_HEADER, greyish);
 
-        addColor(COLOR_NEW_MESSAGE_BADGE, new RGB(0xC7,0xCC,0xD6));
+        addColor(COLOR_NEW_MESSAGE_BADGE,"128,140,152");
+        addColor(COLOR_WHITE, "255,255,255");
 
         initializeFonts();
     }
@@ -60,23 +64,22 @@ public class Resources {
 
     public static void initializeFonts() {
         final FontRegistry fonts = JFaceResources.getFontRegistry();
-        final Display display = Display.getDefault();
         final Font systemFont = Display.getDefault().getSystemFont();
         final FontData[] systemFontData = systemFont.getFontData();
         final FontData base = systemFontData[0];
         final String baseName = base.getName();
 
-        fonts.put(FONT_SENDER, createFont(baseName, "bold-13", display));
-        fonts.put(FONT_DATE, createFont(baseName, "regular-13", display));
-        fonts.put(FONT_SUBJECT, createFont(baseName, "regular-11", display));
-        fonts.put(FONT_SUBJECT_BOLD, createFont(baseName, "bold-11", display));
-        fonts.put(FONT_BODY_SNIPPET, createFont(baseName, "regular-10", display));
-        fonts.put(FONT_BODY_SNIPPET_BOLD, createFont(baseName, "bold-10", display));
-        //fonts.put(FONT_MESSAGE_BODY, createFont("Times", "regular-22", display));
+        fonts.put(FONT_HEADER, createFont(baseName, "bold-13"));
+        fonts.put(FONT_SENDER, createFont(baseName, "bold-13" ));
+        fonts.put(FONT_DATE, createFont(baseName, "regular-13" ));
+        fonts.put(FONT_SUBJECT, createFont(baseName, "regular-11" ));
+        fonts.put(FONT_SUBJECT_BOLD, createFont(baseName, "bold-11"));
+        fonts.put(FONT_BODY_SNIPPET, createFont(baseName, "regular-10" ));
+        fonts.put(FONT_BODY_SNIPPET_BOLD, createFont(baseName, "bold-10"));
         fonts.put(FONT_MESSAGE_BODY, JFaceResources.getTextFont().getFontData());
     }
 
-    private static FontData[] createFont(String baseName, String fontInfo, Device device) {
+    private static FontData[] createFont(String baseName, String fontInfo) {
         final FontData fd = StringConverter.asFontData(baseName + "-" + fontInfo);
         return new FontData[] { fd };
     }

@@ -79,7 +79,7 @@ public class LabelProvider extends OwnerDrawLabelProvider {
 	}
 	
 	private void paintBadge(GC gc, int x, int y, int width, int height, String number, BadgeType badgeType) {
-        gc.setForeground(JFaceResources.getColorRegistry().get(Resources.COLOR_SELECTED_ELEMENT_FOREGROUND));
+        gc.setForeground(getBadgeForeground(badgeType));
         gc.setBackground(getBadgeBackground(badgeType));
         gc.fillOval(x, y, height, height);
 		gc.fillOval(x + width - height, y, height, height);
@@ -89,6 +89,16 @@ public class LabelProvider extends OwnerDrawLabelProvider {
 		int nx = x + (width / 2) - (p.x / 2);
 		gc.drawText(number, nx, y);
 	}
+
+    private Color getBadgeForeground(BadgeType badgeType) {
+        switch (badgeType) {
+            case BADGE_NEW_COUNT:
+                return JFaceResources.getColorRegistry().get(Resources.COLOR_WHITE);
+            case BADGE_SEARCH_MATCHES:
+                return JFaceResources.getColorRegistry().get(Resources.COLOR_SELECTED_ELEMENT_FOREGROUND);
+        }
+        throw new IllegalStateException("Unknown badge type");
+    }
 
     private Color getBadgeBackground(BadgeType badgeType) {
         switch (badgeType) {

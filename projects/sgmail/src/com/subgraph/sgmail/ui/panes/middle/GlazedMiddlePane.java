@@ -14,6 +14,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -27,15 +28,19 @@ public class GlazedMiddlePane extends Composite {
     private final ConversationRenderer conversationRenderer;
     private final Model model;
 
+    private final Color selectedBackground;
+    private final Color selectedShadow;
+    private final Color selectedTopLine;
+    private final Color selectedBottomLine;
+
     private ConversationEventTableViewer<List<StoredMessage>> eventTableViewer;
 
     public GlazedMiddlePane(Composite parent, Model model) {
         super(parent, SWT.NONE);
-        setLayout(new GridLayout());
-
-        final Label label = new Label(this, SWT.NONE);
-        label.setText("Conversations");
-        label.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        GridLayout layout = new GridLayout();
+        layout.marginWidth = 0;
+        layout.marginHeight = 0;
+        setLayout(layout);
 
         final Composite tableComposite = new Composite(this, SWT.NONE);
         tableComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -44,8 +49,17 @@ public class GlazedMiddlePane extends Composite {
         tableComposite.setLayout(tableColumnLayout);
         conversationRenderer = new ConversationRenderer(getDisplay());
         this.model = model;
+        this.selectedBackground = createGrey(236);
+        this.selectedShadow = createGrey(219);
+        this.selectedTopLine = createGrey(155);
+        this.selectedBottomLine = createGrey(222);
 
         model.registerEventListener(this);
+    }
+
+    private Color createGrey(int n) {
+        return new Color(getDisplay(), n, n, n);
+
     }
 
     @Subscribe
@@ -81,7 +95,7 @@ public class GlazedMiddlePane extends Composite {
     }
 
     private Table createTable(Composite tableComposite) {
-        final Table table = new Table(tableComposite, SWT.V_SCROLL | SWT.BORDER  /* | SWT.VIRTUAL*/);
+        final Table table = new Table(tableComposite, SWT.V_SCROLL);
         final GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         table.setLayoutData(gd);
         final Listener listener = createEventListener();
@@ -129,7 +143,22 @@ public class GlazedMiddlePane extends Composite {
     }
 
     private void onEraseItem(Event event) {
+        if((event.detail & SWT.SELECTED) == 0) {
+            return;
+        }
+        int clientWidth = table.getClientArea().width;
+        event.gc.setForeground(selectedShadow);
+        event.gc.setBackground(selectedBackground);
+        event.gc.fillRectangle(0, event.y, clientWidth, event.height);
+        event.gc.fillGradientRectangle(0, event.y + 1, clientWidth, 5, true);
+        event.gc.setForeground(selectedTopLine);
+        event.gc.drawLine(0, event.y, clientWidth, event.y);
+        event.gc.setForeground(selectedBottomLine);
+        int y = event.y + event.height;
+        event.gc.drawLine(0, y, clientWidth, y);
+        event.detail &= ~SWT.SELECTED;
     }
+
 
     private void onPaintItem(Event event) {
         event.width = table.getClientArea().width;

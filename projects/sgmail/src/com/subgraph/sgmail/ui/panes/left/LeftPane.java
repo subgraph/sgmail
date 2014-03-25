@@ -8,6 +8,8 @@ import com.subgraph.sgmail.messages.StoredFolder;
 import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.messages.StoredMessageLabel;
 import com.subgraph.sgmail.model.Model;
+import com.subgraph.sgmail.ui.Resources;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -15,6 +17,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -36,11 +39,14 @@ public class LeftPane extends Composite {
 	public LeftPane(Composite parent, Model model) {
 		super(parent, SWT.NONE);
 		this.model = model;
-		setLayout(new GridLayout());
-		final Label label = new Label(this, SWT.NONE);
-		label.setText("Mailboxes");
-		label.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		
+        final GridLayout layout = new GridLayout();
+        layout.marginWidth = 0;
+        layout.marginHeight = 0;
+        layout.verticalSpacing= 0;
+		setLayout(layout);
+
+        createHeader(this);
+
 		accountsTree = createTreeViewer(this);
         addControlListener(new ControlAdapter() {
             @Override
@@ -60,6 +66,22 @@ public class LeftPane extends Composite {
         searchMatcherEditor = new SearchMatcherEditor(model);
 	}
 
+    private void createHeader(Composite parent) {
+        final Color white = JFaceResources.getColorRegistry().get(Resources.COLOR_WHITE);
+        final Label label = new Label(parent, SWT.CENTER);
+        label.setText("Accounts");
+        label.setBackground(white);
+        label.setForeground(JFaceResources.getColorRegistry().get(Resources.COLOR_HEADER));
+        label.setFont(JFaceResources.getFont(Resources.FONT_HEADER));
+        label.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
+        final Label spacer = new Label(parent, SWT.NONE);
+        spacer.setBackground(white);
+        final GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gd.heightHint = 10;
+        spacer.setLayoutData(gd);
+    }
+
 	private void refreshTree() {
 		getDisplay().asyncExec(new Runnable() {
 			@Override
@@ -70,7 +92,7 @@ public class LeftPane extends Composite {
 	}
 
 	private TreeViewer createTreeViewer(Composite parent) {
-		final TreeViewer tv = new TreeViewer(parent);
+		final TreeViewer tv = new TreeViewer(parent, SWT.V_SCROLL | SWT.H_SCROLL);
 		tv.getTree().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		tv.setContentProvider(new AccountsContentProvider());
 		tv.setLabelProvider(new LabelProvider(this));
