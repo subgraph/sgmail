@@ -128,6 +128,10 @@ public class Model {
 		eventBus.register(listener);
 	}
 
+    public void unregisterEventListener(Object listener) {
+        eventBus.unregister(listener);
+    }
+
 	public void open() {
 		synchronized(dbLock) {
 			checkClosed();
