@@ -19,6 +19,7 @@ import javax.mail.MessagingException;
 import javax.mail.UIDFolder;
 import javax.mail.event.MessageCountEvent;
 import javax.mail.event.MessageCountListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -154,6 +155,9 @@ public class ServerToClientFolderSynchronize  {
                     storeNewMessage(executor, (IMAPMessage) m);
                 }
             }
+        } catch (IOException e) {
+            // TODO fix
+            e.printStackTrace();
         } finally {
             shutdownExecutor(executor);
             model.getMessageSearchIndex().commit();
@@ -174,7 +178,7 @@ public class ServerToClientFolderSynchronize  {
         }
     }
 
-    private void storeNewMessage(ExecutorService executor, IMAPMessage message) throws MessagingException {
+    private void storeNewMessage(ExecutorService executor, IMAPMessage message) throws MessagingException, IOException {
         final StoredIMAPMessage storedMessage = imapMessageFactory.createFromJavamailMessage(account, message, remoteFolder.getUID(message));
         executor.submit(new StoreMessageTask(storedMessage, localFolder, model.getMessageSearchIndex()));
     }

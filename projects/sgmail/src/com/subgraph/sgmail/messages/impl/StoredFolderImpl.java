@@ -4,6 +4,7 @@ import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 import com.db4o.activation.ActivationPurpose;
 import com.db4o.collections.ActivatableArrayList;
+import com.subgraph.sgmail.messages.MessageAttachment;
 import com.subgraph.sgmail.messages.StoredFolder;
 import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.model.AbstractActivatable;
@@ -92,6 +93,9 @@ public class StoredFolderImpl extends AbstractActivatable implements StoredFolde
 
     @Override
     public void addMessage(StoredMessage message) {
+        for (MessageAttachment attachment : message.getAttachments()) {
+            model.store(attachment);
+        }
         model.store(message);
         final EventList<StoredMessage> eventList = getMessageEventList();
         eventList.getReadWriteLock().writeLock().lock();

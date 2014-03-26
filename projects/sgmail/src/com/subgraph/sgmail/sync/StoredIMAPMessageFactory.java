@@ -2,6 +2,7 @@ package com.subgraph.sgmail.sync;
 
 import com.google.common.base.Strings;
 import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.messages.MessageAttachment;
 import com.subgraph.sgmail.messages.MessageUser;
 import com.subgraph.sgmail.messages.StoredIMAPMessage;
 import com.subgraph.sgmail.messages.StoredMessageLabel;
@@ -21,9 +22,12 @@ import java.util.Date;
 import java.util.List;
 
 public class StoredIMAPMessageFactory {
-    StoredIMAPMessage createFromJavamailMessage(IMAPAccount imapAccount, IMAPMessage message, long messageUID) throws MessagingException {
+    private final AttachmentExtractor attachmentExtractor = new AttachmentExtractor();
+
+    StoredIMAPMessage createFromJavamailMessage(IMAPAccount imapAccount, IMAPMessage message, long messageUID) throws MessagingException, IOException {
         final long conversationId = imapAccount.generateConversationIdForMessage(message);
         final long uniqueMessageId = imapAccount.generateUniqueMessageIdForMessage(message);
+        final List<MessageAttachment> attachments = attachmentExtractor.getAttachments(message);
         return StoredIMAPMessage.Builder.create(readRawBytes(message))
                 .conversationId(conversationId)
                 .uniqueMessageId(uniqueMessageId)
@@ -35,6 +39,7 @@ public class StoredIMAPMessageFactory {
                 .messageDate(getMessageTimestamp(message))
                 .flags(getMessageFlags(message))
                 .labels(getGmailLabels(imapAccount, message))
+                .attachments(attachments)
                 .build();
     }
 
@@ -45,7 +50,7 @@ public class StoredIMAPMessageFactory {
             message.writeTo(output);
             return output.toByteArray();
         } catch (IOException e) {
-            throw new MessagingException("IOException reading message body "+ e, e);
+            throw new MessagingException("IOException reading message body " + e, e);
         }
     }
 
@@ -70,24 +75,24 @@ public class StoredIMAPMessageFactory {
 
 
     private void addRecipientsToList(List<MessageUser> recipientList, IMAPMessage message, Message.RecipientType recipientType, MessageUser.UserType userType) throws MessagingException {
-        if(message.getRecipients(recipientType) == null) {
+        if (message.getRecipients(recipientType) == null) {
             return;
         }
-        for(Address address: message.getRecipients(recipientType)) {
+        for (Address address : message.getRecipients(recipientType)) {
             MessageUser mu = addressToMessageUser(address, userType);
-            if(mu != null) {
+            if (mu != null) {
                 recipientList.add(mu);
             }
         }
     }
 
     private MessageUser addressToMessageUser(Address address, MessageUser.UserType type) {
-        if(address == null) {
+        if (address == null) {
             return null;
         }
         final String username = getAddressUsername(address);
         final String email = getAddressEmail(address);
-        if(email == null) {
+        if (email == null) {
             return null;
         } else {
             return MessageUser.create(username, email, type);
@@ -95,7 +100,7 @@ public class StoredIMAPMessageFactory {
     }
 
     private String getAddressUsername(Address address) {
-        if(!(address instanceof InternetAddress)) {
+        if (!(address instanceof InternetAddress)) {
             return null;
         } else {
             return ((InternetAddress) address).getPersonal();
@@ -103,7 +108,7 @@ public class StoredIMAPMessageFactory {
     }
 
     private String getAddressEmail(Address address) {
-        if(!(address instanceof  InternetAddress)) {
+        if (!(address instanceof InternetAddress)) {
             return null;
         } else {
             return ((InternetAddress) address).getAddress();
@@ -112,7 +117,7 @@ public class StoredIMAPMessageFactory {
 
     private long getMessageTimestamp(IMAPMessage message) throws MessagingException {
         final Date date = message.getReceivedDate();
-        if(date == null) {
+        if (date == null) {
             return 0;
         } else {
             return date.getTime();
@@ -124,16 +129,16 @@ public class StoredIMAPMessageFactory {
     }
 
     private List<StoredMessageLabel> getGmailLabels(IMAPAccount account, IMAPMessage message) throws MessagingException {
-        if(!(message instanceof GmailMessage)) {
+        if (!(message instanceof GmailMessage)) {
             return null;
         }
         final GmailMessage gmailMessage = (GmailMessage) message;
-        if(gmailMessage.getLabels() == null || gmailMessage.getLabels().length == 0) {
+        if (gmailMessage.getLabels() == null || gmailMessage.getLabels().length == 0) {
             return null;
         }
         final List<StoredMessageLabel> labelList = new ArrayList<>();
-        for(String label: gmailMessage.getLabels()) {
-            if(!label.isEmpty()) {
+        for (String label : gmailMessage.getLabels()) {
+            if (!label.isEmpty()) {
                 labelList.add(account.getMessageLabelByName(label));
             }
         }
