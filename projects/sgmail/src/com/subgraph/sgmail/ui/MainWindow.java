@@ -137,7 +137,7 @@ public class MainWindow extends ApplicationWindow {
 
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
-		shell.setText("E-Mail Client");
+		shell.setText("Subgraph Mail");
 		shell.addControlListener(createControlListener());
 	}
 	
