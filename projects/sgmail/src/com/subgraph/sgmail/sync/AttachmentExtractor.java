@@ -33,7 +33,7 @@ public class AttachmentExtractor {
     private void processMimeBodyPart(MimeBodyPart bodyPart, List<Integer> mimePath, List<MessageAttachment> attachments) throws MessagingException, IOException {
         if (isMultipartContentType(bodyPart.getContentType())) {
             processMultipartBodyPart(bodyPart, mimePath, attachments);
-        } else if (isAttachment(bodyPart.getDisposition(), bodyPart.getFileName())) {
+        } else if (isAttachment(bodyPart.getDisposition(), bodyPart.getFileName(), bodyPart.getContentType())) {
             processAttachmentBodyPart(bodyPart, mimePath, attachments);
         }
     }
@@ -53,20 +53,28 @@ public class AttachmentExtractor {
         }
     }
 
-    private boolean isAttachment(String disposition, String filename) {
-        if(Part.INLINE.equalsIgnoreCase(disposition)) {
-            return false;
-        } else if(Part.ATTACHMENT.equalsIgnoreCase(disposition)) {
+    private boolean isAttachment(String disposition, String filename, String contentType) {
+        if(Part.ATTACHMENT.equalsIgnoreCase(disposition)) {
             return true;
-        } else {
-            return filename != null;
+        } else if (filename == null) {
+            return false;
         }
+
+        if(Part.INLINE.equalsIgnoreCase(disposition)) {
+            try {
+                ContentType ct = new ContentType(contentType);
+                return !ct.getPrimaryType().equalsIgnoreCase("text");
+            } catch (ParseException e) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private String getFilename(MimeBodyPart bodyPart, int n) throws MessagingException {
         final String filename = cleanFilename(bodyPart.getFileName());
         if (filename == null) {
-            return String.format("attachment%02", n + 1);
+            return String.format("attachment%02d", n + 1);
         } else {
             return filename;
         }
