@@ -21,6 +21,7 @@ public class Resources {
     public final static String COLOR_HIGHLIGHT_BACKGROUND = "com.subgraph.sgmail.colors.highlight.background";
     public final static String COLOR_HIGHLIGHT_FOREGROUND = "com.subgraph.sgmail.colors.highlight.foreground";
     public final static String COLOR_WHITE = "com.subgraph.colors.white";
+    public final static String COLOR_BLACK = "com.subgraph.colors.black";
     public final static String COLOR_HEADER = "com.subgraph.sgmail.colors.header";
     public final static String COLOR_ATTACHMENT_PANEL_HIGHLIGHT = "com.subgraph.sgmail.colors.attachment.highlight";
 
@@ -51,6 +52,7 @@ public class Resources {
 
         addColor(COLOR_NEW_MESSAGE_BADGE,"128,140,152");
         addColor(COLOR_WHITE, "255,255,255");
+        addColor(COLOR_BLACK, black);
         addColor(COLOR_ATTACHMENT_PANEL_HIGHLIGHT, "182,207,255");
 
         initializeFonts();
