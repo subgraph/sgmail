@@ -9,6 +9,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -34,6 +35,8 @@ public class ImageCache {
 	public final static String LOCKED_IMAGE = "locked.png";
 	public final static String UNLOCKED_IMAGE = "unlocked.png";
 	public final static String SIGNED_IMAGE = "signed.png";
+
+    public final static String DEFAULT_MIME_IMAGE = "mimetypes/default-icon-64x64.png";
 	
 	
 	public static ImageCache _instance;
@@ -92,6 +95,19 @@ public class ImageCache {
 		image.dispose();
 		return scaled;
 	}
+
+    public Image getMimetypeIcon(String mimetype) {
+        if(mimetype.indexOf(File.separatorChar) != -1) {
+            return getImage(DEFAULT_MIME_IMAGE);
+        }
+        String name = "mimetypes/"+ mimetype + "-icon-64x64.png";
+        final Image image = getImage(name);
+        if(image == null) {
+            return getImage(DEFAULT_MIME_IMAGE);
+        } else {
+            return image;
+        }
+    }
 	
 	public Image getImage(String key) {
 		if(!imageMap.containsKey(key)) {
@@ -109,7 +125,7 @@ public class ImageCache {
 
 	private Image createImage(String key, boolean greyed) {
 		final Image img = loadImage("/icons/" + key);
-		if(!greyed) {
+		if(!greyed || img == null) {
 			return img;
 		}
 		Image greyedImage = new Image(Display.getDefault(), img, SWT.IMAGE_DISABLE);
@@ -122,7 +138,12 @@ public class ImageCache {
 		if(image != null) {
 			return image;
 		}
-		return new Image(Display.getDefault(), System.getProperty("user.dir") + path);
+        final File imageFile = new File(System.getProperty("user.dir"), path);
+        if(imageFile.exists() && imageFile.canRead()) {
+            return new Image(Display.getDefault(), System.getProperty("user.dir") + path);
+        } else {
+            return null;
+        }
 	}
 	
 	private Image tryResourceLoad(String path) {
