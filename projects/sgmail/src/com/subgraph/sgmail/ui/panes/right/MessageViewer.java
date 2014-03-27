@@ -3,12 +3,14 @@ package com.subgraph.sgmail.ui.panes.right;
 import com.google.common.base.Charsets;
 import com.google.common.eventbus.Subscribe;
 import com.subgraph.sgmail.events.MessageStateChangedEvent;
+import com.subgraph.sgmail.messages.MessageAttachment;
 import com.subgraph.sgmail.messages.StoredIMAPMessage;
 import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.model.LocalMimeMessage;
 import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.model.Preferences;
 import com.subgraph.sgmail.ui.attachments.AttachmentPanel;
+import com.subgraph.sgmail.ui.attachments.ImageAttachmentRenderer;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
@@ -72,6 +74,16 @@ public class MessageViewer extends Composite {
 		bodyViewer = new MessageBodyViewer(this, decryptedMessage);
 		bodyViewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
+        for (MessageAttachment attachment : message.getAttachments()) {
+            if(attachment.getMimePrimaryType().equalsIgnoreCase("image")) {
+                ImageAttachmentRenderer renderer = ImageAttachmentRenderer.createForAttachment(this, (StoredIMAPMessage) message, attachment);
+                if(renderer != null) {
+                    final GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+                    gd.heightHint = 200;
+                    renderer.setLayoutData(gd);
+                }
+            }
+        }
         if(message.getAttachments().isEmpty()) {
             attachmentPanel = null;
         } else {
