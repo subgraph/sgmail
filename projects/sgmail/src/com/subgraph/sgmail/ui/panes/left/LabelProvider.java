@@ -7,6 +7,7 @@ import com.subgraph.sgmail.ui.ImageCache;
 import com.subgraph.sgmail.ui.Resources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.OwnerDrawLabelProvider;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Tree;
@@ -49,7 +50,9 @@ public class LabelProvider extends OwnerDrawLabelProvider {
 			event.gc.drawImage(image, x, b.y + 4);
 			x += image.getImageData().width + 5;
 		}
-		
+
+        event.gc.setAntialias(SWT.ON);
+        event.gc.setTextAntialias(SWT.ON);
 		event.gc.drawText(text, x, b.y);
 		Point extent = event.gc.textExtent(text);
 		x += extent.x + 5;
@@ -87,6 +90,8 @@ public class LabelProvider extends OwnerDrawLabelProvider {
 		
 		Point p = gc.textExtent(number);
 		int nx = x + (width / 2) - (p.x / 2);
+        gc.setAntialias(SWT.ON);
+        gc.setTextAntialias(SWT.ON);
 		gc.drawText(number, nx, y);
 	}
 

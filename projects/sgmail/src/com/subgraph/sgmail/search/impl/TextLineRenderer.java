@@ -148,6 +148,8 @@ public class TextLineRenderer {
         }
         final String text = s.getSectionString();
         final int textWidth = gc.textExtent(text, 0).x;
+        gc.setTextAntialias(SWT.ON);
+        gc.setAntialias(SWT.ON);
         gc.drawText(text, x, y, drawFlags);
         if(savedBackground != null) {
             gc.setBackground(savedBackground);

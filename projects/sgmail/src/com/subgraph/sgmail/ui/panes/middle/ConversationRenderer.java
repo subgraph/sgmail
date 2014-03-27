@@ -278,7 +278,7 @@ public class ConversationRenderer {
 		final String sender = MessageUtils.getSender(message);
 		if(sender != null) {
             final String s = MessageUtils.trimToMaxWidth(event.gc, sender, width);
-			event.gc.drawText(s, x, y, true);
+            drawText(event.gc, s, x, y);
 		}
 	}
 
@@ -302,7 +302,7 @@ public class ConversationRenderer {
 		final Point sz = event.gc.textExtent(dateString);
 		final int x = (event.x + event.width) - (RIGHT_MARGIN + sz.x);
 		final int y = event.y + Section.DATE.getYValue();
-		event.gc.drawText(dateString, x, y, true);
+        drawText(event.gc, dateString, x, y);
 	}
 	
 	private int getDateX(Event event, Message message) {
@@ -317,7 +317,7 @@ public class ConversationRenderer {
 		final int y = event.y + Section.SUBJECT.getYValue();
         setFontAndColor(event, Section.SUBJECT);
 		final String trimmed = MessageUtils.trimToMaxWidth(event.gc, subject, event.width - (LEFT_MARGIN + RIGHT_MARGIN));
-		event.gc.drawText(trimmed, x, y, true);
+        drawText(event.gc, trimmed, x, y);
     }
 	
 	void renderBody(Event event, String body) throws MessagingException {
@@ -326,9 +326,9 @@ public class ConversationRenderer {
 		final int y1 = event.y + Section.BODY.getYValue();
         final int y2 = y1 + Section.BODY.getFontHeight(event.gc);
         final String[] lines = getLinesForBody(event, body);
-		event.gc.drawText(lines[0], x, y1, true);
+        drawText(event.gc, lines[0], x, y1);
 		if(!lines[1].isEmpty()) {
-			event.gc.drawText(lines[1], x, y2, true);
+            drawText(event.gc, lines[1], x, y2);
 		}
 	}
 
@@ -402,4 +402,10 @@ public class ConversationRenderer {
 		final int y = event.y;
 		gc.drawLine(x1, y, x2, y);
 	}
+
+    private void drawText(GC gc, String text, int x, int y) {
+        gc.setAntialias(SWT.ON);
+        gc.setTextAntialias(SWT.ON);
+        gc.drawText(text, x, y, true);
+    }
 }
