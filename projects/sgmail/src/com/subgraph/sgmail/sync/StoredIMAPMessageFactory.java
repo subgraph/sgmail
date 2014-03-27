@@ -2,7 +2,6 @@ package com.subgraph.sgmail.sync;
 
 import com.google.common.base.Strings;
 import com.subgraph.sgmail.accounts.IMAPAccount;
-import com.subgraph.sgmail.messages.MessageAttachment;
 import com.subgraph.sgmail.messages.MessageUser;
 import com.subgraph.sgmail.messages.StoredIMAPMessage;
 import com.subgraph.sgmail.messages.StoredMessageLabel;
@@ -15,6 +14,7 @@ import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,13 +22,32 @@ import java.util.Date;
 import java.util.List;
 
 public class StoredIMAPMessageFactory {
+    public static interface MessageIdGenerator {
+        long getConversationId(MimeMessage message);
+        long getUniqueMessageId(MimeMessage message);
+    }
+
     private final AttachmentExtractor attachmentExtractor = new AttachmentExtractor();
 
-    StoredIMAPMessage createFromJavamailMessage(IMAPAccount imapAccount, IMAPMessage message, long messageUID) throws MessagingException, IOException {
+    public StoredIMAPMessage createFromJavamailMessage(IMAPAccount imapAccount, MimeMessage message, long messageUID) throws MessagingException, IOException {
         final long conversationId = imapAccount.generateConversationIdForMessage(message);
         final long uniqueMessageId = imapAccount.generateUniqueMessageIdForMessage(message);
-        final List<MessageAttachment> attachments = attachmentExtractor.getAttachments(message);
-        return StoredIMAPMessage.Builder.create(readRawBytes(message))
+        final List<StoredMessageLabel> gmailLabels = getGmailLabels(imapAccount, message);
+        return createFromJavamailMessage(message, new long[] {conversationId, uniqueMessageId, messageUID}, gmailLabels);
+   }
+
+    public StoredIMAPMessage createFromJavamailMessage(MimeMessage message, long messageUID, MessageIdGenerator idGenerator) throws MessagingException, IOException {
+        final long conversationId = idGenerator.getConversationId(message);
+        final long uniqueMessageId = idGenerator.getUniqueMessageId(message);
+        return createFromJavamailMessage(message, new long[] { conversationId, uniqueMessageId, messageUID}, null);
+    }
+
+    private StoredIMAPMessage createFromJavamailMessage(MimeMessage message, long[] ids, List<StoredMessageLabel> labels) throws MessagingException, IOException {
+        final long conversationId = ids[0];
+        final long uniqueMessageId = ids[1];
+        final long messageUID = ids[2];
+
+         return StoredIMAPMessage.Builder.create(readRawBytes(message))
                 .conversationId(conversationId)
                 .uniqueMessageId(uniqueMessageId)
                 .messageUID(messageUID)
@@ -38,13 +57,15 @@ public class StoredIMAPMessageFactory {
                 .recipients(getRecipients(message))
                 .messageDate(getMessageTimestamp(message))
                 .flags(getMessageFlags(message))
-                .labels(getGmailLabels(imapAccount, message))
-                .attachments(attachments)
-                .build();
+                .labels(labels)
+                .attachments(attachmentExtractor.getAttachments(message))
+             .build();
     }
 
-    private byte[] readRawBytes(IMAPMessage message) throws MessagingException {
-        message.setPeek(true);
+    private byte[] readRawBytes(MimeMessage message) throws MessagingException {
+        if(message instanceof IMAPMessage) {
+            ((IMAPMessage)message).setPeek(true);
+        }
         final ByteArrayOutputStream output = new ByteArrayOutputStream();
         try {
             message.writeTo(output);
@@ -54,19 +75,19 @@ public class StoredIMAPMessageFactory {
         }
     }
 
-    private String getDisplayText(IMAPMessage message) {
+    private String getDisplayText(MimeMessage message) {
         return MessageBodyUtils.getTextBody(message);
     }
 
-    private String getSubject(IMAPMessage message) throws MessagingException {
+    private String getSubject(MimeMessage message) throws MessagingException {
         return Strings.nullToEmpty(message.getSubject());
     }
 
-    private MessageUser getSender(IMAPMessage message) throws MessagingException {
+    private MessageUser getSender(MimeMessage message) throws MessagingException {
         return addressToMessageUser(message.getSender(), MessageUser.UserType.USER_SENDER);
     }
 
-    private List<MessageUser> getRecipients(IMAPMessage message) throws MessagingException {
+    private List<MessageUser> getRecipients(MimeMessage message) throws MessagingException {
         final List<MessageUser> recipients = new ArrayList<>();
         addRecipientsToList(recipients, message, Message.RecipientType.TO, MessageUser.UserType.USER_TO);
         addRecipientsToList(recipients, message, Message.RecipientType.CC, MessageUser.UserType.USER_CC);
@@ -74,7 +95,7 @@ public class StoredIMAPMessageFactory {
     }
 
 
-    private void addRecipientsToList(List<MessageUser> recipientList, IMAPMessage message, Message.RecipientType recipientType, MessageUser.UserType userType) throws MessagingException {
+    private void addRecipientsToList(List<MessageUser> recipientList, MimeMessage message, Message.RecipientType recipientType, MessageUser.UserType userType) throws MessagingException {
         if (message.getRecipients(recipientType) == null) {
             return;
         }
@@ -115,7 +136,7 @@ public class StoredIMAPMessageFactory {
         }
     }
 
-    private long getMessageTimestamp(IMAPMessage message) throws MessagingException {
+    private long getMessageTimestamp(MimeMessage message) throws MessagingException {
         final Date date = message.getReceivedDate();
         if (date == null) {
             return 0;
@@ -124,11 +145,11 @@ public class StoredIMAPMessageFactory {
         }
     }
 
-    private long getMessageFlags(IMAPMessage message) throws MessagingException {
+    private long getMessageFlags(MimeMessage message) throws MessagingException {
         return FlagUtils.getFlagsFromMessage(message);
     }
 
-    private List<StoredMessageLabel> getGmailLabels(IMAPAccount account, IMAPMessage message) throws MessagingException {
+    private List<StoredMessageLabel> getGmailLabels(IMAPAccount account, MimeMessage message) throws MessagingException {
         if (!(message instanceof GmailMessage)) {
             return null;
         }

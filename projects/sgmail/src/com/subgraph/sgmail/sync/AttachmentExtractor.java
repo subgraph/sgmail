@@ -1,14 +1,10 @@
 package com.subgraph.sgmail.sync;
 
 import com.subgraph.sgmail.messages.MessageAttachment;
-import com.sun.mail.imap.IMAPMessage;
 
 import javax.mail.MessagingException;
 import javax.mail.Part;
-import javax.mail.internet.ContentType;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.ParseException;
+import javax.mail.internet.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,7 +15,7 @@ import java.util.logging.Logger;
 public class AttachmentExtractor {
     private final static Logger logger = Logger.getLogger(AttachmentExtractor.class.getName());
 
-    List<MessageAttachment> getAttachments(IMAPMessage message) throws MessagingException, IOException {
+    List<MessageAttachment> getAttachments(MimeMessage message) throws MessagingException, IOException {
         final List<MessageAttachment> attachments = new ArrayList<>();
         if(isMultipartContentType(message.getContentType()) && (message.getContent() instanceof MimeMultipart)) {
             processMultipartAttachments((MimeMultipart) message.getContent(), Collections.emptyList(), attachments);

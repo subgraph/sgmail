@@ -267,7 +267,7 @@ public class RightPane extends Composite {
 				if(!m.isFlagSet(StoredMessage.FLAG_DELETED)) {
 					MimeMessage raw = getMimeMessage((StoredIMAPMessage) m);
                     MimeMessage decrypted = maybeDecryptMessage(raw);
-					addMessageViewer(raw, decrypted, idx);
+					addMessageViewer(m, raw, decrypted, idx);
 					idx += 1;
 				}
 			}
@@ -362,7 +362,7 @@ public class RightPane extends Composite {
 			
 		}
 
-		private void addMessageViewer(final MimeMessage raw, final MimeMessage decrypted, final int idx) {
+		private void addMessageViewer(final StoredMessage m, final MimeMessage raw, final MimeMessage decrypted, final int idx) {
 			if(raw == null) {
 				return;
 			}
@@ -372,7 +372,7 @@ public class RightPane extends Composite {
 						finished = true;
 						return;
 					}
-					final MessageViewer mv = new MessageViewer(composite, RightPane.this, raw, decrypted, model);
+					final MessageViewer mv = new MessageViewer(composite, RightPane.this, m, raw, decrypted, model);
 					mv.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 					// Update size for first three and every 10th after that
 					if(idx < 3 || (idx % 10) == 0) {

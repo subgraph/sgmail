@@ -8,6 +8,7 @@ import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.model.LocalMimeMessage;
 import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.model.Preferences;
+import com.subgraph.sgmail.ui.attachments.AttachmentPanel;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
@@ -45,6 +46,7 @@ public class MessageViewer extends Composite {
     private final Message decryptedMessage;
 	private final MessageHeaderViewer headerViewer;
     private final MessageBodyViewer bodyViewer;
+    private final AttachmentPanel attachmentPanel;
 	private volatile boolean isHighlighted;
 	
 	
@@ -54,7 +56,7 @@ public class MessageViewer extends Composite {
 		cr.put("highlight", rgb);
 	}
 	
-	public MessageViewer(Composite parent, final RightPane pane, Message raw, Message decrypted, Model model) {
+	public MessageViewer(Composite parent, final RightPane pane, StoredMessage message, Message raw, Message decrypted, Model model) {
 		super(parent, SWT.NONE);
 		final GridLayout layout = new GridLayout();
 		layout.verticalSpacing = 0;
@@ -70,6 +72,12 @@ public class MessageViewer extends Composite {
 		bodyViewer = new MessageBodyViewer(this, decryptedMessage);
 		bodyViewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
+        if(message.getAttachments().isEmpty()) {
+            attachmentPanel = null;
+        } else {
+            attachmentPanel = new AttachmentPanel(model.getExecutor(), message, this);
+            attachmentPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+        }
 		addPaintListener(new PaintListener() {
             @Override
             public void paintControl(PaintEvent e) {
@@ -127,7 +135,11 @@ public class MessageViewer extends Composite {
 		if(value) {
 			markMessageSeen();
 			maybeDumpMessage();
-		}
+		} else {
+            if(attachmentPanel != null) {
+                attachmentPanel.unselectAll();
+            }
+        }
 		isHighlighted = value;
 		redraw();
 	}
