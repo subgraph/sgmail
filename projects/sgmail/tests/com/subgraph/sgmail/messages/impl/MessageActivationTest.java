@@ -2,8 +2,10 @@ package com.subgraph.sgmail.messages.impl;
 
 import com.db4o.ObjectContainer;
 import com.db4o.ObjectSet;
+import com.subgraph.sgmail.messages.MessageAttachment;
 import com.subgraph.sgmail.messages.StoredIMAPMessage;
 import com.subgraph.sgmail.messages.StoredMessages;
+import com.subgraph.sgmail.sync.StoredIMAPMessageFactory;
 import com.subgraph.sgmail.testutils.Db4oUtils;
 import com.subgraph.sgmail.testutils.JavamailUtils;
 import com.subgraph.sgmail.testutils.db4oevents.Db4oEventTracker;
@@ -15,6 +17,7 @@ import org.junit.Test;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -87,6 +90,30 @@ public class MessageActivationTest {
     public void testStoredMessageStore() throws MessagingException {
         storeTestMessage(false);
         tracker.assertCREATE(getClassNames(ClassSet.RAW_MESSAGE, ClassSet.MESSAGE_SUMMARY, ClassSet.MESSAGE_BASE));
+    }
+
+    @Test
+    public void testStoredMessageWithAttachmentStore() throws MessagingException, IOException {
+        final StoredIMAPMessageFactory factory = new StoredIMAPMessageFactory();
+        final MimeMessage mimeMessage = JavamailUtils.createTestMimeMessageWithAttachment();
+        db.store(factory.createFromJavamailMessage(mimeMessage, 123, new StoredIMAPMessageFactory.MessageIdGenerator() {
+                    @Override
+                    public long getConversationId(MimeMessage message) {
+                        return 0;
+                    }
+
+                    @Override
+                    public long getUniqueMessageId(MimeMessage message) {
+                        return 0;
+                    }
+                }));
+        db.commit();
+        db.ext().purge();
+        final StoredIMAPMessage storedIMAPMessage = lookupMessage(false, false);
+        for (MessageAttachment attachment : storedIMAPMessage.getAttachments()) {
+            System.out.println(attachment.getFilename());
+        }
+        tracker.printEventList();
     }
 
     @Test

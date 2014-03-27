@@ -1,11 +1,10 @@
 package com.subgraph.sgmail.testutils;
 
-import javax.mail.Address;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
+import javax.mail.*;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import java.util.Properties;
 
 public class JavamailUtils {
@@ -17,13 +16,32 @@ public class JavamailUtils {
 
     public static MimeMessage createTestMimeMessage() {
         try {
-            return constructTestMimeMessage(TEST_FROM_ADDRESS, TEST_TO_ADDRESS, TEST_MESSAGE_SUBJECT, TEST_MESSAGE_BODY);
+            MimeMessage mimeMessage = constructTestMimeMessage(TEST_FROM_ADDRESS, TEST_TO_ADDRESS, TEST_MESSAGE_SUBJECT);
+            mimeMessage.setText(TEST_MESSAGE_BODY);
+            mimeMessage.saveChanges();
+            return mimeMessage;
         } catch (MessagingException e) {
             throw new IllegalStateException("Unexpected exception building test mime message "+ e, e);
         }
     }
 
-    private static MimeMessage constructTestMimeMessage(String fromAddress, String toAddress, String subject, String body) throws MessagingException {
+    public static MimeMessage createTestMimeMessageWithAttachment() throws MessagingException {
+        MimeMultipart mp = new MimeMultipart();
+        MimeBodyPart body = new MimeBodyPart();
+        body.setText(TEST_MESSAGE_BODY);
+        mp.addBodyPart(body);
+        MimeBodyPart attach = new MimeBodyPart();
+        attach.setDisposition(Part.ATTACHMENT);
+        attach.setFileName("attachment.txt");
+        attach.setContent(TEST_MESSAGE_BODY, "text/plain");
+        mp.addBodyPart(attach);
+        final MimeMessage mimeMessage = constructTestMimeMessage(TEST_FROM_ADDRESS, TEST_TO_ADDRESS, TEST_MESSAGE_SUBJECT);
+        mimeMessage.setContent(mp);
+        mimeMessage.saveChanges();
+        return mimeMessage;
+    }
+
+    private static MimeMessage constructTestMimeMessage(String fromAddress, String toAddress, String subject) throws MessagingException {
         final Session session = Session.getInstance(new Properties());
         final MimeMessage message = new MimeMessage(session);
         final Address from = new InternetAddress(fromAddress);
@@ -31,8 +49,6 @@ public class JavamailUtils {
         message.setSender(from);
         message.addRecipient(Message.RecipientType.TO, to);
         message.setSubject(subject);
-        message.setText(body);
-        message.saveChanges();
         return message;
     }
 
