@@ -2,10 +2,10 @@ package com.subgraph.sgmail.messages.impl;
 
 import com.db4o.activation.ActivationPurpose;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.subgraph.sgmail.messages.MessageAttachment;
 import com.subgraph.sgmail.model.AbstractActivatable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,7 +20,7 @@ public class MessageAttachmentImpl extends AbstractActivatable implements Messag
 
 
     private MessageAttachmentImpl(Builder builder) {
-        this.mimePath = ImmutableList.copyOf(builder.mimePath);
+        this.mimePath = new ArrayList<>(builder.mimePath);
         this.mimePrimaryType = Objects.requireNonNull(builder.mimePrimaryType);
         this.mimeSubType = Objects.requireNonNull(builder.mimeSubType);
         this.filename = Objects.requireNonNull(builder.filename);
