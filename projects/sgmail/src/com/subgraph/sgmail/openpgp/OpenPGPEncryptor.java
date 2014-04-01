@@ -1,5 +1,15 @@
 package com.subgraph.sgmail.openpgp;
 
+import com.subgraph.sgmail.identity.PublicIdentity;
+import com.subgraph.sgmail.identity.Random;
+import org.bouncycastle.bcpg.ArmoredOutputStream;
+import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
+import org.bouncycastle.openpgp.*;
+import org.bouncycastle.openpgp.operator.bc.BcPGPDataEncryptorBuilder;
+import org.bouncycastle.openpgp.operator.bc.BcPublicKeyKeyEncryptionMethodGenerator;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMultipart;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -7,22 +17,6 @@ import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMultipart;
-
-import org.bouncycastle.bcpg.ArmoredOutputStream;
-import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
-import org.bouncycastle.openpgp.PGPEncryptedDataGenerator;
-import org.bouncycastle.openpgp.PGPException;
-import org.bouncycastle.openpgp.PGPLiteralData;
-import org.bouncycastle.openpgp.PGPLiteralDataGenerator;
-import org.bouncycastle.openpgp.PGPPublicKey;
-import org.bouncycastle.openpgp.PGPPublicKeyRing;
-import org.bouncycastle.openpgp.operator.bc.BcPGPDataEncryptorBuilder;
-import org.bouncycastle.openpgp.operator.bc.BcPublicKeyKeyEncryptionMethodGenerator;
-
-import com.subgraph.sgmail.identity.PublicIdentity;
 
 public class OpenPGPEncryptor {
 	//private final static Logger logger = Logger.getLogger(OpenPGPEncryptor.class.getName());
@@ -35,7 +29,8 @@ public class OpenPGPEncryptor {
 	}
 	
 	public byte[] encryptMessageBody(byte[] bodyData, List<PublicIdentity> recipientIdentities) throws IOException, PGPException {
-		PGPEncryptedDataGenerator gen = new PGPEncryptedDataGenerator(new BcPGPDataEncryptorBuilder(SymmetricKeyAlgorithmTags.AES_128).setWithIntegrityPacket(true).setSecureRandom(new SecureRandom()));
+        final SecureRandom sr = Random.getInstance().getSecureRandom();
+        PGPEncryptedDataGenerator gen = new PGPEncryptedDataGenerator(new BcPGPDataEncryptorBuilder(SymmetricKeyAlgorithmTags.AES_128).setWithIntegrityPacket(true).setSecureRandom(sr));
 		for(PublicIdentity id: recipientIdentities) {
 			gen.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(getEncryptionKeyForIdentity(id)));
 		}

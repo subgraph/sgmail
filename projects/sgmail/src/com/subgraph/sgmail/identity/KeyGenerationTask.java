@@ -107,7 +107,8 @@ public class KeyGenerationTask implements Callable<KeyGenerationResult>{
 	
 	private RSAKeyPairGenerator createRSAGenerator(int keyLength) {
 		final RSAKeyPairGenerator kpg = new RSAKeyPairGenerator();
-		kpg.init(new RSAKeyGenerationParameters(BigInteger.valueOf(0x10001), new SecureRandom(), keyLength, 12));
+        final SecureRandom sr = Random.getInstance().getSecureRandom();
+		kpg.init(new RSAKeyGenerationParameters(BigInteger.valueOf(0x10001), sr, keyLength, 12));
 		return kpg;
 	}
 

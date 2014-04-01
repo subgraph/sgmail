@@ -1,5 +1,6 @@
 package com.subgraph.sgmail.identity.server;
 
+import com.subgraph.sgmail.identity.Random;
 import com.subgraph.sgmail.identity.protocol.KeyLookupRequest;
 import com.subgraph.sgmail.identity.protocol.KeyRegistrationFinalizeRequest;
 import com.subgraph.sgmail.identity.protocol.KeyRegistrationRequest;
@@ -11,7 +12,10 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
@@ -29,7 +33,7 @@ public class Server {
     private final Map<String, KeyRegistrationState> registrationByEmail = new HashMap<>();
     private final Map<Long, KeyRegistrationState> registrationByRequestId = new HashMap<>();
 
-    private final Random random = new SecureRandom();
+    private final SecureRandom random = Random.getInstance().getSecureRandom();
 
     private KeyRegistrationMailer registrationMailer;
 	
