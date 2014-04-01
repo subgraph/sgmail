@@ -17,7 +17,7 @@ public class SearchMatcherEditor extends AbstractMatcherEditor<StoredMessage> {
         }
         @Override
         public boolean matches(StoredMessage message) {
-            return searchResult.resultContainsUID(message.getUniqueMessageId());
+            return searchResult.resultContainsMessageId(message.getMessageId());
         }
     }
 

@@ -2,11 +2,12 @@ package com.subgraph.sgmail.ui.attachments;
 
 import com.subgraph.sgmail.attachments.StoredMessageAttachmentExtractor;
 import com.subgraph.sgmail.messages.MessageAttachment;
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.ui.Resources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Composite;
 
@@ -18,7 +19,7 @@ public class ImageAttachmentRenderer extends Composite {
     private final static int MARGIN_HEIGHT = 30;
     private final static int HEADER_SPACING = 10;
 
-    public static ImageAttachmentRenderer createForAttachment(Composite parent, StoredIMAPMessage message, MessageAttachment attachment) {
+    public static ImageAttachmentRenderer createForAttachment(Composite parent, StoredMessage message, MessageAttachment attachment) {
         final StoredMessageAttachmentExtractor extractor = new StoredMessageAttachmentExtractor(message);
         try {
             final InputStream stream = extractor.extractAttachment(attachment);

@@ -1,48 +1,58 @@
 package com.subgraph.sgmail.messages.impl;
 
 import com.db4o.activation.ActivationPurpose;
+import com.google.common.base.Charsets;
 import com.subgraph.sgmail.messages.MessageAttachment;
 import com.subgraph.sgmail.messages.MessageUser;
+import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.model.AbstractActivatable;
+import com.subgraph.sgmail.model.LocalMimeMessage;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 public class StoredMessageSummary extends AbstractActivatable {
 
-    private final StoredMessageRawData messageRawData;
-    private final long uniqueMessageId;
-    private final String subject;
-    private final String displayText;
+    private final byte[] subject;
+    private final byte[] bodySnippet;
     private final MessageUser sender;
-    private final List<MessageUser> recipients;
-    private final List<MessageAttachment> attachments;
+    private final StoredMessageContent content;
+    private int referenceCount;
 
-    StoredMessageSummary(Builder builder) {
-        this.messageRawData = builder.messageRawData;
-        this.uniqueMessageId = builder.uniqueMessageId;
-        this.subject = builder.subject;
-        this.displayText = builder.displayText;
-        this.sender = builder.sender;
-        this.recipients = builder.recipients;
-        this.attachments = builder.attachments;
+    private transient MimeMessage cachedMimeMessage;
+
+    StoredMessageSummary(StoredMessageBuilder builder, StoredMessageContent content) {
+        this(builder.subject.getBytes(Charsets.UTF_8), builder.bodySnippet.getBytes(Charsets.UTF_8), builder.sender, content);
+    }
+
+    StoredMessageSummary(byte[] subject, byte[] bodySnippet, MessageUser sender, StoredMessageContent content) {
+        this.subject = subject;
+        this.bodySnippet = bodySnippet;
+        this.sender = sender;
+        this.content = content;
     }
 
     byte[] getRawMessageBytes() {
         activate(ActivationPurpose.READ);
-        return messageRawData.getMessageBytes();
+        return content.getRawMessageBytes();
     }
 
     String getSubject() {
         activate(ActivationPurpose.READ);
-        return subject;
+        return new String(subject, Charsets.UTF_8);
     }
 
-    String getDisplayText() {
+    String getBodySnippet() {
         activate(ActivationPurpose.READ);
-        return displayText;
+        return new String(bodySnippet, Charsets.UTF_8);
+    }
+
+    String getBodyText() {
+        activate(ActivationPurpose.READ);
+        return content.getBodyText();
     }
 
     MessageUser getSender() {
@@ -50,45 +60,49 @@ public class StoredMessageSummary extends AbstractActivatable {
         return sender;
     }
 
-    List<MessageUser> getRecipients() {
+    List<MessageUser> getToRecipients() {
         activate(ActivationPurpose.READ);
-        return recipients;
+        return content.getToRecipients();
+    }
+
+    List<MessageUser> getCCRecipients() {
+        activate(ActivationPurpose.READ);
+        return content.getCCRecipients();
     }
 
     List<MessageAttachment> getAttachments() {
         activate(ActivationPurpose.READ);
-        return attachments;
+        return content.getAttachments();
     }
 
     InputStream getRawMessageStream() {
         return new ByteArrayInputStream(getRawMessageBytes());
     }
 
-    long getUniqueMessageId() {
+
+    synchronized MimeMessage toMimeMessage(StoredMessage msg) throws MessagingException {
         activate(ActivationPurpose.READ);
-        return uniqueMessageId;
+        if (cachedMimeMessage == null) {
+            cachedMimeMessage = new LocalMimeMessage(msg, model.getSession(), getRawMessageStream());
+        }
+        return cachedMimeMessage;
     }
 
-    static class Builder {
-        private StoredMessageRawData messageRawData;
-        private long uniqueMessageId;
-        private String subject;
-        private String displayText;
-        private MessageUser sender;
-        private List<MessageUser> recipients;
-        private List<MessageAttachment> attachments;
+    synchronized int incrementReferenceCount() {
+        referenceCount += 1;
+        return referenceCount;
+    }
 
-        Builder(byte[] rawBytes) {
-            messageRawData = new StoredMessageRawData(rawBytes);
-            recipients = new ArrayList<>();
-            attachments = new ArrayList<>();
+    synchronized int decrementReferenceCount() {
+        if(referenceCount <= 0) {
+            throw new IllegalStateException("decrementReferenceCount() called while referenceCount == "+ referenceCount);
         }
+        referenceCount -= 1;
+        return referenceCount;
 
-        Builder uniqueMessageId(long value) { uniqueMessageId = value; return this; }
-        Builder subject(String value) { subject = value; return this; }
-        Builder displayText(String value) { displayText = value; return this; }
-        Builder sender(MessageUser value) { sender = value; return this; }
-        Builder addRecipient(MessageUser value) { recipients.add(value); return this; }
-        Builder addAttachment(MessageAttachment value) { attachments.add(value); return this; }
+    }
+
+    synchronized int getReferenceCount() {
+        return referenceCount;
     }
 }

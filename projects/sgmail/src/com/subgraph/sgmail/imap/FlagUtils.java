@@ -1,4 +1,4 @@
-package com.subgraph.sgmail.messages.impl;
+package com.subgraph.sgmail.imap;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
@@ -14,7 +14,7 @@ public class FlagUtils {
         return((flagBits & flag) == flag);
     }
 
-    private final static BiMap<Flags.Flag, Long> flagMap = new ImmutableBiMap.Builder<Flags.Flag, Long>()
+    private final static BiMap<Flags.Flag, Integer> flagMap = new ImmutableBiMap.Builder<Flags.Flag, Integer>()
             .put(Flags.Flag.ANSWERED, StoredMessage.FLAG_ANSWERED)
             .put(Flags.Flag.DELETED, StoredMessage.FLAG_DELETED)
             .put(Flags.Flag.DRAFT, StoredMessage.FLAG_DRAFT)
@@ -24,20 +24,19 @@ public class FlagUtils {
             .build();
 
 
-
-    public static long getFlagsFromMessage(Message message) throws MessagingException {
+    public static int getFlagsFromMessage(Message message) throws MessagingException {
         return getFlagBitsFromFlags(message.getFlags());
     }
 
-    public static long getFlagBitFromFlag(Flags.Flag flag) {
+    public static int getFlagBitFromFlag(Flags.Flag flag) {
         if(flagMap.containsKey(flag)) {
             return flagMap.get(flag);
         } else {
             return 0;
         }
     }
-    public static long getFlagBitsFromFlags(Flags flags) {
-        long flagBits = 0;
+    public static int getFlagBitsFromFlags(Flags flags) {
+        int flagBits = 0;
         for(Flags.Flag f: flagMap.keySet()) {
             if(flags.contains(f)) {
                 flagBits |= flagMap.get(f);

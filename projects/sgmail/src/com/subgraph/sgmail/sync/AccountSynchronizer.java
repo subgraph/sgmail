@@ -1,11 +1,9 @@
 package com.subgraph.sgmail.sync;
 
-import com.subgraph.sgmail.accounts.IMAPAccount;
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.imap.IMAPAccount;
 import com.subgraph.sgmail.model.Model;
 import com.sun.mail.imap.IMAPStore;
 
-import javax.mail.Flags.Flag;
 import javax.mail.MessagingException;
 import java.util.logging.Logger;
 
@@ -24,7 +22,7 @@ public class AccountSynchronizer {
 	public AccountSynchronizer(Model model, IMAPAccount account) {
 		this.model = model;
 		this.account = account;
-		this.remoteStore = (IMAPStore) account.getRemoteStore();
+		this.remoteStore = account.getRemoteStore();
 	}
 
 	public synchronized void stop() {
@@ -53,10 +51,12 @@ public class AccountSynchronizer {
 		isRunning = true;
 	}
 
+    /*
 	public void updateFlags(StoredIMAPMessage message, Flag flag, boolean isSet) {
 		final UpdateFlagsTask task = new UpdateFlagsTask(remoteStore, message, flag, isSet);
         model.getExecutor().execute(task);
 	}
+	*/
 
 	IMAPStore getRemoteStore() {
 		return remoteStore;

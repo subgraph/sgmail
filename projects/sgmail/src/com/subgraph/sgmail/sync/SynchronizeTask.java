@@ -1,7 +1,7 @@
 package com.subgraph.sgmail.sync;
 
-import com.subgraph.sgmail.accounts.IMAPAccount;
-import com.subgraph.sgmail.messages.StoredIMAPFolder;
+import com.subgraph.sgmail.imap.IMAPAccount;
+import com.subgraph.sgmail.imap.LocalIMAPFolder;
 import com.subgraph.sgmail.model.Model;
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.IMAPStore;
@@ -119,7 +119,7 @@ public class SynchronizeTask implements Runnable {
 	}
 
 	private void synchronizeFolder(IMAPFolder remoteFolder) throws MessagingException {
-		final StoredIMAPFolder localFolder = account.getFolderByName(remoteFolder.getFullName());
+		final LocalIMAPFolder localFolder = account.getFolderByName(remoteFolder.getFullName());
 
 		openRemote(remoteFolder);
 		final ClientToServerSynchronize c2s = new ClientToServerSynchronize(localFolder, remoteFolder);
@@ -135,7 +135,7 @@ public class SynchronizeTask implements Runnable {
 	}
 	
 	private void idleFolder(IMAPFolder remoteFolder) throws MessagingException {
-		final StoredIMAPFolder localFolder = account.getFolderByName(remoteFolder.getFullName());
+		final LocalIMAPFolder localFolder = account.getFolderByName(remoteFolder.getFullName());
 		openRemote(remoteFolder);
 		final ServerToClientFolderSynchronize s2c = new ServerToClientFolderSynchronize(model, account, remoteFolder, localFolder, stopFlag);
 		idleFolder = remoteFolder;

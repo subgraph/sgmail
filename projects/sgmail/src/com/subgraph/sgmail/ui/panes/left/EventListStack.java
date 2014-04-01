@@ -6,7 +6,7 @@ import ca.odell.glazedlists.GroupingList;
 import ca.odell.glazedlists.calculation.Calculation;
 import ca.odell.glazedlists.calculation.Calculations;
 import ca.odell.glazedlists.matchers.Matcher;
-import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.accounts.Account;
 import com.subgraph.sgmail.messages.StoredFolder;
 import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.messages.StoredMessageLabel;
@@ -17,7 +17,7 @@ import java.util.List;
 
 public class EventListStack {
 
-    public static EventListStack createForIMAPAccount(IMAPAccount imapAccount, SearchMatcherEditor searchMatcherEditor) {
+    public static EventListStack createForAccount(Account imapAccount, SearchMatcherEditor searchMatcherEditor) {
         return create(imapAccount.getMessageEventList(), searchMatcherEditor, null);
     }
 
@@ -26,11 +26,7 @@ public class EventListStack {
     }
 
     public static EventListStack createForLabel(StoredMessageLabel label, SearchMatcherEditor searchMatcherEditor) {
-        if(!(label.getAccount() instanceof IMAPAccount)) {
-            throw new IllegalArgumentException("Label is not associated with IMAPAccount");
-        }
-        final IMAPAccount imapAccount = (IMAPAccount) label.getAccount();
-        return create(imapAccount.getMessageEventList(), searchMatcherEditor, label);
+        return create(label.getAccount().getMessageEventList(), searchMatcherEditor, label);
     }
 
     private static EventListStack create(EventList<StoredMessage> messages, SearchMatcherEditor searchMatcherEditor, StoredMessageLabel label) {
@@ -120,7 +116,7 @@ public class EventListStack {
         }
         @Override
         public boolean matches(StoredMessage message) {
-            return message.getLabels().contains(label);
+            return message.containsLabel(label);
         }
     }
 

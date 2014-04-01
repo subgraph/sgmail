@@ -1,16 +1,16 @@
 package com.subgraph.sgmail.events;
 
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.messages.StoredMessage;
 
 public class MessageStateChangedEvent {
 
-	private final StoredIMAPMessage message;
+	private final StoredMessage message;
 
-    public MessageStateChangedEvent(StoredIMAPMessage message) {
+    public MessageStateChangedEvent(StoredMessage message) {
 		this.message = message;
 	}
 	
-	public StoredIMAPMessage getMessage() {
+	public StoredMessage getMessage() {
 		return message;
 	}
 }

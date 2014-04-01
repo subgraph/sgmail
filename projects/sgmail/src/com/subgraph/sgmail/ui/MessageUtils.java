@@ -2,7 +2,7 @@ package com.subgraph.sgmail.ui;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.messages.StoredMessage;
 import org.eclipse.swt.graphics.GC;
 
 import javax.mail.Address;
@@ -27,7 +27,7 @@ public class MessageUtils {
 	private final static SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
 	private final static SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd");
 
-    public static String getSubject(StoredIMAPMessage message) {
+    public static String getSubject(StoredMessage message) {
         try {
             return getSubject(message.toMimeMessage());
         } catch (MessagingException e) {

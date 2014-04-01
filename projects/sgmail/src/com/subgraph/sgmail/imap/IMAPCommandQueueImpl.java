@@ -1,4 +1,4 @@
-package com.subgraph.sgmail.messages.impl;
+package com.subgraph.sgmail.imap;
 
 import com.db4o.activation.ActivationPurpose;
 import com.db4o.collections.ActivatableLinkedList;

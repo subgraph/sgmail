@@ -34,6 +34,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="lucene-queryparser-4.7.0" level="project" />
+    <orderEntry type="library" name="trove-3.1a1" level="project" />
   </component>
   <component name="org.twodividedbyzero.idea.findbugs">
     <option name="_basePreferences">

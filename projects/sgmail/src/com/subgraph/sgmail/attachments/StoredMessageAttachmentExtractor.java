@@ -1,7 +1,7 @@
 package com.subgraph.sgmail.attachments;
 
 import com.subgraph.sgmail.messages.MessageAttachment;
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.messages.StoredMessage;
 
 import javax.mail.MessagingException;
 import javax.mail.Part;
@@ -14,7 +14,7 @@ import java.util.List;
 
 public class StoredMessageAttachmentExtractor {
 
-    private final StoredIMAPMessage message;
+    private final StoredMessage message;
 
     public static class AttachmentExtractionException extends Exception {
         public AttachmentExtractionException(String message) {
@@ -26,7 +26,7 @@ public class StoredMessageAttachmentExtractor {
         }
     }
 
-    public StoredMessageAttachmentExtractor(StoredIMAPMessage message) {
+    public StoredMessageAttachmentExtractor(StoredMessage message) {
         this.message = message;
     }
 

@@ -9,10 +9,12 @@ public class StoredMessageLabelImpl extends AbstractActivatable implements Store
 
     private final Account account;
     private final String name;
+    private final int index;
 
-    public StoredMessageLabelImpl(Account account, String name) {
+    public StoredMessageLabelImpl(Account account, String name, int index) {
         this.account = account;
         this.name = name;
+        this.index = index;
     }
 
     @Override
@@ -25,5 +27,11 @@ public class StoredMessageLabelImpl extends AbstractActivatable implements Store
     public String getName() {
         activate(ActivationPurpose.READ);
         return name;
+    }
+
+    @Override
+    public int getIndex() {
+        activate(ActivationPurpose.READ);
+        return index;
     }
 }

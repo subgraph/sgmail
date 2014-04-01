@@ -4,6 +4,7 @@ import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 import com.db4o.activation.ActivationPurpose;
 import com.db4o.collections.ActivatableArrayList;
+import com.subgraph.sgmail.accounts.Account;
 import com.subgraph.sgmail.messages.MessageAttachment;
 import com.subgraph.sgmail.messages.StoredFolder;
 import com.subgraph.sgmail.messages.StoredMessage;
@@ -20,11 +21,13 @@ public class StoredFolderImpl extends AbstractActivatable implements StoredFolde
     // This list must be an 'activatable' implementation because it will be
     // wrapped and manipulated by glazed lists
     private final ArrayList<StoredMessage> messages = new ActivatableArrayList<>();
+    private final Account account;
     private String name;
 
     private transient EventList<StoredMessage> messageEventList;
 
-    public StoredFolderImpl(String name) {
+    public StoredFolderImpl(Account account, String name) {
+        this.account = checkNotNull(account);
         this.name = checkNotNull(name);
     }
 
@@ -41,17 +44,6 @@ public class StoredFolderImpl extends AbstractActivatable implements StoredFolde
     }
 
     @Override
-    public List<StoredMessage> getMessages() {
-        final EventList<StoredMessage> eventList = getMessageEventList();
-        eventList.getReadWriteLock().readLock().lock();
-        try {
-            return new ArrayList<>(eventList);
-        } finally {
-            eventList.getReadWriteLock().readLock().unlock();;
-        }
-    }
-
-    @Override
     @SuppressWarnings("deprecation")
     public EventList<StoredMessage> getMessageEventList() {
         activate(ActivationPurpose.READ);
@@ -64,6 +56,7 @@ public class StoredFolderImpl extends AbstractActivatable implements StoredFolde
         }
     }
 
+    /*
     @Override
     public boolean hasNewMessages() {
         final EventList<StoredMessage> eventList = getMessageEventList();
@@ -79,6 +72,7 @@ public class StoredFolderImpl extends AbstractActivatable implements StoredFolde
             eventList.getReadWriteLock().readLock().unlock();
         }
     }
+    */
 
     @Override
     public int getMessageCount() {
@@ -101,7 +95,7 @@ public class StoredFolderImpl extends AbstractActivatable implements StoredFolde
         eventList.getReadWriteLock().writeLock().lock();
         try {
             eventList.add(message);
-            message.setFolder(this);
+            message.incrementReferenceCount();
         } finally {
             eventList.getReadWriteLock().writeLock().unlock();
             model.commit();
@@ -159,6 +153,9 @@ public class StoredFolderImpl extends AbstractActivatable implements StoredFolde
         final EventList<StoredMessage> eventList = getMessageEventList();
         eventList.getReadWriteLock().writeLock().lock();
         try {
+            for (StoredMessage msg: eventList) {
+                msg.decrementReferenceCount();
+            }
             eventList.clear();
         } finally {
             eventList.getReadWriteLock().writeLock().unlock();

@@ -1,6 +1,6 @@
 package com.subgraph.sgmail.model;
 
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.messages.StoredMessage;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -11,15 +11,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class LocalMimeMessage extends MimeMessage {
 	
-	private final StoredIMAPMessage storedMessage;
+	private final StoredMessage storedMessage;
 	
-	public LocalMimeMessage(StoredIMAPMessage storedMessage, Session session, InputStream is)
+	public LocalMimeMessage(StoredMessage storedMessage, Session session, InputStream is)
 			throws MessagingException {
 		super(session, is);
 		this.storedMessage = checkNotNull(storedMessage);
 	}
 	
-	public StoredIMAPMessage getStoredMessage() {
+	public StoredMessage getStoredMessage() {
 		return storedMessage;
 	}
 }

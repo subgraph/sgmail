@@ -1,11 +1,9 @@
 package com.subgraph.sgmail.ui.dialogs;
 
 import com.google.common.net.InternetDomainName;
-import com.subgraph.sgmail.accounts.Accounts;
-import com.subgraph.sgmail.accounts.AuthenticationCredentials;
-import com.subgraph.sgmail.accounts.IMAPAccount;
-import com.subgraph.sgmail.accounts.SMTPAccount;
-import com.subgraph.sgmail.accounts.impl.IMAPAccountImpl;
+import com.subgraph.sgmail.accounts.MailAccount;
+import com.subgraph.sgmail.accounts.ServerDetails;
+import com.subgraph.sgmail.imap.IMAPAccount;
 import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.model.Preferences;
 import com.subgraph.sgmail.servers.ServerInformation;
@@ -148,30 +146,24 @@ public class AccountDetailsPage extends WizardPage {
 	}
 
     IMAPAccount createIMAPAccount() {
-        final ServerInformation imapServer = getIncomingServer();
-        final boolean isGmail = imapServer.getHostname().endsWith(".googlemail.com");
-        final AuthenticationCredentials auth = Accounts.createPasswordCredential(getIncomingLogin(), getPassword());
-
-        return new IMAPAccountImpl.Builder()
-                .login(getIncomingLogin())
-                .emailAddress(addressField.getText())
-                .label(addressField.getText())
-                .smtpAccount(createSMTPAccount())
-                .hostname(imapServer.getHostname())
-                .onion(imapServer.getOnionHostname())
-                .port(imapServer.getPort())
-                .realname(getRealname())
-                .password(getPassword())
-                .build();
+        final ServerDetails smtpServer = createServerDetails(getOutgoingServer(), "smtps", getOutgoingLogin(), getPassword());
+        final String imapProtocol = getIMAPProtocol(getIncomingServer());
+        final ServerDetails imapServer = createServerDetails(getIncomingServer(), imapProtocol, getIncomingLogin(), getPassword());
+        final MailAccount mailAccount = MailAccount.create(addressField.getText(), addressField.getText(), getRealname(), smtpServer);
+        return new IMAPAccount(mailAccount, imapServer);
     }
 
-    private SMTPAccount createSMTPAccount() {
-        final ServerInformation smtpServer = getOutgoingServer();
-        final String hostname = smtpServer.getHostname();
-        final int port = smtpServer.getPort();
-        final String login = getOutgoingLogin();
-        final String password = getPassword();
-        return Accounts.createSMTPAccount(hostname,port, login, password);
+    private String getIMAPProtocol(ServerInformation imapServer) {
+        final String hostname = imapServer.getHostname();
+        if(hostname.endsWith("gmail.com") || hostname.endsWith("googlemail.com")) {
+            return "gimaps";
+        } else {
+            return "imaps";
+        }
+    }
+
+    private ServerDetails createServerDetails(ServerInformation info, String protocol, String login, String password) {
+        return ServerDetails.create(protocol, info.getHostname(), info.getOnionHostname(), info.getPort(), login, password);
     }
 	
 	@Override

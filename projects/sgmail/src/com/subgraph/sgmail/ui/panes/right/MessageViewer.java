@@ -4,7 +4,6 @@ import com.google.common.base.Charsets;
 import com.google.common.eventbus.Subscribe;
 import com.subgraph.sgmail.events.MessageStateChangedEvent;
 import com.subgraph.sgmail.messages.MessageAttachment;
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
 import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.model.LocalMimeMessage;
 import com.subgraph.sgmail.model.Model;
@@ -76,7 +75,7 @@ public class MessageViewer extends Composite {
 
         for (MessageAttachment attachment : message.getAttachments()) {
             if(attachment.getMimePrimaryType().equalsIgnoreCase("image")) {
-                ImageAttachmentRenderer renderer = ImageAttachmentRenderer.createForAttachment(this, (StoredIMAPMessage) message, attachment);
+                ImageAttachmentRenderer renderer = ImageAttachmentRenderer.createForAttachment(this, message, attachment);
                 if(renderer != null) {
                     final GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
                     gd.heightHint = 200;
@@ -172,7 +171,7 @@ public class MessageViewer extends Composite {
 		if(!(decryptedMessage instanceof LocalMimeMessage)) {
 			return;
 		}
-		final StoredIMAPMessage sm = ((LocalMimeMessage) decryptedMessage).getStoredMessage();
+		final StoredMessage sm = ((LocalMimeMessage) decryptedMessage).getStoredMessage();
         if(!sm.isFlagSet(StoredMessage.FLAG_SEEN)) {
             sm.addFlag(StoredMessage.FLAG_SEEN);
 			model.commit();

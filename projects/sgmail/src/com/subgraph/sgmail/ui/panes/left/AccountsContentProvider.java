@@ -3,8 +3,7 @@ package com.subgraph.sgmail.ui.panes.left;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 import com.subgraph.sgmail.accounts.Account;
-import com.subgraph.sgmail.accounts.IMAPAccount;
-import com.subgraph.sgmail.messages.StoredIMAPFolder;
+import com.subgraph.sgmail.messages.StoredFolder;
 import com.subgraph.sgmail.model.AccountList;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -45,10 +44,6 @@ public class AccountsContentProvider implements ITreeContentProvider, ListEventL
         return getRootElements();
 	}
 
-    private void addLabelsFromIMAPAccount(IMAPAccount account, List<Object> elements) {
-        elements.addAll(account.getMessageLabels());
-    }
-	
 	private Object[] getRootElements() {
         if(accountList == null) {
             return new Object[0];
@@ -56,9 +51,7 @@ public class AccountsContentProvider implements ITreeContentProvider, ListEventL
 		final List<Object> elems = new ArrayList<>();
         for(Account a: accountList.getAccounts()) {
             elems.add(a);
-            if(a instanceof IMAPAccount) {
-                addLabelsFromIMAPAccount((IMAPAccount) a, elems);
-            }
+            elems.addAll(a.getMessageLabels());
         }
         return elems.toArray();
 	}
@@ -67,16 +60,16 @@ public class AccountsContentProvider implements ITreeContentProvider, ListEventL
 	public Object[] getChildren(Object parentElement) {
         if(parentElement instanceof AccountList) {
 			return getRootElements();
-		} else if(parentElement instanceof IMAPAccount) {
-			return getChildrenOfAccount((IMAPAccount) parentElement);
+		} else if(parentElement instanceof Account) {
+			return getChildrenOfAccount((Account) parentElement);
 		} else {
 			return null;
 		}
 	}
 
-	private Object[] getChildrenOfAccount(IMAPAccount account) {
+	private Object[] getChildrenOfAccount(Account account) {
         final List<Object> result = new ArrayList<>();
-		for(StoredIMAPFolder f: account.getFolders()) {
+		for(StoredFolder f: account.getFolders()) {
 			result.add(f);
 		}
 		return result.toArray();
@@ -92,8 +85,8 @@ public class AccountsContentProvider implements ITreeContentProvider, ListEventL
 	public boolean hasChildren(Object element) {
         if(element instanceof AccountList) {
             return !(accountList == null || accountList.getAccounts().isEmpty());
-		} else if(element instanceof IMAPAccount) {
-			return getChildrenOfAccount((IMAPAccount) element).length > 0;
+		} else if(element instanceof Account) {
+			return getChildrenOfAccount((Account) element).length > 0;
 		} else {
 			return false;
 		}

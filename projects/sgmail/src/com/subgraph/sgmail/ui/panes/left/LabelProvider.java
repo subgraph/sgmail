@@ -1,7 +1,7 @@
 package com.subgraph.sgmail.ui.panes.left;
 
 import com.subgraph.sgmail.accounts.Account;
-import com.subgraph.sgmail.messages.StoredIMAPFolder;
+import com.subgraph.sgmail.messages.StoredFolder;
 import com.subgraph.sgmail.messages.StoredMessageLabel;
 import com.subgraph.sgmail.ui.ImageCache;
 import com.subgraph.sgmail.ui.Resources;
@@ -121,8 +121,8 @@ public class LabelProvider extends OwnerDrawLabelProvider {
 	}
 	
 	private String getText(Object element) {
-        if(element instanceof StoredIMAPFolder) {
-			final StoredIMAPFolder folder = (StoredIMAPFolder) element;
+        if(element instanceof StoredFolder) {
+			final StoredFolder folder = (StoredFolder) element;
 			return folder.getName();
 		} else if(element instanceof Account) {
 			return ((Account)element).getLabel();

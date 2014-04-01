@@ -1,6 +1,5 @@
 package com.subgraph.sgmail.search.impl;
 
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
 import com.subgraph.sgmail.messages.StoredMessage;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -71,7 +70,7 @@ class MessageIndexWriter {
         }
     }
 
-    public void removeMessage(StoredIMAPMessage message) {
+    public void removeMessage(StoredMessage message) {
         synchronized (lock) {
             if(!isClosed) {
                 //indexWriter.deleteDocuments(new Term("uid", ""));

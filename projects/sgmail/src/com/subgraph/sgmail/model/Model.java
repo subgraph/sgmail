@@ -21,13 +21,16 @@ import com.subgraph.sgmail.identity.PublicIdentityCache;
 import com.subgraph.sgmail.identity.client.IdentityServerManager;
 import com.subgraph.sgmail.search.MessageSearchIndex;
 import com.subgraph.sgmail.sync.SynchronizationManager;
+import gnu.trove.impl.hash.THash;
+import gnu.trove.impl.hash.TIntHash;
+import gnu.trove.impl.hash.TLongIntHash;
+import gnu.trove.impl.hash.TPrimitiveHash;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.map.hash.TLongIntHashMap;
 
 import javax.mail.Session;
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
@@ -36,6 +39,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Model {
 
+    private final static List<Class> CLASSES_WITH_TRANSIENT_FIELDS = Arrays.asList(
+            THash.class, TPrimitiveHash.class, TLongIntHash.class,
+            TLongIntHashMap.class, TIntObjectHashMap.class, TIntHash.class);
 	private final static Logger logger = Logger.getLogger(Model.class.getName());
 	
 	private final static String DATABASE_FILENAME = "mail.db";
@@ -133,10 +139,13 @@ public class Model {
     }
 
 	public void open() {
-		synchronized(dbLock) {
+        synchronized(dbLock) {
 			checkClosed();
 			final EmbeddedConfiguration config = Db4oEmbedded.newConfiguration();
-			config.common().add(new TransparentPersistenceSupport(new DeactivatingRollbackStrategy()));
+            config.common().add(new TransparentPersistenceSupport(new DeactivatingRollbackStrategy()));
+            for (Class aClass : CLASSES_WITH_TRANSIENT_FIELDS) {
+                config.common().objectClass(aClass).storeTransientFields(true);
+            }
 			databaseDirectory.mkdirs();
 			File dbFile = new File(databaseDirectory, DATABASE_FILENAME);
 			db = Db4oEmbedded.openFile(config, dbFile.getPath());
@@ -270,6 +279,20 @@ public class Model {
         return accountList;
     }
 
+    public int getUniqueId() {
+        return getUniqueIdGenerator().next();
+    }
+
+    private synchronized UniqueIdGenerator getUniqueIdGenerator() {
+        final UniqueIdGenerator gen = getModelSingleton(UniqueIdGenerator.class);
+        if(gen == null) {
+            return storeNewObject(new UniqueIdGenerator());
+        } else {
+            return gen;
+        }
+    }
+
+
 	public StoredPreferences getRootStoredPreferences() {
 		final StoredPreferences result = getModelSingleton(StoredRootPreferences.class);
 		return (result != null) ? (result) 
@@ -292,7 +315,7 @@ public class Model {
 		return newObject;
 	}
 
-	private <T> T getModelSingleton(Class<T> klass) {
+	public <T> T getModelSingleton(Class<T> klass) {
 		checkOpened();
 		final ObjectSet<T> result = db.query(klass);
         if(result.size() == 0) {

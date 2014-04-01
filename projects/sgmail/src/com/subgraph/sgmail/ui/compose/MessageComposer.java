@@ -1,7 +1,7 @@
 package com.subgraph.sgmail.ui.compose;
 
 import com.google.common.base.Charsets;
-import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.accounts.MailAccount;
 import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.ui.MessageBodyUtils;
 import org.eclipse.swt.SWT;
@@ -118,7 +118,7 @@ public class MessageComposer extends Composite {
         transmitMessage(msg, state.getSelectedAccount());
 	}
 
-	private void transmitMessage(MimeMessage message, IMAPAccount account) {
+	private void transmitMessage(MimeMessage message, MailAccount account) {
 		buttonSection.setProgressVisible(true);
 		buttonSection.setProgressMessage("Sending...");
 		new Thread(new SendMailTask(this, message, account)).start();

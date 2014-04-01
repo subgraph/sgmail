@@ -3,7 +3,6 @@ package com.subgraph.sgmail.ui.attachments;
 import com.google.common.io.Files;
 import com.subgraph.sgmail.attachments.StoredMessageAttachmentExtractor;
 import com.subgraph.sgmail.messages.MessageAttachment;
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
 import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.ui.Resources;
 import org.eclipse.jface.resource.JFaceResources;
@@ -118,7 +117,7 @@ public class AttachmentPanel extends Composite {
     }
 
     private void performSaveAttachment(String path, AttachmentPanelItem item) {
-        final StoredMessageAttachmentExtractor extractor = new StoredMessageAttachmentExtractor((StoredIMAPMessage) message);
+        final StoredMessageAttachmentExtractor extractor = new StoredMessageAttachmentExtractor(message);
         try {
             final InputStream inputStream = extractor.extractAttachment(item.getAttachment());
             saveAttachmentStream(path, inputStream);

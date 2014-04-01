@@ -1,10 +1,10 @@
 package com.subgraph.sgmail.sync;
 
-import com.subgraph.sgmail.accounts.IMAPAccount;
 import com.subgraph.sgmail.events.MessageStateChangedEvent;
-import com.subgraph.sgmail.messages.StoredIMAPFolder;
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
-import com.subgraph.sgmail.messages.impl.FlagUtils;
+import com.subgraph.sgmail.imap.IMAPAccount;
+import com.subgraph.sgmail.imap.LocalIMAPFolder;
+import com.subgraph.sgmail.messages.StoredMessage;
+import com.subgraph.sgmail.imap.FlagUtils;
 import com.subgraph.sgmail.model.Model;
 import com.sun.mail.gimap.GmailFolder;
 import com.sun.mail.imap.IMAPFolder;
@@ -12,6 +12,8 @@ import com.sun.mail.imap.IMAPFolder.FetchProfileItem;
 import com.sun.mail.imap.IMAPMessage;
 import com.sun.mail.imap.IMAPStore;
 import com.sun.mail.imap.ModifiedSinceTerm;
+import gnu.trove.iterator.TLongIterator;
+import gnu.trove.list.TLongList;
 
 import javax.mail.FetchProfile;
 import javax.mail.Message;
@@ -21,8 +23,9 @@ import javax.mail.event.MessageCountEvent;
 import javax.mail.event.MessageCountListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -35,11 +38,11 @@ public class ServerToClientFolderSynchronize  {
 	private final Model model;
 	private final IMAPAccount account;
 	private final IMAPFolder remoteFolder;
-	private final StoredIMAPFolder localFolder;
+	private final LocalIMAPFolder localFolder;
 	private final AtomicBoolean stopFlag;
     private final StoredIMAPMessageFactory imapMessageFactory = new StoredIMAPMessageFactory();
 
-    public ServerToClientFolderSynchronize(Model model, IMAPAccount account, IMAPFolder remoteFolder, StoredIMAPFolder localFolder, AtomicBoolean stopFlag) {
+    public ServerToClientFolderSynchronize(Model model, IMAPAccount account, IMAPFolder remoteFolder, LocalIMAPFolder localFolder, AtomicBoolean stopFlag) {
 		this.model = model;
 		this.account = account;
 		this.remoteFolder = remoteFolder;
@@ -131,7 +134,7 @@ public class ServerToClientFolderSynchronize  {
 	}
 
 	private void loadFullUIDMapping() throws MessagingException {
-		final List<Long> localUIDs = localFolder.getUIDMap();
+        final TLongList localUIDs = localFolder.getUIDMap();
 		final Message[] messages = loadRemoteUIDMapping();
 		final List<Long> remoteUIDs = getMessageUIDs(messages);
 	
@@ -150,7 +153,7 @@ public class ServerToClientFolderSynchronize  {
                     return;
                 }
                 if (!(m instanceof IMAPMessage)) {
-                    logger.warning("Message is not an IMAPMessage " + m);
+                    logger.warning("Message is not an LocalIMAPMessage " + m);
                 } else {
                     storeNewMessage(executor, (IMAPMessage) m);
                 }
@@ -179,8 +182,9 @@ public class ServerToClientFolderSynchronize  {
     }
 
     private void storeNewMessage(ExecutorService executor, IMAPMessage message) throws MessagingException, IOException {
-        final StoredIMAPMessage storedMessage = imapMessageFactory.createFromJavamailMessage(account, message, remoteFolder.getUID(message));
-        executor.submit(new StoreMessageTask(storedMessage, localFolder, model.getMessageSearchIndex()));
+        final long messageUID = remoteFolder.getUID(message);
+        final StoredMessage storedMessage = imapMessageFactory.createFromJavamailMessage(account, message);
+        executor.submit(new StoreMessageTask(storedMessage, messageUID, localFolder, model.getMessageSearchIndex()));
     }
 
 	private void fetchDetails(Message[] messages) throws MessagingException {
@@ -202,10 +206,10 @@ public class ServerToClientFolderSynchronize  {
 		return result;
 	}
 
-	private List<Long> expungeMissingLocal(List<Long> localUIDs, List<Long> remoteUIDs) {
-		final List<Long> expungeUIDs = new ArrayList<>();
+	private List<Long> expungeMissingLocal(TLongList localUIDs, List<Long> remoteUIDs) {
+		final Set<Long> expungeUIDs = new HashSet<>();
 		final List<Long> newUIDs = new ArrayList<>();
-		final Iterator<Long> it = localUIDs.iterator();
+		final TLongIterator it = localUIDs.iterator();
 		
 		long localUID;
 		for(long uid: remoteUIDs) {
@@ -241,7 +245,6 @@ public class ServerToClientFolderSynchronize  {
 	
 	
 	private void synchronizeFlags() throws MessagingException {
-		System.out.println("synchronizing flags...");
 		if(localFolder.getUIDNext() == 0) {
 			return;
 		}
@@ -284,8 +287,8 @@ public class ServerToClientFolderSynchronize  {
 		if(localFolder.getMessageCount() < m.getMessageNumber()) {
 			return;
 		}
-		final StoredIMAPMessage localMessage = localFolder.getMessageByMessageNumber(m.getMessageNumber());
-        final long flagBits = FlagUtils.getFlagsFromMessage(m);
+		final StoredMessage localMessage = localFolder.getMessageByMessageNumber(m.getMessageNumber());
+        final int flagBits = FlagUtils.getFlagsFromMessage(m);
 		if(localMessage.getFlags() != flagBits) {
 			localMessage.setFlags(flagBits);
 			model.postEvent(new MessageStateChangedEvent(localMessage));
@@ -315,7 +318,7 @@ public class ServerToClientFolderSynchronize  {
 	}
 	
 	private void processMessagesRemoved(Message[] messages) {
-		final List<Long> uids = new ArrayList<>();
+		final Set<Long> uids = new HashSet<>();
 		try {
 			for(Message m: messages) {
 				uids.add(remoteFolder.getUID(m));

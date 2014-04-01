@@ -1,7 +1,7 @@
 package com.subgraph.sgmail.ui.panes.middle;
 
 import com.google.common.collect.Range;
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.google.common.collect.RangeSet;
 import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.search.HighlightedString;
 import com.subgraph.sgmail.search.SearchResult;
@@ -22,6 +22,16 @@ import java.util.*;
 
 
 public class ConversationRenderer {
+    private static class HighlightCacheEntry {
+        final String string;
+        final RangeSet<Integer> highlightedRanges;
+        final List<Range<Integer>> ranges;
+        HighlightCacheEntry(String string, RangeSet<Integer> highlightedRanges, List<Range<Integer>> ranges) {
+            this.string = string;
+            this.highlightedRanges = highlightedRanges;
+            this.ranges = ranges;
+        }
+    }
 
 //  +-- Left margin                                  Right margin -+                                                           
 //  |                                                              |
@@ -94,6 +104,7 @@ public class ConversationRenderer {
 
     private final Object searchLock = new Object();
     private SearchResult searchResult;
+    private Map<Integer, HighlightCacheEntry> bodyHighlightCache = new HashMap<>();
 
 	/** Vertical offsets of each section, and Section.END is total height */
 	private final Map<Section, Integer> yMap = new HashMap<>();
@@ -106,6 +117,7 @@ public class ConversationRenderer {
     public void setSearchResult(SearchResult result) {
         synchronized (searchLock) {
             searchResult = result;
+            bodyHighlightCache.clear();
         }
     }
 
@@ -158,21 +170,21 @@ public class ConversationRenderer {
 
     void renderAll(Event event, List<StoredMessage> messages) {
        try {
-           if(messages.size() == 0 || !(messages.get(0) instanceof StoredIMAPMessage)) {
+           if(messages.size() == 0) {
                return;
            }
-           final StoredIMAPMessage imapMessage = (StoredIMAPMessage) messages.get(0);
-           final MimeMessage mm = ((StoredIMAPMessage) messages.get(0)).toMimeMessage();
+           final StoredMessage sm = messages.get(0);
+           final MimeMessage mm =  sm.toMimeMessage();
            if(hasNewMessage(messages)) {
                renderNewMessageDot(event);
            }
            synchronized (searchLock) {
-               if(searchResult != null && searchResult.resultContainsUID(imapMessage.getUniqueMessageId())) {
-                   renderHighlightedSubject(event, imapMessage);
-                   renderHighlightedBody(event, imapMessage);
+               if(searchResult != null && searchResult.resultContainsMessageId(sm.getMessageId())) {
+                   renderHighlightedSubject(event, sm);
+                   renderHighlightedBody(event, sm);
                } else {
-                   renderSubject(event, imapMessage.getSubject());
-                   renderBody(event, imapMessage.getDisplayText());
+                   renderSubject(event, sm.getSubject());
+                   renderBody(event, sm.getBodyText());
                }
            }
            renderSender(event, mm);
@@ -194,7 +206,7 @@ public class ConversationRenderer {
     }
 
     private void renderHighlightedSubject(Event event, StoredMessage msg) {
-        final HighlightedString highlightedSubject = searchResult.getHighlightedSubject(msg.getUniqueMessageId());
+        final HighlightedString highlightedSubject = searchResult.getHighlightedSubject(msg.getMessageId());
         final Color foreground = getEventColor(event, Section.SUBJECT);
         final Color highlightBackground = JFaceResources.getColorRegistry().get(Resources.COLOR_HIGHLIGHT_BACKGROUND);
         final Color highlightForeground = JFaceResources.getColorRegistry().get(Resources.COLOR_HIGHLIGHT_FOREGROUND);
@@ -208,11 +220,14 @@ public class ConversationRenderer {
         renderer.render(event.gc, x, y);
     }
 
-    private void renderHighlightedBody(Event event, StoredIMAPMessage msg) {
+    private void renderHighlightedBody(Event event, StoredMessage msg) {
+        HighlightCacheEntry entry = getHighlightDetails(event, msg.getMessageId());
+        /*
         final HighlightedString highlightedBody = searchResult.getHighlightedBody(msg.getUniqueMessageId());
         final int snippetStart = getSnippetStart(highlightedBody, 80);
         final BodySnippetGenerator gen = new BodySnippetGenerator(highlightedBody.getString(), event.width - (LEFT_MARGIN + RIGHT_MARGIN), event.gc);
         final List<Range<Integer>> ranges = gen.generateSnippetRanges(snippetStart);
+        */
         final Color foreground = getEventColor(event, Section.BODY);
         final Color highlightBackground = JFaceResources.getColorRegistry().get(Resources.COLOR_HIGHLIGHT_BACKGROUND);
         final Color highlightForeground = JFaceResources.getColorRegistry().get(Resources.COLOR_HIGHLIGHT_FOREGROUND);
@@ -220,12 +235,26 @@ public class ConversationRenderer {
         final TextLineRenderer.TextStyle highlighted = TextLineRenderer.createStyle(JFaceResources.getFont(Resources.FONT_BODY_SNIPPET_BOLD), highlightForeground, highlightBackground);
         final int x = event.x + LEFT_MARGIN;
         int y = event.y + Section.BODY.getYValue();
-        for(Range<Integer> r: ranges) {
-            TextLineRenderer renderer = TextLineRenderer.createHighlighted(highlightedBody.getString(), r, highlightedBody.getHighlightedRanges(), basic, highlighted);
+        for(Range<Integer> r: entry.ranges) {
+            // TextLineRenderer renderer = TextLineRenderer.createHighlighted(highlightedBody.getString(), r, highlightedBody.getHighlightedRanges(), basic, highlighted);
+            TextLineRenderer renderer = TextLineRenderer.createHighlighted(entry.string, r, entry.highlightedRanges, basic, highlighted);
             renderer.render(event.gc, x, y);
             y += Section.BODY.getFontHeight(event.gc);
         }
     }
+
+    // XXX need to regen cache on resize
+    HighlightCacheEntry getHighlightDetails(Event event, int uid) {
+        if(!bodyHighlightCache.containsKey(uid)) {
+            final HighlightedString highlightedBody = searchResult.getHighlightedBody(uid);
+            final int snippetStart = getSnippetStart(highlightedBody, 80);
+            final BodySnippetGenerator gen = new BodySnippetGenerator(highlightedBody.getString(), event.width - (LEFT_MARGIN + RIGHT_MARGIN), event.gc);
+            final List<Range<Integer>> ranges = gen.generateSnippetRanges(snippetStart);
+            bodyHighlightCache.put(uid, new HighlightCacheEntry(highlightedBody.getString(), highlightedBody.getHighlightedRanges(), ranges));
+        }
+        return bodyHighlightCache.get(uid);
+    }
+
 
     private int getSnippetStart(HighlightedString highlightedBody, int minOffset) {
         if(highlightedBody.getHighlightedRanges().isEmpty()) {

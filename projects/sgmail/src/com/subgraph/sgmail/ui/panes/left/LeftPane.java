@@ -2,7 +2,7 @@ package com.subgraph.sgmail.ui.panes.left;
 
 import ca.odell.glazedlists.GroupingList;
 import ca.odell.glazedlists.impl.matchers.TrueMatcher;
-import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.accounts.Account;
 import com.subgraph.sgmail.events.ConversationSourceSelectedEvent;
 import com.subgraph.sgmail.messages.StoredFolder;
 import com.subgraph.sgmail.messages.StoredMessage;
@@ -136,8 +136,8 @@ public class LeftPane extends Composite {
     }
 
     private EventListStack generateEventListStackFor(Object ob) {
-        if(ob instanceof IMAPAccount) {
-            return EventListStack.createForIMAPAccount((IMAPAccount) ob, searchMatcherEditor);
+        if(ob instanceof Account) {
+            return EventListStack.createForAccount((Account) ob, searchMatcherEditor);
         } else if(ob instanceof StoredFolder) {
             return EventListStack.createForFolder((StoredFolder) ob, searchMatcherEditor);
         } else if(ob instanceof StoredMessageLabel) {

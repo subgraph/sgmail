@@ -1,17 +1,16 @@
 package com.subgraph.sgmail.ui.preferences;
 
-import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.accounts.MailAccount;
+import com.subgraph.sgmail.model.Preferences;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
-
-import com.subgraph.sgmail.model.Preferences;
 
 public class AccountPreferencePage extends FieldEditorPreferencePage {
 	
 	private final IPreferenceStore store;
 	
-	AccountPreferencePage(IMAPAccount account) {
+	AccountPreferencePage(MailAccount account) {
 		super(GRID);
 		setTitle(account.getEmailAddress());
 		this.store = new PreferenceStoreAdapter(account.getPreferences());

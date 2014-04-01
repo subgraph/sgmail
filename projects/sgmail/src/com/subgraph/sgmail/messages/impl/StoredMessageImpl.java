@@ -1,75 +1,137 @@
 package com.subgraph.sgmail.messages.impl;
 
 import com.db4o.activation.ActivationPurpose;
-import com.db4o.collections.ActivatableHashSet;
-import com.google.common.collect.ImmutableSet;
-import com.subgraph.sgmail.messages.*;
+import com.subgraph.sgmail.messages.MessageAttachment;
+import com.subgraph.sgmail.messages.MessageUser;
+import com.subgraph.sgmail.messages.StoredMessage;
+import com.subgraph.sgmail.messages.StoredMessageLabel;
 import com.subgraph.sgmail.model.AbstractActivatable;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 public class StoredMessageImpl extends AbstractActivatable implements StoredMessage {
 
-    private final long conversationId;
-    private final long messageDate;
+    private final int messageId;
+    private final int conversationId;
+    private final int messageDate;
+
     protected final StoredMessageSummary summary;
 
-    private StoredFolder folder;
-    private long flags;
-    private Set<StoredMessageLabel> labels = new ActivatableHashSet<>();
+    private int flags;
+    private long labelBits;
+    private long[] extendedLabelBits;
 
-    protected StoredMessageImpl(long conversationId, long messageDate, StoredMessageSummary summary) {
-        this.conversationId = conversationId;
-        this.messageDate = messageDate;
+    StoredMessageImpl(StoredMessageBuilder builder, StoredMessageSummary summary) {
+        this.messageId = builder.messageId;
+        this.conversationId = builder.conversationId;
+        this.messageDate = builder.messageDate;
         this.summary = summary;
     }
 
     @Override
-    public long getUniqueMessageId() {
+    public int getMessageId() {
         activate(ActivationPurpose.READ);
-        return summary.getUniqueMessageId();
+        return messageId;
     }
 
-    public long getConversationId() {
+    public int getConversationId() {
        activate(ActivationPurpose.READ);
        return conversationId;
     }
 
-    public long getMessageDate() {
+    public int getMessageDate() {
         activate(ActivationPurpose.READ);
         return messageDate;
     }
 
     @Override
-    public StoredFolder getFolder() {
-        activate(ActivationPurpose.READ);
-        return folder;
-    }
-
-    @Override
-    public void setFolder(StoredFolder folder) {
-        activate(ActivationPurpose.WRITE);
-        this.folder = folder;
-    }
-
-    @Override
     public void addLabel(StoredMessageLabel label) {
         activate(ActivationPurpose.WRITE);
-        labels.add(label);
+        if(label.getIndex() > 64) {
+            addExtendedLabel(label);
+        } else {
+            labelBits |= getLabelBit(label);
+        }
     }
 
     @Override
     public void removeLabel(StoredMessageLabel label) {
         activate(ActivationPurpose.WRITE);
-        labels.remove(label);
+        if(label.getIndex() > 64) {
+            removeExtendedLabel(label);
+        } else {
+            labelBits &= ~getLabelBit(label);
+        }
     }
 
     @Override
-    public Set<StoredMessageLabel> getLabels() {
+    public boolean containsLabel(StoredMessageLabel label) {
         activate(ActivationPurpose.READ);
-        return ImmutableSet.copyOf(labels);
+        if(label.getIndex() > 64) {
+            return containsExtendedLabel(label);
+        } else {
+            final long bit = getLabelBit(label);
+            return (labelBits & bit) == bit;
+        }
+    }
+
+    private long getLabelBit(StoredMessageLabel label) {
+        if(label.getIndex() > 64) {
+            throw new IllegalArgumentException("Label has extended index: "+ label.getIndex());
+        }
+        return 1L << (label.getIndex() - 1);
+    }
+
+    void addExtendedLabel(StoredMessageLabel label) {
+        activate(ActivationPurpose.WRITE);
+        final int idx = getExtendedLabelWordIndex(label, true);
+        extendedLabelBits[idx] |= getExtendedLabelBit(label);
+    }
+
+    void removeExtendedLabel(StoredMessageLabel label) {
+        activate(ActivationPurpose.WRITE);
+        final int idx = getExtendedLabelWordIndex(label, true);
+        extendedLabelBits[idx] &= ~(getExtendedLabelBit(label));
+    }
+
+    boolean containsExtendedLabel(StoredMessageLabel label) {
+        activate(ActivationPurpose.WRITE);
+        if(extendedLabelBits == null) {
+            return false;
+        }
+        final int idx = getExtendedLabelWordIndex(label, false);
+        if(idx >= extendedLabelBits.length) {
+            return false;
+        }
+        final long bit = getExtendedLabelBit(label);
+        return (extendedLabelBits[idx] & bit) == bit;
+    }
+
+    private int getExtendedLabelWordIndex(StoredMessageLabel label, boolean ensure) {
+        if(label.getIndex() <= 64) {
+            throw new IllegalArgumentException("Label index is not an extended value: "+ label.getIndex());
+        }
+        final int idx = (label.getIndex() - 65) / 64;
+        if(ensure) {
+            ensureLabelWordIndexExists(idx);
+        }
+        return idx;
+    }
+
+    private void ensureLabelWordIndexExists(int idx) {
+        if(extendedLabelBits == null) {
+            extendedLabelBits = new long[idx + 1];
+        } else if(idx >= extendedLabelBits.length) {
+            extendedLabelBits = Arrays.copyOf(extendedLabelBits, idx + 1);
+        }
+    }
+
+    private long getExtendedLabelBit(StoredMessageLabel label) {
+        return (1L << (label.getIndex() - 1) % 64);
     }
 
     @Override
@@ -79,9 +141,15 @@ public class StoredMessageImpl extends AbstractActivatable implements StoredMess
     }
 
     @Override
-    public String getDisplayText() {
+    public String getBodySnippet() {
         activate(ActivationPurpose.READ);
-        return summary.getDisplayText();
+        return summary.getBodySnippet();
+    }
+
+    @Override
+    public String getBodyText() {
+        activate(ActivationPurpose.READ);
+        return summary.getBodyText();
     }
 
     @Override
@@ -97,36 +165,42 @@ public class StoredMessageImpl extends AbstractActivatable implements StoredMess
     }
 
     @Override
-    public List<MessageUser> getRecipients() {
+    public List<MessageUser> getToRecipients() {
         activate(ActivationPurpose.READ);
-        return summary.getRecipients();
+        return summary.getToRecipients();
     }
 
     @Override
-    public boolean isFlagSet(long flag) {
+    public List<MessageUser> getCCRecipients() {
+        activate(ActivationPurpose.READ);
+        return summary.getCCRecipients();
+    }
+
+    @Override
+    public boolean isFlagSet(int flag) {
         activate(ActivationPurpose.READ);
         return (flags & flag) == flag;
     }
 
     @Override
-    public long getFlags() {
+    public int getFlags() {
         activate(ActivationPurpose.READ);
         return flags;
     }
 
     @Override
-    public void setFlags(long value) {
+    public void setFlags(int value) {
         activate(ActivationPurpose.WRITE);
         this.flags = value;
     }
 
     @Override
-    public void addFlag(long flag) {
+    public void addFlag(int flag) {
         setFlags(getFlags() | flag);
     }
 
     @Override
-    public void removeFlag(long flag) {
+    public void removeFlag(int flag) {
         setFlags(getFlags() & ~flag);
     }
 
@@ -140,5 +214,33 @@ public class StoredMessageImpl extends AbstractActivatable implements StoredMess
     public InputStream getRawMessageStream() {
         activate(ActivationPurpose.READ);
         return summary.getRawMessageStream();
+    }
+
+    @Override
+    public MimeMessage toMimeMessage() throws MessagingException {
+        return summary.toMimeMessage(this);
+    }
+
+    @Override
+    public void purgeContent() {
+
+    }
+
+    @Override
+    public int incrementReferenceCount() {
+        activate(ActivationPurpose.READ);
+        return summary.incrementReferenceCount();
+    }
+
+    @Override
+    public int decrementReferenceCount() {
+        activate(ActivationPurpose.READ);
+        return summary.decrementReferenceCount();
+    }
+
+    @Override
+    public int getReferenceCount() {
+        activate(ActivationPurpose.READ);
+        return summary.getReferenceCount();
     }
 }

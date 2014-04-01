@@ -7,9 +7,7 @@ import org.apache.lucene.search.*;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,23 +18,30 @@ class SearchResultImpl implements SearchResult {
         final IndexSearcher searcher = searcherManager.acquire();
         try {
             final TopDocs topDocs = searcher.search(query, Integer.MAX_VALUE);
-            final Set<Long> uidSet = new HashSet<>();
-            final Map<Long, Integer> documentIdMap = new HashMap<>();
-            populate(searcher, topDocs, uidSet, documentIdMap);
-            return new SearchResultImpl(queryInput, query, searcher, searcherManager, documentIdMap, uidSet);
+            final Map<Integer, Integer> documentIdMap = new HashMap<>();
+            final boolean[] bitset = populate(searcher, topDocs, documentIdMap);
+            return new SearchResultImpl(queryInput, query, searcher, searcherManager, documentIdMap, bitset);
         } catch (Exception e) {
            searcherManager.release(searcher);
            throw e;
         }
     }
 
-    private static void populate(IndexSearcher searcher, TopDocs topDocs, Set<Long> uidSet, Map<Long, Integer> documentIdMap) throws IOException {
+    private static boolean[] populate(IndexSearcher searcher, TopDocs topDocs, Map<Integer, Integer> documentIdMap) throws IOException {
+        int highest = 0;
         for(ScoreDoc sd: topDocs.scoreDocs) {
             Document document = searcher.doc(sd.doc);
-            Long uid = document.getField("uid").numericValue().longValue();
-            uidSet.add(uid);
+            int uid = document.getField("uid").numericValue().intValue();
+            if(uid > highest) {
+                highest = uid;
+            }
             documentIdMap.put(uid, sd.doc);
         }
+        boolean[] bitset = new boolean[highest + 1];
+        for(Integer n: documentIdMap.keySet()) {
+            bitset[n] = true;
+        }
+        return bitset;
     }
 
     private final static ResultHighlighter highlighter = new ResultHighlighter();
@@ -49,17 +54,17 @@ class SearchResultImpl implements SearchResult {
     private final SearcherManager searcherManager;
     private IndexSearcher searcher;
 
-    private final Map<Long, Integer> documentIdMap;
-    private final Set<Long> uidSet;
-    private final Map<Long, HighlightedString[]> highlightMap = new HashMap<>();
+    private final Map<Integer, Integer> documentIdMap;
+    private final boolean[] bitset;
+    private final Map<Integer, HighlightedString[]> highlightMap = new HashMap<>();
 
-    public SearchResultImpl(String queryText, Query query, IndexSearcher searcher, SearcherManager searcherManager, Map<Long, Integer> documentIdMap, Set<Long> uidSet) {
+    public SearchResultImpl(String queryText, Query query, IndexSearcher searcher, SearcherManager searcherManager, Map<Integer, Integer> documentIdMap, boolean[] bitset) {
         this.queryText = queryText;
         this.query = query;
         this.searcherManager = searcherManager;
         this.searcher = searcher;
         this.documentIdMap = documentIdMap;
-        this.uidSet = uidSet;
+        this.bitset = bitset;
     }
 
     public String getQueryText() {
@@ -67,18 +72,21 @@ class SearchResultImpl implements SearchResult {
     }
 
     public int getMatchCount() {
-        return uidSet.size();
+        return bitset.length;
     }
 
-    public boolean resultContainsUID(long uid) {
-        return uidSet.contains(uid);
+    public boolean resultContainsMessageId(int uid) {
+        if(uid >= bitset.length) {
+            return false;
+        }
+        return bitset[uid];
     }
 
-    public HighlightedString getHighlightedSubject(long uid) {
+    public HighlightedString getHighlightedSubject(int uid) {
         return getHighlightsByUID(uid)[0];
     }
 
-    public HighlightedString getHighlightedBody(long uid) {
+    public HighlightedString getHighlightedBody(int uid) {
         return getHighlightsByUID(uid)[1];
     }
 
@@ -88,11 +96,11 @@ class SearchResultImpl implements SearchResult {
             searcherManager.release(searcher);
             searcher = null;
         } catch (IOException e) {
-            logger.log(Level.WARNING, "IOException releasing searcher: "+ e, e);
+            logger.log(Level.WARNING, "IOException releasing searcher: " + e, e);
         }
     }
 
-    private HighlightedString[] getHighlightsByUID(Long uid) {
+    private HighlightedString[] getHighlightsByUID(int uid) {
         synchronized (highlightMap) {
             if (!highlightMap.containsKey(uid)) {
                 highlightMap.put(uid, generateHightlight(uid));
@@ -101,7 +109,7 @@ class SearchResultImpl implements SearchResult {
         }
     }
 
-    private HighlightedString[] generateHightlight(Long uid) {
+    private HighlightedString[] generateHightlight(int uid) {
         if(!documentIdMap.containsKey(uid)) {
             logger.warning("No document id found for UID = "+ uid);
             return EMPTY_HIGHLIGHTS;
@@ -123,16 +131,5 @@ class SearchResultImpl implements SearchResult {
     private static HighlightedStringImpl getHighlightedString(Map<String, String[]> highlights, String key) {
         final String tagged = highlights.get(key)[0];
         return HighlightedStringImpl.createFromTaggedString(tagged);
-    }
-
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        for(Long id: uidSet) {
-            sb.append(id);
-            sb.append(") ");
-            sb.append(getHighlightedBody(id));
-            sb.append("\n");
-        }
-        return sb.toString();
     }
 }

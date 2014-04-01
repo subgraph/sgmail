@@ -1,7 +1,7 @@
 package com.subgraph.sgmail.ui.preferences;
 
 import com.subgraph.sgmail.accounts.Account;
-import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.accounts.MailAccount;
 import com.subgraph.sgmail.model.Model;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
@@ -37,13 +37,13 @@ public class PreferenceDialogFactory {
         final PreferenceNode accountsNode = new PreferenceNode("accounts", new AllAccountsPage());
         manager.addToRoot(accountsNode);
         for(Account a: accounts) {
-            if(a instanceof IMAPAccount) {
-                addIMAPAccount(manager, (IMAPAccount) a);
+            if(a instanceof MailAccount) {
+                addMailAccount(manager, (MailAccount) a);
             }
         }
     }
 
-    private void addIMAPAccount(PreferenceManager manager, IMAPAccount imapAccount) {
+    private void addMailAccount(PreferenceManager manager, MailAccount imapAccount) {
         final PreferenceNode node = new PreferenceNode(imapAccount.getEmailAddress(), new AccountPreferencePage(imapAccount));
         manager.addTo("accounts", node);
     }

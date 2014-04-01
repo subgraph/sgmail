@@ -1,6 +1,7 @@
 package com.subgraph.sgmail.ui.dialogs;
 
-import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.imap.IMAPAccount;
+import com.subgraph.sgmail.imap.IMAPAccountList;
 import com.subgraph.sgmail.model.Identity;
 import com.subgraph.sgmail.model.Model;
 import com.subgraph.sgmail.ui.identity.IdentityCreationPage;
@@ -56,11 +57,24 @@ public class NewAccountWizard extends Wizard {
 	@Override
 	public boolean performFinish() {
         final IMAPAccount imapAccount = accountDetailsPage.createIMAPAccount();
-        model.getAccountList().addAccount(imapAccount);
+        model.getAccountList().addAccount(imapAccount.getMailAccount());
+        final IMAPAccountList imapAccountList = getIMAPAccountList();
+        imapAccountList.addAccount(imapAccount);
         final Identity identity = identityCreationPage.getIdentity();
         if(identity != null) {
-            imapAccount.setIdentity(identity);
+            imapAccount.getMailAccount().setIdentity(identity);
         }
         return true;
 	}
+
+    private IMAPAccountList getIMAPAccountList() {
+        final IMAPAccountList imapAccountList = model.getModelSingleton(IMAPAccountList.class);
+        if(imapAccountList != null) {
+            return imapAccountList;
+        }
+        final IMAPAccountList newList = new IMAPAccountList();
+        model.store(newList);
+        model.commit();
+        return newList;
+    }
 }

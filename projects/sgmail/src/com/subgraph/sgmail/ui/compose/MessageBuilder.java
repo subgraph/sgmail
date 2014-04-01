@@ -1,6 +1,6 @@
 package com.subgraph.sgmail.ui.compose;
 
-import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.accounts.MailAccount;
 import com.subgraph.sgmail.model.Contact;
 
 import javax.mail.Address;
@@ -73,7 +73,7 @@ public class MessageBuilder {
         return refs;
     }
 
-    private String generateMessageID(IMAPAccount account) {
+    private String generateMessageID(MailAccount account) {
         final UUID uuid = UUID.randomUUID();
         if(account == null) {
             return "<"+ uuid + ">";
@@ -101,7 +101,7 @@ public class MessageBuilder {
     }
 
     private Address getFromAddress() throws AddressException {
-        final IMAPAccount account = state.getSelectedAccount();
+        final MailAccount account = state.getSelectedAccount();
         return new InternetAddress(account.getEmailAddress(), true);
     }
 

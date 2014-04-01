@@ -1,6 +1,6 @@
 package com.subgraph.sgmail.ui.compose;
 
-import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.accounts.MailAccount;
 import com.subgraph.sgmail.identity.OpenPGPException;
 import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.identity.PublicIdentity;
@@ -22,7 +22,7 @@ import java.util.List;
 public class OpenPGPProcessing {
 	private final MessageProcessor processor = new MessageProcessor();
 	private final Model model;
-	private final IMAPAccount account;
+	private final MailAccount account;
 	private final MimeMessage message;
 	private final boolean encrypt;
 	private final boolean sign;
@@ -32,7 +32,7 @@ public class OpenPGPProcessing {
 	private MimeMessage outputMessage;
 	private PrivateIdentity signingKey;
 	
-	OpenPGPProcessing(Model model, IMAPAccount account, MimeMessage message, boolean encrypt, boolean sign) {
+	OpenPGPProcessing(Model model, MailAccount account, MimeMessage message, boolean encrypt, boolean sign) {
 		this.model = model;
 		this.account = account;
 		this.message = message;

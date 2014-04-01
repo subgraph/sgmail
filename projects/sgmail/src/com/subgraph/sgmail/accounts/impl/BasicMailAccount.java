@@ -4,65 +4,53 @@ import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 import com.db4o.activation.ActivationPurpose;
 import com.db4o.collections.ActivatableArrayList;
-import com.subgraph.sgmail.accounts.AuthenticationCredentials;
+import com.google.common.collect.ImmutableList;
 import com.subgraph.sgmail.accounts.MailAccount;
-import com.subgraph.sgmail.accounts.PasswordAuthenticationCredentials;
-import com.subgraph.sgmail.accounts.SMTPAccount;
-import com.subgraph.sgmail.messages.StoredMessage;
-import com.subgraph.sgmail.messages.StoredMessageLabel;
-import com.subgraph.sgmail.messages.StoredMessageLabelCollection;
-import com.subgraph.sgmail.messages.StoredMessages;
+import com.subgraph.sgmail.accounts.ServerDetails;
+import com.subgraph.sgmail.messages.*;
+import com.subgraph.sgmail.messages.impl.StoredFolderImpl;
+import com.subgraph.sgmail.messages.impl.StoredMessageLabelCollectionImpl;
 import com.subgraph.sgmail.model.AbstractActivatable;
 import com.subgraph.sgmail.model.Identity;
-import com.subgraph.sgmail.model.Preferences;
+import com.subgraph.sgmail.model.StoredAccountPreferences;
+import gnu.trove.map.hash.TIntObjectHashMap;
 
-import javax.mail.NoSuchProviderException;
-import javax.mail.Store;
-import javax.mail.URLName;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 
-public abstract class AbstractMailAccount extends AbstractActivatable implements MailAccount {
-    private final static Logger logger = Logger.getLogger(AbstractMailAccount.class.getName());
+public class BasicMailAccount extends AbstractActivatable implements MailAccount {
 
-    private final SMTPAccount smtpAccount;
+    private final ServerDetails smtpAccount;
     private final String emailAddress;
     private final StoredMessageLabelCollection labelCollection;
 
     private final List<StoredMessage> allMessages = new ActivatableArrayList<>();
+    private final List<StoredFolder> folders = new ActivatableArrayList<>();
+    private final StoredAccountPreferences preferences;
+    private final TIntObjectHashMap<StoredMessage> messagesById = new TIntObjectHashMap<>();
 
 
     private Identity identity;
     private String realname;
     private String label;
-    private String hostname;
-    private int port;
-    private String onionHostname;
-    private AuthenticationCredentials authenticationCredentials;
 
-    private transient Store remoteStore;
     private transient EventList<StoredMessage> messageEventList;
     private transient PropertyChangeSupport propertyChangeSupport;
 
 
-    protected AbstractMailAccount(Builder builder) {
-        smtpAccount = checkNotNull(builder.smtpAccount);
-        emailAddress = checkNotNull(builder.emailAddress);
-        label = checkNotNull(builder.label);
-        hostname = checkNotNull(builder.hostname);
-        port = builder.port;
-        checkArgument(port > 0 && port <= 0xFFFF, "Port value must be between 1 and 65535");
-        onionHostname = builder.onionHostname;
-        authenticationCredentials = new PasswordAuthenticationCredentialsImpl(checkNotNull(builder.login), checkNotNull(builder.password));
-        realname = builder.realname;
-        labelCollection = StoredMessages.createLabelCollection(this);
+    public BasicMailAccount(String label, String emailAddress, String realName, ServerDetails smtpServer) {
+        this.label = checkNotNull(label);
+        this.emailAddress = checkNotNull(emailAddress);
+        this.realname = realName;
+        this.smtpAccount = checkNotNull(smtpServer);
+        this.preferences = StoredAccountPreferences.create(this);
+        labelCollection = new StoredMessageLabelCollectionImpl(this);
     }
 
     @Override
@@ -92,27 +80,51 @@ public abstract class AbstractMailAccount extends AbstractActivatable implements
     }
 
     @Override
-    public SMTPAccount getSMTPAccount() {
+    public List<StoredFolder> getFolders() {
         activate(ActivationPurpose.READ);
-        return smtpAccount;
+        synchronized (folders) {
+            return ImmutableList.copyOf(folders);
+        }
     }
 
     @Override
-    public synchronized Store getRemoteStore() {
-        if(remoteStore == null) {
-            remoteStore = createRemoteStore();
+    public StoredFolder getFolderByName(String name) {
+        activate(ActivationPurpose.READ);
+        synchronized (folders) {
+            final StoredFolder folder = findFolderByName(name);
+            return (folder != null) ? (folder) : (createNewFolder(name));
         }
-        return remoteStore;
     }
 
-    private Store createRemoteStore() {
-        final URLName urlname = getURLName();
-        try {
-            return model.getSession().getStore(urlname);
-        } catch (NoSuchProviderException e) {
-            logger.warning("Could not create store for "+ urlname + " : "+ e);
-            return null;
+    private StoredFolder findFolderByName(String name) {
+        for (StoredFolder folder : folders) {
+            if(folder.getName().equals(name)) {
+                return folder;
+            }
         }
+        return null;
+    }
+
+    private StoredFolder createNewFolder(String name) {
+        activate(ActivationPurpose.READ);
+        final StoredFolder newFolder = new StoredFolderImpl(this, name);
+        model.store(newFolder);
+        folders.add(newFolder);
+        model.commit();
+        getPropertyChangeSupport().firePropertyChange("folders", null, null);
+        return newFolder;
+    }
+
+    @Override
+    public StoredAccountPreferences getPreferences() {
+        activate(ActivationPurpose.READ);
+        return preferences;
+    }
+
+    @Override
+    public ServerDetails getSMTPAccount() {
+        activate(ActivationPurpose.READ);
+        return smtpAccount;
     }
 
     @Override
@@ -136,57 +148,6 @@ public abstract class AbstractMailAccount extends AbstractActivatable implements
         return realname;
     }
 
-    @Override
-    public AuthenticationCredentials getAuthenticationCredentials() {
-        activate(ActivationPurpose.READ);
-        return authenticationCredentials;
-    }
-
-    @Override
-    public String getHostname() {
-        activate(ActivationPurpose.READ);
-        return hostname;
-    }
-
-    @Override
-    public String getOnionHostname() {
-        activate(ActivationPurpose.READ);
-        return onionHostname;
-    }
-
-    @Override
-    public int getPort() {
-        activate(ActivationPurpose.READ);
-        return port;
-    }
-
-    protected abstract int getDefaultPort();
-    protected abstract String getProtocol();
-
-    @Override
-    public URLName getURLName() {
-        activate(ActivationPurpose.READ);
-        final String login = getPasswordAuth().getLogin();
-        final String password = getPasswordAuth().getPassword();
-        final String connectHostname = getConnectHostname();
-        final int portValue = (port == getDefaultPort()) ? -1 : port;
-        return new URLName(getProtocol(), connectHostname, portValue, null, login, password);
-    }
-
-    private String getConnectHostname() {
-        if(onionHostname != null && model.getRootStoredPreferences().getBoolean(Preferences.TOR_ENABLED)) {
-            return onionHostname;
-        } else {
-            return hostname;
-        }
-    }
-
-    private PasswordAuthenticationCredentials getPasswordAuth() {
-        if(!(authenticationCredentials instanceof PasswordAuthenticationCredentials)) {
-            throw new IllegalStateException("Authentication credentials are not password credentials");
-        }
-        return (PasswordAuthenticationCredentials) authenticationCredentials;
-    }
 
     @Override
     public void setIdentity(Identity identity) {
@@ -205,6 +166,9 @@ public abstract class AbstractMailAccount extends AbstractActivatable implements
     public void addMessages(Collection<StoredMessage> messages) {
         try {
             writeLockMessageEventList().addAll(messages);
+            for(StoredMessage sm: messages) {
+                messagesById.put(sm.getMessageId(), sm);
+            }
         } finally {
             writeUnlockMessageEventList();
         }
@@ -214,11 +178,47 @@ public abstract class AbstractMailAccount extends AbstractActivatable implements
     public void addMessage(StoredMessage message) {
         try {
             writeLockMessageEventList().add(message);
+            messagesById.put(message.getMessageId(), message);
         } finally {
             writeUnlockMessageEventList();
             model.commit();
         }
         getPropertyChangeSupport().firePropertyChange("allMessages", null, null);
+    }
+
+    @Override
+    public void removeDeletedMessages() {
+        final EventList<StoredMessage> eventList = getMessageEventList();
+        eventList.getReadWriteLock().writeLock().lock();
+        try {
+            final int count = countDeletedMessages(eventList);
+            if(count == 0) {
+                return;
+            }
+            final List<StoredMessage> retainedMessages = new ArrayList<>(eventList.size() - count);
+            for (StoredMessage msg : eventList) {
+                if(msg.getReferenceCount() > 0) {
+                    retainedMessages.add(msg);
+                } else {
+                    model.delete(msg);
+                }
+            }
+            eventList.clear();
+            messagesById.clear();
+            addMessages(retainedMessages);
+        } finally {
+            eventList.getReadWriteLock().writeLock().unlock();
+        }
+    }
+
+    private int countDeletedMessages(List<StoredMessage> messages) {
+        int count = 0;
+        for (StoredMessage m : messages) {
+            if(m.getReferenceCount() == 0) {
+                count += 1;
+            }
+        }
+        return count;
     }
 
     public void removeMessage(StoredMessage message) {
@@ -262,6 +262,16 @@ public abstract class AbstractMailAccount extends AbstractActivatable implements
         }
     }
 
+    @Override
+    public StoredMessage getMessageById(int messageId) {
+        getMessageEventList().getReadWriteLock().readLock().lock();
+        try {
+            return messagesById.get(messageId);
+        } finally {
+            getMessageEventList().getReadWriteLock().readLock().unlock();
+        }
+    }
+
     protected synchronized PropertyChangeSupport getPropertyChangeSupport() {
         if(propertyChangeSupport == null) {
             propertyChangeSupport = new PropertyChangeSupport(this);
@@ -275,28 +285,5 @@ public abstract class AbstractMailAccount extends AbstractActivatable implements
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         getPropertyChangeSupport().removePropertyChangeListener(listener);
-    }
-
-    public static class Builder {
-        private SMTPAccount smtpAccount;
-        private String emailAddress;
-        private String realname;
-        private String login;
-        private String password;
-        private String label;
-        private String hostname;
-        private int port;
-        private String onionHostname;
-
-        public Builder smtpAccount(SMTPAccount value) { smtpAccount = value; return this; }
-        public Builder emailAddress(String value) { emailAddress = value; return this; }
-        public Builder realname(String value) { realname = value; return this; }
-        public Builder login(String value) { login = value; return this; }
-        public Builder password(String value) { password = value; return this; }
-        public Builder label(String value) { label = value; return this; }
-        public Builder hostname(String value) { hostname = value; return this; }
-        public Builder port(int value) { port = value; return this; }
-        public Builder onion(String value) { onionHostname = value; return this; }
-
     }
 }

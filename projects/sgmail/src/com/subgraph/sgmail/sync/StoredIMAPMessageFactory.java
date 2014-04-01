@@ -1,11 +1,11 @@
 package com.subgraph.sgmail.sync;
 
 import com.google.common.base.Strings;
-import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.imap.IMAPAccount;
 import com.subgraph.sgmail.messages.MessageUser;
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.messages.StoredMessageLabel;
-import com.subgraph.sgmail.messages.impl.FlagUtils;
+import com.subgraph.sgmail.imap.FlagUtils;
 import com.subgraph.sgmail.ui.MessageBodyUtils;
 import com.sun.mail.gimap.GmailMessage;
 import com.sun.mail.imap.IMAPMessage;
@@ -15,6 +15,7 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,43 +24,57 @@ import java.util.List;
 
 public class StoredIMAPMessageFactory {
     public static interface MessageIdGenerator {
-        long getConversationId(MimeMessage message);
-        long getUniqueMessageId(MimeMessage message);
+        int getConversationId(MimeMessage message);
+        int getUniqueMessageId(MimeMessage message);
     }
 
     private final AttachmentExtractor attachmentExtractor = new AttachmentExtractor();
 
-    public StoredIMAPMessage createFromJavamailMessage(IMAPAccount imapAccount, MimeMessage message, long messageUID) throws MessagingException, IOException {
-        final long conversationId = imapAccount.generateConversationIdForMessage(message);
-        final long uniqueMessageId = imapAccount.generateUniqueMessageIdForMessage(message);
+    public StoredMessage createFromJavamailMessage(IMAPAccount imapAccount, MimeMessage message) throws MessagingException, IOException {
+        final StoredMessage duplicate = imapAccount.getMessageForMimeMessage(message);
+        if(duplicate != null) {
+            return duplicate;
+        }
+        final int conversationId = imapAccount.generateConversationIdForMessage(message);
+        final int messageId = imapAccount.generateUniqueMessageIdForMessage(message);
         final List<StoredMessageLabel> gmailLabels = getGmailLabels(imapAccount, message);
-        return createFromJavamailMessage(message, new long[] {conversationId, uniqueMessageId, messageUID}, gmailLabels);
+
+        final MimeMessage reparsed = reparseMessage(message);
+        return createFromJavamailMessage(reparsed, messageId, conversationId, gmailLabels);
    }
 
-    public StoredIMAPMessage createFromJavamailMessage(MimeMessage message, long messageUID, MessageIdGenerator idGenerator) throws MessagingException, IOException {
-        final long conversationId = idGenerator.getConversationId(message);
-        final long uniqueMessageId = idGenerator.getUniqueMessageId(message);
-        return createFromJavamailMessage(message, new long[] { conversationId, uniqueMessageId, messageUID}, null);
+    public StoredMessage createFromJavamailMessage(MimeMessage message, MessageIdGenerator idGenerator) throws MessagingException, IOException {
+        final int conversationId = idGenerator.getConversationId(message);
+        final int messageId = idGenerator.getUniqueMessageId(message);
+        return createFromJavamailMessage(message, messageId, conversationId, null);
     }
 
-    private StoredIMAPMessage createFromJavamailMessage(MimeMessage message, long[] ids, List<StoredMessageLabel> labels) throws MessagingException, IOException {
-        final long conversationId = ids[0];
-        final long uniqueMessageId = ids[1];
-        final long messageUID = ids[2];
+    private StoredMessage createFromJavamailMessage(MimeMessage message, int messageId, int conversationId, List<StoredMessageLabel> labels) throws MessagingException, IOException {
 
-         return StoredIMAPMessage.Builder.create(readRawBytes(message))
+         return StoredMessage.Builder.create(readRawBytes(message))
                 .conversationId(conversationId)
-                .uniqueMessageId(uniqueMessageId)
-                .messageUID(messageUID)
+                .messageId(messageId)
                 .subject(getSubject(message))
-                .displayText(getDisplayText(message))
+                 .bodyText(getBodyText(message))
                 .sender(getSender(message))
-                .recipients(getRecipients(message))
-                .messageDate(getMessageTimestamp(message))
+                 .toRecipients(getRecipients(message, Message.RecipientType.TO))
+                 .ccRecipients(getRecipients(message, Message.RecipientType.CC))
+
+                .messageDate((int) (getMessageTimestamp(message) / 1000))
                 .flags(getMessageFlags(message))
                 .labels(labels)
                 .attachments(attachmentExtractor.getAttachments(message))
              .build();
+    }
+
+    private MimeMessage reparseMessage(MimeMessage message) throws IOException, MessagingException {
+        if(message instanceof IMAPMessage) {
+            ((IMAPMessage) message).setPeek(true);
+        }
+        final ByteArrayOutputStream output = new ByteArrayOutputStream();
+        message.writeTo(output);
+        final ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
+        return new MimeMessage(message.getSession(), input);
     }
 
     private byte[] readRawBytes(MimeMessage message) throws MessagingException {
@@ -75,7 +90,7 @@ public class StoredIMAPMessageFactory {
         }
     }
 
-    private String getDisplayText(MimeMessage message) {
+    private String getBodyText(MimeMessage message) {
         return MessageBodyUtils.getTextBody(message);
     }
 
@@ -84,30 +99,29 @@ public class StoredIMAPMessageFactory {
     }
 
     private MessageUser getSender(MimeMessage message) throws MessagingException {
-        return addressToMessageUser(message.getSender(), MessageUser.UserType.USER_SENDER);
+        return addressToMessageUser(message.getSender());
     }
 
-    private List<MessageUser> getRecipients(MimeMessage message) throws MessagingException {
+    private List<MessageUser> getRecipients(MimeMessage message, Message.RecipientType type) throws MessagingException {
         final List<MessageUser> recipients = new ArrayList<>();
-        addRecipientsToList(recipients, message, Message.RecipientType.TO, MessageUser.UserType.USER_TO);
-        addRecipientsToList(recipients, message, Message.RecipientType.CC, MessageUser.UserType.USER_CC);
+        addRecipientsToList(recipients, message, type);
         return recipients;
     }
 
 
-    private void addRecipientsToList(List<MessageUser> recipientList, MimeMessage message, Message.RecipientType recipientType, MessageUser.UserType userType) throws MessagingException {
+    private void addRecipientsToList(List<MessageUser> recipientList, MimeMessage message, Message.RecipientType recipientType) throws MessagingException {
         if (message.getRecipients(recipientType) == null) {
             return;
         }
         for (Address address : message.getRecipients(recipientType)) {
-            MessageUser mu = addressToMessageUser(address, userType);
+            MessageUser mu = addressToMessageUser(address);
             if (mu != null) {
                 recipientList.add(mu);
             }
         }
     }
 
-    private MessageUser addressToMessageUser(Address address, MessageUser.UserType type) {
+    private MessageUser addressToMessageUser(Address address) {
         if (address == null) {
             return null;
         }
@@ -116,7 +130,7 @@ public class StoredIMAPMessageFactory {
         if (email == null) {
             return null;
         } else {
-            return MessageUser.create(username, email, type);
+            return MessageUser.create(username, email);
         }
     }
 
@@ -145,7 +159,7 @@ public class StoredIMAPMessageFactory {
         }
     }
 
-    private long getMessageFlags(MimeMessage message) throws MessagingException {
+    private int getMessageFlags(MimeMessage message) throws MessagingException {
         return FlagUtils.getFlagsFromMessage(message);
     }
 
@@ -160,7 +174,7 @@ public class StoredIMAPMessageFactory {
         final List<StoredMessageLabel> labelList = new ArrayList<>();
         for (String label : gmailMessage.getLabels()) {
             if (!label.isEmpty()) {
-                labelList.add(account.getMessageLabelByName(label));
+                labelList.add(account.getMailAccount().getMessageLabelByName(label));
             }
         }
         return labelList;

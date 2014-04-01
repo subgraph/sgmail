@@ -1,7 +1,7 @@
 package com.subgraph.sgmail.sync;
 
-import com.subgraph.sgmail.messages.StoredIMAPFolder;
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.imap.LocalIMAPFolder;
+import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.search.MessageSearchIndex;
 
 import java.io.IOException;
@@ -10,19 +10,29 @@ import java.util.logging.Logger;
 
 public class StoreMessageTask implements Runnable {
     private final static Logger logger = Logger.getLogger(StoreMessageTask.class.getName());
-    private final StoredIMAPMessage message;
+    private final StoredMessage message;
+    private final long messageUID;
     private final MessageSearchIndex searchIndex;
-    private final StoredIMAPFolder folder;
+    private final LocalIMAPFolder folder;
 
-    StoreMessageTask(StoredIMAPMessage message, StoredIMAPFolder folder, MessageSearchIndex searchIndex) {
+    StoreMessageTask(StoredMessage message, long messageUID, LocalIMAPFolder folder, MessageSearchIndex searchIndex) {
         this.message = message;
+        this.messageUID = messageUID;
         this.folder = folder;
         this.searchIndex = searchIndex;
     }
 
     @Override
     public void run() {
-        folder.addMessage(message);
+        try {
+            storeMessage();
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Unexpected exception in StoreMessageTask: "+ e, e);
+        }
+    }
+
+    private void storeMessage() {
+        folder.appendMessage(message, messageUID);
         try {
             searchIndex.addMessage(message);
         } catch (IOException e) {

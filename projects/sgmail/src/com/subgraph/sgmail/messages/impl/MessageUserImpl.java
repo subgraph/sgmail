@@ -10,12 +10,10 @@ public class MessageUserImpl extends AbstractActivatable implements MessageUser 
 
     private final String username;
     private final String address;
-    private final UserType usertype;
 
-    public MessageUserImpl(String username, String address, UserType usertype) {
+    public MessageUserImpl(String username, String address) {
         this.username = username;
         this.address = checkNotNull(address);
-        this.usertype = checkNotNull(usertype);
     }
 
     @Override
@@ -28,11 +26,5 @@ public class MessageUserImpl extends AbstractActivatable implements MessageUser 
     public String getAddress() {
         activate(ActivationPurpose.READ);
         return address;
-    }
-
-    @Override
-    public UserType getType() {
-        activate(ActivationPurpose.READ);
-        return usertype;
     }
 }

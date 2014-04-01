@@ -1,13 +1,9 @@
 package com.subgraph.sgmail.sync;
 
-import com.google.common.eventbus.Subscribe;
-import com.subgraph.sgmail.accounts.Account;
-import com.subgraph.sgmail.accounts.IMAPAccount;
-import com.subgraph.sgmail.events.AccountAddedEvent;
-import com.subgraph.sgmail.messages.StoredIMAPMessage;
+import com.subgraph.sgmail.imap.IMAPAccount;
+import com.subgraph.sgmail.imap.IMAPAccountList;
 import com.subgraph.sgmail.model.Model;
 
-import javax.mail.Flags.Flag;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,27 +21,28 @@ public class SynchronizationManager {
 	}
 
 	private void initializeSynchronizers() {
-		synchronized(synchronizers) {
-			for(Account account: model.getAccountList().getAccounts()) {
-				addAccount(account);
+        synchronized(synchronizers) {
+            final IMAPAccountList imapAccountList = model.getModelSingleton(IMAPAccountList.class);
+            if(imapAccountList == null) {
+                return;
+            }
+
+            for(IMAPAccount account: imapAccountList.getAccounts()){
+                synchronizers.put(account, new AccountSynchronizer(model, account));
 			}
 		}
 	}
 	
-	private void addAccount(Account account) {
-		if(account instanceof IMAPAccount) {
-			final IMAPAccount imap = (IMAPAccount) account;
-			synchronizers.put(imap, new AccountSynchronizer(model, imap));
-		}
-	}
 
+    /*
 	@Subscribe
 	public void onAccountAdded(AccountAddedEvent event) {
 		synchronized (synchronizers) {
 			addAccount(event.getAccount());
 		}
 	}
-
+	*/
+/*
 	public void updateFlag(IMAPAccount account, StoredIMAPMessage message, Flag flag, boolean isSet) {
 		synchronized(synchronizers) {
 			if(synchronizers.containsKey(account)) {
@@ -55,15 +52,16 @@ public class SynchronizationManager {
 			}
 		}
 	}
+	*/
 
 	public synchronized void start() {
 		if(isRunning) {
 			return;
 		}
 
-		synchronized (synchronizers) {
+        synchronized (synchronizers) {
 			for(IMAPAccount account: synchronizers.keySet()) {
-				if(account.isAutomaticSyncEnabled()) {
+                if(account.isAutomaticSyncEnabled()) {
 					synchronizers.get(account).start();
 				}
 			}

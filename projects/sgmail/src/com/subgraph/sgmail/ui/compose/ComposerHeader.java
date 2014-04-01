@@ -2,7 +2,7 @@ package com.subgraph.sgmail.ui.compose;
 
 import com.google.common.base.Strings;
 import com.subgraph.sgmail.accounts.Account;
-import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.accounts.MailAccount;
 import com.subgraph.sgmail.model.Model;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -27,7 +27,7 @@ public class ComposerHeader extends Composite {
 
 	private final Map<RecipientType, RecipientSection> recipientSectionMap = new HashMap<>();
 
-	private final List<IMAPAccount> accounts;
+	private final List<MailAccount> accounts;
 	private final Text subjectText;
 	private final Combo fromCombo;
 
@@ -86,7 +86,7 @@ public class ComposerHeader extends Composite {
 		}
 	}
 
-	public IMAPAccount getSelectedAccount() {
+	public MailAccount getSelectedAccount() {
 		return accounts.get(fromCombo.getSelectionIndex());
 	}
 
@@ -96,11 +96,11 @@ public class ComposerHeader extends Composite {
 		return layout;
 	}
 
-	private List<IMAPAccount> getAccountList(Model model) {
-		final List<IMAPAccount> accounts = new ArrayList<>();
+	private List<MailAccount> getAccountList(Model model) {
+		final List<MailAccount> accounts = new ArrayList<>();
 		for(Account a: model.getAccountList().getAccounts()) {
-			if(a instanceof IMAPAccount) {
-				accounts.add((IMAPAccount) a);
+			if(a instanceof MailAccount) {
+				accounts.add((MailAccount) a);
 			}
 		}
 		return accounts;
@@ -132,11 +132,11 @@ public class ComposerHeader extends Composite {
 		return text;
 	}
 
-	private Combo createFromCombo(List<IMAPAccount> accounts) {
+	private Combo createFromCombo(List<MailAccount> accounts) {
 		createLabel("From:");
 		
 		final Combo combo = new Combo(this, SWT.READ_ONLY);
-		for(IMAPAccount a: accounts) {
+		for(MailAccount a: accounts) {
 			combo.add(a.getRealname() + " <"+ a.getEmailAddress() + ">");
 		}
 		combo.select(0);
@@ -153,7 +153,7 @@ public class ComposerHeader extends Composite {
 	
 	
 	private void onSelectedAccountChanged() {
-		final IMAPAccount selectedAccount = getSelectedAccount();
+		final MailAccount selectedAccount = getSelectedAccount();
         state.setSelectedAccount(selectedAccount);
 
 	}

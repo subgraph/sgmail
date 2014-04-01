@@ -25,7 +25,7 @@ public class SearchBarContribution extends ControlContribution {
 
     private final static Logger logger = Logger.getLogger(SearchBarContribution.class.getName());
 
-    private final static int SEARCH_DELAY_MS = 300;
+    private final static int SEARCH_DELAY_MS = 50;
 
     private final ScheduledExecutorService scheduler =
             MoreExecutors.getExitingScheduledExecutorService((ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1));

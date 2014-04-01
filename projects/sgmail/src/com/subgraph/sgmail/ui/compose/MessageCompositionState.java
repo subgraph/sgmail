@@ -3,7 +3,7 @@ package com.subgraph.sgmail.ui.compose;
 
 import com.google.common.base.Preconditions;
 import com.google.common.eventbus.Subscribe;
-import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.accounts.MailAccount;
 import com.subgraph.sgmail.events.ContactPublicIdentityChangedEvent;
 import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.model.Contact;
@@ -28,7 +28,7 @@ public class MessageCompositionState {
 
     private final MimeMessage replyMessage;
 
-    private IMAPAccount selectedAccount;
+    private MailAccount selectedAccount;
 
     private String subject;
     private Map<Message.RecipientType, List<Contact>> recipientMap = new HashMap<>();
@@ -62,7 +62,7 @@ public class MessageCompositionState {
     String getSubject() {
         return subject;
     }
-    public void setSelectedAccount(IMAPAccount account) {
+    public void setSelectedAccount(MailAccount account) {
         selectedAccount = Preconditions.checkNotNull(account);
         final StoredPreferences preferences = account.getPreferences();
         isSigningRequested = preferences.getBoolean(Preferences.ACCOUNT_DEFAULT_SIGN);
@@ -176,7 +176,7 @@ public class MessageCompositionState {
 
     }
 
-    public IMAPAccount getSelectedAccount() {
+    public MailAccount getSelectedAccount() {
         return selectedAccount;
     }
 

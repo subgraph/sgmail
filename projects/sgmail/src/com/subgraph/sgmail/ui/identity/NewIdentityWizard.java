@@ -1,7 +1,7 @@
 package com.subgraph.sgmail.ui.identity;
 
 import com.google.common.util.concurrent.*;
-import com.subgraph.sgmail.accounts.IMAPAccount;
+import com.subgraph.sgmail.accounts.MailAccount;
 import com.subgraph.sgmail.identity.KeyGenerationParameters;
 import com.subgraph.sgmail.identity.KeyGenerationResult;
 import com.subgraph.sgmail.identity.KeyGenerationTask;
@@ -25,7 +25,7 @@ public class NewIdentityWizard extends Wizard {
 		return MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor());
 	}
 	
-	public NewIdentityWizard(Model model, IMAPAccount account) {
+	public NewIdentityWizard(Model model, MailAccount account) {
 		this.page1 = new IdentityCreationPage(model, null, null);
 		parameters.setEmailAddress(account.getEmailAddress());
 		parameters.setRealName(account.getRealname());

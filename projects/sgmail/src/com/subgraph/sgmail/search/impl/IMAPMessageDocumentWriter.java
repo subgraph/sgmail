@@ -18,7 +18,7 @@ class IMAPMessageDocumentWriter {
     IMAPMessageDocumentWriter() {
         this.document = new Document();
         final FieldType offsetsType = createOffsetsType();
-        this.uidField = new LongField("uid", 0, Field.Store.YES);
+        this.uidField = new IntField("uid", 0, Field.Store.YES);
         this.subjectField = new Field("subject", "", offsetsType);
         this.bodyField = new Field("body", "", offsetsType);
         document.add(uidField);
@@ -33,9 +33,9 @@ class IMAPMessageDocumentWriter {
     }
 
     synchronized void indexMessage(IndexWriter writer, StoredMessage message) throws IOException {
-        uidField.setLongValue(message.getUniqueMessageId());
+        uidField.setIntValue(message.getMessageId());
         subjectField.setStringValue(Objects.requireNonNull(message.getSubject()));
-        bodyField.setStringValue(Objects.requireNonNull(message.getDisplayText()));
+        bodyField.setStringValue(Objects.requireNonNull(message.getBodyText()));
         writer.addDocument(document);
     }
 }

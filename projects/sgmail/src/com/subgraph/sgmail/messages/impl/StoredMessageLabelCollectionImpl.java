@@ -14,6 +14,7 @@ public class StoredMessageLabelCollectionImpl extends AbstractActivatable implem
 
     private final Account account;
     private List<StoredMessageLabel> labels = new ActivatableArrayList<>();
+    private int currentLabelIndex = 1;
 
     public StoredMessageLabelCollectionImpl(Account account) {
         this.account = account;
@@ -38,7 +39,8 @@ public class StoredMessageLabelCollectionImpl extends AbstractActivatable implem
 
     public synchronized StoredMessageLabel createNewLabel(String name) {
         activate(ActivationPurpose.READ);
-        final StoredMessageLabel label = new StoredMessageLabelImpl(account, name);
+        final StoredMessageLabel label = new StoredMessageLabelImpl(account, name, currentLabelIndex);
+        currentLabelIndex += 1;
         model.store(label);
         labels.add(label);
         model.commit();
