@@ -1,0 +1,25 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Subgraph Mail Messages
+Bundle-SymbolicName: com.subgraph.sgmail.messages
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: SUBGRAPH
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: ca.odell.glazedlists,
+ ca.odell.glazedlists.util.concurrent,
+ com.db4o.activation;version="8.0.249.16098",
+ com.db4o.collections;version="8.0.249.16098",
+ com.db4o.ta;version="8.0.249.16098",
+ com.google.common.base;version="15.0.0",
+ com.google.common.collect,
+ com.subgraph.sgmail,
+ com.subgraph.sgmail.accounts,
+ com.subgraph.sgmail.database,
+ com.subgraph.sgmail.identity,
+ com.subgraph.sgmail.messages,
+ com.subgraph.sgmail.model,
+ gnu.trove.map.hash;version="3.0.3",
+ javax.mail,
+ javax.mail.internet
+Service-Component: OSGI-INF/account-factory.xml,
+ OSGI-INF/message-factory.xml

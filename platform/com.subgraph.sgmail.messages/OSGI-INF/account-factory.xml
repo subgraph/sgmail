@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="AccountFactory">
+   <implementation class="com.subgraph.sgmail.internal.accounts.AccountFactoryService"/>
+   <service>
+      <provide interface="com.subgraph.sgmail.accounts.AccountFactory"/>
+   </service>
+   <reference bind="setModel" cardinality="1..1" interface="com.subgraph.sgmail.database.Model" name="Model" policy="static"/>
+</scr:component>

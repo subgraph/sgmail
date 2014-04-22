@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="MessageSearchIndex">
+   <implementation class="com.subgraph.sgmail.internal.search.MessageSearchIndexService"/>
+   <service>
+      <provide interface="com.subgraph.sgmail.search.MessageSearchIndex"/>
+   </service>
+</scr:component>

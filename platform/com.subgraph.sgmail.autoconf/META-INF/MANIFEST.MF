@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Mail Provider Autoconfiguration
+Bundle-SymbolicName: com.subgraph.sgmail.autoconf
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: SUBGRAPH
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: com.subgraph.sgmail.autoconf
+Service-Component: OSGI-INF/autoconf.xml

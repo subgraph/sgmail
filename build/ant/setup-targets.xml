@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<project name="sgmail.setup">
+  <target name="setup" depends="copy-files" />
+  
+  <target name="copy-files">
+    <copy todir="build/stage/features" >
+      <fileset dir="platform" >
+        <include name="**/*.feature/**" />
+	<include name="**/*.ui.product/**" /> 
+      </fileset>
+    </copy>
+
+    <copy todir="build/stage/plugins">
+      <fileset dir="platform">
+        <exclude name="**/bin/**" />
+        <exclude name="**/.metadata/**" />
+        <include name="**" />
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="clean">
+    <delete dir="build/stage" />
+  </target>
+
+</project>

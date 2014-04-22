@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="IMAPSynchronizationManager">
+   <implementation class="com.subgraph.sgmail.internal.imap.sync.IMAPSynchronizationManagerService"/>
+   <service>
+      <provide interface="com.subgraph.sgmail.imap.IMAPSynchronizationManager"/>
+   </service>
+   <reference bind="setSearchIndex" cardinality="1..1" interface="com.subgraph.sgmail.search.MessageSearchIndex" name="MessageSearchIndex" policy="static"/>
+   <reference bind="setExecutor" cardinality="1..1" interface="com.google.common.util.concurrent.ListeningExecutorService" name="ListeningExecutorService" policy="static"/>
+   <reference bind="setEventBus" cardinality="1..1" interface="com.subgraph.sgmail.IEventBus" name="IEventBus" policy="static"/>
+   <reference bind="setMessageFactory" cardinality="1..1" interface="com.subgraph.sgmail.messages.MessageFactory" name="MessageFactory" policy="static"/>
+   <reference bind="setJavamailUtils" cardinality="1..1" interface="com.subgraph.sgmail.JavamailUtils" name="JavamailUtils" policy="static"/>
+   <reference bind="setModel" cardinality="1..1" interface="com.subgraph.sgmail.database.Model" name="Model" policy="static"/>
+</scr:component>

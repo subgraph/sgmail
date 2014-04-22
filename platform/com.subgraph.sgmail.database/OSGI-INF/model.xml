@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="Model">
+   <implementation class="com.subgraph.sgmail.internal.model.ModelService"/>
+   <service>
+      <provide interface="com.subgraph.sgmail.database.Model"/>
+   </service>
+   <reference bind="setDatabase" cardinality="1..1" interface="com.subgraph.sgmail.database.Database" name="Database" policy="static"/>
+   <reference bind="setEventBus" cardinality="1..1" interface="com.subgraph.sgmail.IEventBus" name="IEventBus" policy="static"/>
+</scr:component>

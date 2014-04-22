@@ -1,3 +1,2 @@
-projects/javamail/build/
-projects/javamail/dist/
-projects/javamail/bin/
+build/archives
+build/buildpack
