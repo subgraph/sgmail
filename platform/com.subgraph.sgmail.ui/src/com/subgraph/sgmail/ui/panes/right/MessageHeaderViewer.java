@@ -23,10 +23,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import com.google.common.base.Charsets;
-import com.subgraph.sgmail.identity.IdentityManager;
-import com.subgraph.sgmail.identity.PublicIdentity;
 import com.subgraph.sgmail.messages.MessageUser;
 import com.subgraph.sgmail.messages.StoredMessage;
+import com.subgraph.sgmail.nyms.NymsAgent;
 import com.subgraph.sgmail.ui.ImageCache;
 import com.subgraph.sgmail.ui.Resources;
 
@@ -36,20 +35,13 @@ public class MessageHeaderViewer extends Composite {
 	private final static SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
 	private final static SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/YY");
 	
-	private final IdentityManager identityManager;
+	private final NymsAgent nymsAgent;
 	private final StoredMessage message;
-	//private final JavamailUtils javamailUtils;
-	//private final Message rawMessage;
-    //private final Message decryptedMessage;
 	private final Label newMessageIndicator;
 
-	//public MessageHeaderViewer(Composite parent, IdentityManager identityManager, JavamailUtils javamailUtils, Message rawMessage, Message decryptedMessage) {
-	public MessageHeaderViewer(Composite parent, IdentityManager identityManager, StoredMessage message) {
+	public MessageHeaderViewer(Composite parent, NymsAgent nymsAgent, StoredMessage message) {
 		super(parent, SWT.NONE);
-		this.identityManager = identityManager;
-		//this.javamailUtils = javamailUtils;
-        //this.rawMessage = rawMessage;
-        //this.decryptedMessage = decryptedMessage;
+		this.nymsAgent = nymsAgent;
 		this.message = message;
 
 		final GridLayout layout = new GridLayout(3, false);
@@ -171,8 +163,9 @@ public class MessageHeaderViewer extends Composite {
 		//final InternetAddress address = javamailUtils.getSenderAddress((MimeMessage) decryptedMessage);
 		MessageUser sender = message.getSender();
 		if(sender != null) {
-			List<PublicIdentity> identities = identityManager.findPublicKeysByAddress(sender.getAddress());
-			return ImageCache.getInstance().getAvatarImage(sender.getAddress(), identities);
+		  byte[] imageData = nymsAgent.getAvatarImage(sender.getAddress());
+//			List<PublicIdentity> identities = identityManager.findPublicKeysByAddress(sender.getAddress());
+			return ImageCache.getInstance().getAvatarImage(sender.getAddress(), imageData);
 		}
 		return ImageCache.getInstance().getDisabledImage(ImageCache.USER_IMAGE);
 	}

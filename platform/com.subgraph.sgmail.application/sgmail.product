@@ -33,16 +33,16 @@
       <plugin id="com.google.protobuf.java"/>
       <plugin id="com.subgraph.sgmail.api"/>
       <plugin id="com.subgraph.sgmail.autoconf"/>
-      <plugin id="com.subgraph.sgmail.identity"/>
       <plugin id="com.subgraph.sgmail.imap"/>
       <plugin id="com.subgraph.sgmail.javamail"/>
       <plugin id="com.subgraph.sgmail.messages"/>
-      <plugin id="com.subgraph.sgmail.openpgp"/>
+      <plugin id="com.subgraph.sgmail.nyms"/>
       <plugin id="com.subgraph.sgmail.search"/>
       <plugin id="com.subgraph.sgmail.services"/>
       <plugin id="com.subgraph.sgmail.ui"/>
       <plugin id="db4o_osgi"/>
       <plugin id="gnu.trove"/>
+      <plugin id="javax.json-api"/>
       <plugin id="org.eclipse.core.commands"/>
       <plugin id="org.eclipse.core.contenttype"/>
       <plugin id="org.eclipse.core.jobs"/>
@@ -59,16 +59,17 @@
       <plugin id="org.eclipse.swt"/>
       <plugin id="org.eclipse.swt.cocoa.macosx.x86_64" fragment="true"/>
       <plugin id="org.eclipse.swt.gtk.linux.x86_64" fragment="true"/>
+      <plugin id="org.glassfish.javax.json"/>
    </plugins>
 
    <configurations>
       <plugin id="com.subgraph.sgmail.autoconf" autoStart="true" startLevel="0" />
-      <plugin id="com.subgraph.sgmail.identity" autoStart="true" startLevel="0" />
       <plugin id="com.subgraph.sgmail.imap" autoStart="true" startLevel="0" />
       <plugin id="com.subgraph.sgmail.messages" autoStart="true" startLevel="0" />
-      <plugin id="com.subgraph.sgmail.openpgp" autoStart="true" startLevel="0" />
+      <plugin id="com.subgraph.sgmail.nyms" autoStart="true" startLevel="0" />
       <plugin id="com.subgraph.sgmail.search" autoStart="true" startLevel="0" />
       <plugin id="com.subgraph.sgmail.services" autoStart="true" startLevel="0" />
+      <plugin id="com.subgraph.sgmail.ui" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="1" />

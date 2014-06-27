@@ -12,18 +12,16 @@ import com.subgraph.sgmail.accounts.AccountFactory;
 import com.subgraph.sgmail.autoconf.MailserverAutoconfig;
 import com.subgraph.sgmail.database.Database;
 import com.subgraph.sgmail.database.Model;
-import com.subgraph.sgmail.identity.IdentityManager;
 import com.subgraph.sgmail.imap.IMAPFactory;
 import com.subgraph.sgmail.imap.IMAPSynchronizationManager;
 import com.subgraph.sgmail.messages.MessageFactory;
-import com.subgraph.sgmail.openpgp.MessageProcessor;
+import com.subgraph.sgmail.nyms.NymsAgent;
 import com.subgraph.sgmail.search.MessageSearchIndex;
 
 public class Activator implements BundleActivator {
 
 	private static BundleContext context;
 
-	private ServiceTracker<MessageProcessor, MessageProcessor> messageProcessorTracker;
 	private ServiceTracker<MailserverAutoconfig, MailserverAutoconfig> mailserverAutoconfigTracker;
 	private ServiceTracker<IMAPFactory,IMAPFactory> imapFactoryTracker;
 	private ServiceTracker<AccountFactory,AccountFactory> accountFactoryTracker;
@@ -33,9 +31,9 @@ public class Activator implements BundleActivator {
 	private ServiceTracker<Model, Model> modelTracker;
 	private ServiceTracker<IEventBus,IEventBus> eventBusTracker;
 	private ServiceTracker<ListeningExecutorService,ListeningExecutorService> executorTracker;
-	private ServiceTracker<IdentityManager,IdentityManager> identityManagerTracker;
 	private ServiceTracker<JavamailUtils,JavamailUtils> javamailUtilsTracker;
 	private ServiceTracker<MessageSearchIndex,MessageSearchIndex> messageSearchIndexTracker;
+	private ServiceTracker<NymsAgent, NymsAgent> nymsAgentTracker;
 	
 	
 	private static Activator _INSTANCE;
@@ -55,7 +53,6 @@ public class Activator implements BundleActivator {
 	public void start(BundleContext bundleContext) throws Exception {
 		Activator.context = bundleContext;
 		Activator._INSTANCE = this;
-		messageProcessorTracker = openTracker(bundleContext, MessageProcessor.class);
 		mailserverAutoconfigTracker = openTracker(bundleContext, MailserverAutoconfig.class);
 		accountFactoryTracker = openTracker(bundleContext, AccountFactory.class);
 		messageFactoryTracker = openTracker(bundleContext, MessageFactory.class);
@@ -65,9 +62,9 @@ public class Activator implements BundleActivator {
 		modelTracker = openTracker(bundleContext, Model.class);
 		eventBusTracker = openTracker(bundleContext, IEventBus.class);
 		executorTracker = openTracker(bundleContext, ListeningExecutorService.class);
-		identityManagerTracker = openTracker(bundleContext, IdentityManager.class);
 		javamailUtilsTracker = openTracker(bundleContext, JavamailUtils.class);
 		messageSearchIndexTracker = openTracker(bundleContext, MessageSearchIndex.class);
+		nymsAgentTracker = openTracker(bundleContext, NymsAgent.class);
 	}
 	
 	private <T> ServiceTracker<T,T> openTracker(BundleContext ctx, Class<T> clazz) {
@@ -82,10 +79,6 @@ public class Activator implements BundleActivator {
 	 */
 	public void stop(BundleContext bundleContext) throws Exception {
 		Activator.context = null;
-	}
-	
-	public MessageProcessor getMessageProcessor() {
-		return messageProcessorTracker.getService();
 	}
 	
 	public MailserverAutoconfig getMailserverAutoconfig() {
@@ -120,8 +113,8 @@ public class Activator implements BundleActivator {
 		return eventBusTracker.getService();
 	}
 	
-	public IdentityManager getIdentityManager() {
-		return identityManagerTracker.getService();
+	public NymsAgent getNymsAgent() {
+	  return nymsAgentTracker.getService();
 	}
 	
 	public ListeningExecutorService getGlobalExecutor() {

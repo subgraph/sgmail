@@ -4,6 +4,7 @@ import com.db4o.query.Predicate;
 import com.google.common.eventbus.Subscribe;
 import com.subgraph.sgmail.IEventBus;
 import com.subgraph.sgmail.accounts.AccountList;
+import com.subgraph.sgmail.database.ContactManager;
 import com.subgraph.sgmail.database.Database;
 import com.subgraph.sgmail.database.Model;
 import com.subgraph.sgmail.database.Preferences;
@@ -94,4 +95,9 @@ public class ModelService implements Model {
 		database.commit();
 		return preferences;
 	}
+
+  @Override
+  public ContactManager getContactManager() {
+    return database.getSingleton(ContactManagerImpl.class);
+  }
 }

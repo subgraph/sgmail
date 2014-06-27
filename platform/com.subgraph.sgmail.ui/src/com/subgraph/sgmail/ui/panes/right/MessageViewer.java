@@ -1,24 +1,16 @@
 package com.subgraph.sgmail.ui.panes.right;
 
-import com.google.common.base.Charsets;
-import com.google.common.eventbus.Subscribe;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.subgraph.sgmail.IEventBus;
-import com.subgraph.sgmail.JavamailUtils;
-import com.subgraph.sgmail.database.Model;
-import com.subgraph.sgmail.database.Preferences;
-import com.subgraph.sgmail.events.MessageStateChangedEvent;
-import com.subgraph.sgmail.identity.IdentityManager;
-import com.subgraph.sgmail.messages.LocalMimeMessage;
-import com.subgraph.sgmail.messages.MessageAttachment;
-import com.subgraph.sgmail.messages.StoredMessage;
-import com.subgraph.sgmail.ui.attachments.AttachmentPanel;
-import com.subgraph.sgmail.ui.attachments.ImageAttachmentRenderer;
+import java.util.List;
+import java.util.logging.Logger;
 
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
@@ -27,13 +19,19 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Logger;
+import com.google.common.base.Charsets;
+import com.google.common.eventbus.Subscribe;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.subgraph.sgmail.IEventBus;
+import com.subgraph.sgmail.JavamailUtils;
+import com.subgraph.sgmail.database.Model;
+import com.subgraph.sgmail.database.Preferences;
+import com.subgraph.sgmail.events.MessageStateChangedEvent;
+import com.subgraph.sgmail.messages.MessageAttachment;
+import com.subgraph.sgmail.messages.StoredMessage;
+import com.subgraph.sgmail.nyms.NymsAgent;
+import com.subgraph.sgmail.ui.attachments.AttachmentPanel;
+import com.subgraph.sgmail.ui.attachments.ImageAttachmentRenderer;
 
 public class MessageViewer extends Composite {
 	private final static Logger logger = Logger.getLogger(MessageViewer.class.getName());
@@ -65,7 +63,7 @@ public class MessageViewer extends Composite {
 		cr.put("highlight", rgb);
 	}
 	
-	public MessageViewer(Composite parent, final RightPane pane, StoredMessage message, Model model, ListeningExecutorService executor, IEventBus eventBus, IdentityManager identityManager, JavamailUtils javamailUtils) {
+	public MessageViewer(Composite parent, final RightPane pane, StoredMessage message, Model model, ListeningExecutorService executor, IEventBus eventBus, NymsAgent nymsAgent, JavamailUtils javamailUtils) {
 		super(parent, SWT.NONE);
 		final GridLayout layout = new GridLayout();
 		layout.verticalSpacing = 0;
@@ -78,7 +76,7 @@ public class MessageViewer extends Composite {
         this.model = model;
         this.eventBus = eventBus;
 		
-		headerViewer = new MessageHeaderViewer(this, identityManager, message);
+		headerViewer = new MessageHeaderViewer(this, nymsAgent, message);
 		headerViewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		bodyViewer = new MessageBodyViewer(this, message);
 		bodyViewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));

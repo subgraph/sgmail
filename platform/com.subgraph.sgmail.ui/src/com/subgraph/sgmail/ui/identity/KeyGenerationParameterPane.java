@@ -6,20 +6,19 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import com.subgraph.sgmail.identity.KeyGenerationParameters;
-
 public class KeyGenerationParameterPane extends Composite {
 
-	private final KeyGenerationParameters parameters;
+//	private final KeyGenerationParameters parameters;
 	private final Label emailLabel;
 	private final Label signingKey;
 	private final Label encryptionKey;
 	private final Label expiryLabel;
 	
-	KeyGenerationParameterPane(Composite parent, KeyGenerationParameters parameters) {
+//	KeyGenerationParameterPane(Composite parent, KeyGenerationParameters parameters) {
+	KeyGenerationParameterPane(Composite parent /*KeyGenerationParameters parameters*/) {
 		super(parent, SWT.NONE);
 		this.setLayout(new GridLayout(2, false));
-		this.parameters = parameters;
+//		this.parameters = parameters;
 		emailLabel = createLabel("Email:");
 		
 		signingKey = createLabel("Signing key: ");
@@ -39,13 +38,15 @@ public class KeyGenerationParameterPane extends Composite {
 	}
 	
 	public void refresh() {
-		emailLabel.setText(parameters.getEmailAddress());
+//		emailLabel.setText(parameters.getEmailAddress());
 		signingKey.setText(getSigningKeyText());
 		encryptionKey.setText(getEncryptionKeyText());
 		expiryLabel.setText("No expiry");
 	}
 	
 	private String getEncryptionKeyText() {
+	  return null;
+	  /*
 		final String bits = "("+ getKeyLengthText(parameters.getEncryptionKeyLength()) + " bits)";
 		switch(parameters.getKeyType()) {
 		case RSA_AND_RSA:
@@ -58,9 +59,11 @@ public class KeyGenerationParameterPane extends Composite {
 		default:
 			throw new IllegalArgumentException();
 		}
+		*/
 	}
 	
 	private String getSigningKeyText() {
+	  /*
 		String bits = "("+ getKeyLengthText(parameters.getSigningKeyLength()) + " bits)";
 		switch(parameters.getKeyType()) {
 		case RSA_AND_RSA:
@@ -72,8 +75,11 @@ public class KeyGenerationParameterPane extends Composite {
 		default:
 			throw new IllegalArgumentException();
 		}
+		*/
+	  return null;
 	}
 	
+	/*
 	private String getKeyLengthText(KeyGenerationParameters.KeyLength length) {
 		switch(length) {
 		case KEY_1024:
@@ -88,4 +94,5 @@ public class KeyGenerationParameterPane extends Composite {
 			throw new IllegalArgumentException();
 		}
 	}
+	*/
 }

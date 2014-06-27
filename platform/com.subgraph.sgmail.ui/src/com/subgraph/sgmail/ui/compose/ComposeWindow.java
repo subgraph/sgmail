@@ -1,7 +1,5 @@
 package com.subgraph.sgmail.ui.compose;
 
-import javax.mail.Message;
-
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
@@ -18,9 +16,8 @@ import com.subgraph.sgmail.IEventBus;
 import com.subgraph.sgmail.JavamailUtils;
 import com.subgraph.sgmail.database.Model;
 import com.subgraph.sgmail.database.StoredUserInterfaceState;
-import com.subgraph.sgmail.identity.IdentityManager;
 import com.subgraph.sgmail.messages.StoredMessage;
-import com.subgraph.sgmail.openpgp.MessageProcessor;
+import com.subgraph.sgmail.nyms.NymsAgent;
 
 public class ComposeWindow extends Window {
 
@@ -28,26 +25,24 @@ public class ComposeWindow extends Window {
 	
 	private final JavamailUtils javamailUtils;
 	private final IEventBus eventBus;
-	private final MessageProcessor messageProcessor;
-	private final IdentityManager identityManager;
+	private final NymsAgent nymsAgent;
 	private final Model model;
 
 	private final StoredMessage message;
 	private final boolean isReplyAll;
 	
-	public ComposeWindow(Shell parentShell, JavamailUtils javamailUtils, IEventBus eventBus, MessageProcessor messageProcessor, IdentityManager identityManager, Model model, StoredMessage replyMessage, boolean isReplyAll) {
+	public ComposeWindow(Shell parentShell, JavamailUtils javamailUtils, IEventBus eventBus, NymsAgent nymsAgent, Model model, StoredMessage replyMessage, boolean isReplyAll) {
 		super(parentShell);
 		this.javamailUtils = javamailUtils;
 		this.eventBus = eventBus;
-		this.messageProcessor = messageProcessor;
-		this.identityManager = identityManager;
+		this.nymsAgent = nymsAgent;
 		this.model = model;
 		this.message = replyMessage;
 		this.isReplyAll = isReplyAll;
 	}
 	
-	public ComposeWindow(Shell parentShell, JavamailUtils javamailUtils, IEventBus eventBus, MessageProcessor messageProcessor, IdentityManager identityManager, Model model) {
-		this(parentShell, javamailUtils, eventBus, messageProcessor, identityManager, model, null, false);
+	public ComposeWindow(Shell parentShell, JavamailUtils javamailUtils, IEventBus eventBus, NymsAgent nymsAgent, Model model) {
+		this(parentShell, javamailUtils, eventBus, nymsAgent, model, null, false);
 	}
 
 	protected Point getInitialSize() {
@@ -71,7 +66,7 @@ public class ComposeWindow extends Window {
 	}
 
 	protected Control createContents(Composite parent) {
-		composer = new MessageComposer(parent, javamailUtils, eventBus, messageProcessor, identityManager, model, message, isReplyAll, createCloseListener());
+		composer = new MessageComposer(parent, javamailUtils, eventBus, nymsAgent, model, message, isReplyAll, createCloseListener());
 		composer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		return composer;
 	}

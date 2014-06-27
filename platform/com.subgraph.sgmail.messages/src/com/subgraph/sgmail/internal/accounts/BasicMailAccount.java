@@ -13,7 +13,6 @@ import com.subgraph.sgmail.accounts.ServerDetails;
 import com.subgraph.sgmail.database.Database;
 import com.subgraph.sgmail.database.Preferences;
 import com.subgraph.sgmail.database.Storeable;
-import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.internal.messages.StoredFolderImpl;
 import com.subgraph.sgmail.internal.messages.StoredMessageLabelCollectionImpl;
 import com.subgraph.sgmail.messages.StoredFolder;
@@ -44,7 +43,7 @@ public class BasicMailAccount implements MailAccount, Storeable, Activatable {
     private final TIntObjectHashMap<StoredMessage> messagesById = new TIntObjectHashMap<>();
 
 
-    private PrivateIdentity identity;
+//    private PrivateIdentity identity;
     private String realname;
     private String label;
 
@@ -160,6 +159,7 @@ public class BasicMailAccount implements MailAccount, Storeable, Activatable {
     }
 
 
+    /*
     @Override
     public void setIdentity(PrivateIdentity identity) {
         activate(ActivationPurpose.WRITE);
@@ -173,6 +173,7 @@ public class BasicMailAccount implements MailAccount, Storeable, Activatable {
         activate(ActivationPurpose.READ);
         return identity;
     }
+    */
 
     public void addMessages(Collection<StoredMessage> messages) {
         try {

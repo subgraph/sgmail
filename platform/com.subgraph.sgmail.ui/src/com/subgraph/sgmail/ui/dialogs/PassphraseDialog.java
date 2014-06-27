@@ -1,9 +1,5 @@
 package com.subgraph.sgmail.ui.dialogs;
 
-import com.subgraph.sgmail.identity.PrivateIdentity;
-import com.subgraph.sgmail.openpgp.OpenPGPException;
-import com.subgraph.sgmail.ui.identity.PublicIdentityPane;
-
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
@@ -11,16 +7,24 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
+
+import com.subgraph.sgmail.ui.identity.PublicIdentityPane;
 
 public class PassphraseDialog extends TitleAreaDialog {
 
-    private final PrivateIdentity identity;
+//    private final PrivateIdentity identity;
     private Text passphraseText;
 
-    public PassphraseDialog(Shell parentShell, PrivateIdentity identity) {
+//    public PassphraseDialog(Shell parentShell, PrivateIdentity identity) {
+    public PassphraseDialog(Shell parentShell) {
         super(parentShell);
-        this.identity = identity;
+//        this.identity = identity;
     }
 
     protected Control createContents(Composite parent) {
@@ -45,7 +49,7 @@ public class PassphraseDialog extends TitleAreaDialog {
         composite.setLayout(new GridLayout(2, false));
 
         final PublicIdentityPane publicIdentityPane = new PublicIdentityPane(composite, null, false);
-        publicIdentityPane.displayIdentity(identity.getPublicIdentity(), identity);
+//        publicIdentityPane.displayIdentity(identity.getPublicIdentity(), identity);
         publicIdentityPane.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 
         final Label label = new Label(composite, SWT.NONE);
@@ -70,6 +74,7 @@ public class PassphraseDialog extends TitleAreaDialog {
 
     protected void okPressed() {
 
+      /*
         final String passphrase = passphraseText.getText();
 
         if(identity.isValidPassphrase(passphrase)) {
@@ -83,6 +88,7 @@ public class PassphraseDialog extends TitleAreaDialog {
                 return;
             }
         }
+        */
 
         setErrorMessage("Invalid passphrase");
 

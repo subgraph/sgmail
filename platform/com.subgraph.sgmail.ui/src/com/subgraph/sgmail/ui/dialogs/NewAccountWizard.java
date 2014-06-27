@@ -6,11 +6,10 @@ import org.eclipse.jface.wizard.Wizard;
 import com.subgraph.sgmail.accounts.AccountList;
 import com.subgraph.sgmail.database.Database;
 import com.subgraph.sgmail.database.Model;
-import com.subgraph.sgmail.identity.IdentityManager;
-import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.imap.IMAPAccount;
 import com.subgraph.sgmail.imap.IMAPAccountList;
 import com.subgraph.sgmail.imap.IMAPFactory;
+import com.subgraph.sgmail.nyms.NymsAgent;
 import com.subgraph.sgmail.ui.identity.IdentityCreationPage;
 
 public class NewAccountWizard extends Wizard {
@@ -23,12 +22,12 @@ public class NewAccountWizard extends Wizard {
     private final IdentityPublicationPage identityPublicationPage;
 	private final AccountCreationFinishedPage finishedPage;
 	
-	public NewAccountWizard(Model model, IMAPFactory imapFactory, IdentityManager identityManager) {
+	public NewAccountWizard(Model model, IMAPFactory imapFactory, NymsAgent nymsAgent) {
 		this.model = model;
 		this.imapFactory = imapFactory;
 		this.accountDetailsPage = new AccountDetailsPage(model);
         this.identityPublicationPage = new IdentityPublicationPage(model, accountDetailsPage);
-		this.identityCreationPage = new IdentityCreationPage(identityManager, accountDetailsPage, identityPublicationPage);
+		this.identityCreationPage = new IdentityCreationPage(nymsAgent, accountDetailsPage, identityPublicationPage);
 		this.finishedPage = new AccountCreationFinishedPage();
 		//setNeedsProgressMonitor(true);
 	}
@@ -69,10 +68,12 @@ public class NewAccountWizard extends Wizard {
         accountList.addAccount(imapAccount.getMailAccount());
         final IMAPAccountList imapAccountList = getIMAPAccountList();
         imapAccountList.addAccount(imapAccount);
+        /*
         final PrivateIdentity identity = identityCreationPage.getIdentity();
         if(identity != null) {
             imapAccount.getMailAccount().setIdentity(identity);
         }
+        */
         return true;
 	}
 

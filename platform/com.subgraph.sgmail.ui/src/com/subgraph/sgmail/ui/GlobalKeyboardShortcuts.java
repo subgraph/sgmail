@@ -1,5 +1,15 @@
 package com.subgraph.sgmail.ui;
 
+import java.util.Map;
+
+import org.eclipse.jface.window.ApplicationWindow;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
+
 import com.google.common.collect.ImmutableMap;
 import com.subgraph.sgmail.IEventBus;
 import com.subgraph.sgmail.JavamailUtils;
@@ -9,15 +19,8 @@ import com.subgraph.sgmail.events.DeleteMessageEvent;
 import com.subgraph.sgmail.events.NextMessageEvent;
 import com.subgraph.sgmail.events.PreviousMessageEvent;
 import com.subgraph.sgmail.events.ReplyMessageEvent;
-import com.subgraph.sgmail.identity.IdentityManager;
-import com.subgraph.sgmail.openpgp.MessageProcessor;
+import com.subgraph.sgmail.nyms.NymsAgent;
 import com.subgraph.sgmail.ui.compose.ComposeWindow;
-
-import org.eclipse.jface.window.ApplicationWindow;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.*;
-
-import java.util.Map;
 
 public class GlobalKeyboardShortcuts {
 
@@ -41,21 +44,18 @@ public class GlobalKeyboardShortcuts {
 	private final Model model;
 	private final JavamailUtils javamailUtils;
 	private final IEventBus eventBus;
-	private final MessageProcessor messageProcessor;
-	private final IdentityManager identityManager;
-	
+	private final NymsAgent nymsAgent;
 
-	public GlobalKeyboardShortcuts(ApplicationWindow mainWindow, Model model, JavamailUtils javamailUtils, IEventBus eventBus, MessageProcessor messageProcessor, IdentityManager identityManager) {
+	public GlobalKeyboardShortcuts(ApplicationWindow mainWindow, Model model, JavamailUtils javamailUtils, IEventBus eventBus, NymsAgent nymsAgent) {
 		this.mainWindow = mainWindow;
 		this.model = model;
 		this.javamailUtils = javamailUtils;
 		this.eventBus = eventBus;
-		this.messageProcessor = messageProcessor;
-		this.identityManager = identityManager;
+		this.nymsAgent = nymsAgent;
 	}
 	
-	public static GlobalKeyboardShortcuts install(ApplicationWindow mainWindow, Model model, JavamailUtils javamailUtils, IEventBus eventBus, MessageProcessor messageProcessor, IdentityManager identityManager) {
-		final GlobalKeyboardShortcuts gks = new GlobalKeyboardShortcuts(mainWindow, model, javamailUtils, eventBus, messageProcessor, identityManager);
+	public static GlobalKeyboardShortcuts install(ApplicationWindow mainWindow, Model model, JavamailUtils javamailUtils, IEventBus eventBus, NymsAgent nymsAgent) {
+		final GlobalKeyboardShortcuts gks = new GlobalKeyboardShortcuts(mainWindow, model, javamailUtils, eventBus, nymsAgent);
 		gks.install();
 		return gks;
 	}
@@ -99,7 +99,7 @@ public class GlobalKeyboardShortcuts {
 		if(c == 'c') {
 			final AccountList accountList = model.getAccountList();
             if(!accountList.getAccounts().isEmpty()) {
-                ComposeWindow compose = new ComposeWindow(Display.getDefault().getActiveShell(), javamailUtils, eventBus, messageProcessor, identityManager, model);
+                ComposeWindow compose = new ComposeWindow(Display.getDefault().getActiveShell(), javamailUtils, eventBus, nymsAgent, model);
                 compose.open();
                 return true;
             }

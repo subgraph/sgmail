@@ -1,6 +1,11 @@
 package com.subgraph.sgmail.ui;
 
-import com.subgraph.sgmail.identity.PublicIdentity;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
@@ -8,14 +13,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ImageCache {
 	public final static String USER_IMAGE = "user_64x64.png";
@@ -54,6 +51,7 @@ public class ImageCache {
 	private final Map<String, Image> disabledMap = new HashMap<>();
 	private final Map<String, Image> avatarMap = new HashMap<>();
 	
+	/*
 	public Image getAvatarImage(String email, List<PublicIdentity> identities) {
 		if(!avatarMap.containsKey(email)) {
 			avatarMap.put(email, createAvatarImage(email, identities));
@@ -69,6 +67,14 @@ public class ImageCache {
 			}
 		}
 		return getDisabledImage(USER_IMAGE);
+	}
+
+*/
+	public Image getAvatarImage(String email, byte[] imageBytes) {
+	  if(!avatarMap.containsKey(email) && imageBytes != null && imageBytes.length > 0) {
+	    return createAvatarImage(imageBytes);
+	  }
+	  return getDisabledImage(USER_IMAGE);
 	}
 
 	public Image createAvatarImage(byte[] imageBytes) {

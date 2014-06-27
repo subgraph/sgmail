@@ -1,27 +1,8 @@
 package com.subgraph.sgmail.ui.compose;
 
-import com.subgraph.sgmail.accounts.MailAccount;
-import com.subgraph.sgmail.identity.Contact;
-import com.subgraph.sgmail.identity.IdentityManager;
-import com.subgraph.sgmail.identity.PrivateIdentity;
-import com.subgraph.sgmail.identity.PublicIdentity;
-import com.subgraph.sgmail.openpgp.MessageProcessor;
-import com.subgraph.sgmail.openpgp.OpenPGPException;
-
-import org.bouncycastle.openpgp.PGPException;
-
-import javax.mail.Address;
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-
-import java.io.IOException;
-import java.security.SignatureException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class OpenPGPProcessing {
+  /*
 	private final MessageProcessor processor;
 	private final IdentityManager identityManager;
 	private final MailAccount account;
@@ -145,4 +126,5 @@ public class OpenPGPProcessing {
             return c.getLocalPublicKeys();
         }
 	}
+	*/
 }

@@ -1,26 +1,33 @@
 package com.subgraph.sgmail.ui.identity;
 
-import com.subgraph.sgmail.database.Model;
-import com.subgraph.sgmail.identity.PrivateIdentity;
-import com.subgraph.sgmail.identity.PublicIdentity;
-import com.subgraph.sgmail.ui.ImageCache;
-
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+
+import com.subgraph.sgmail.database.Model;
+import com.subgraph.sgmail.ui.ImageCache;
 
 public class PublicIdentityPane extends Composite {
 
@@ -30,8 +37,8 @@ public class PublicIdentityPane extends Composite {
     private final Image defaultImage;
     private final Button editImageButton;
     private final Model model;
-    private PublicIdentity publicIdentity;
-    private PrivateIdentity privateIdentity;
+//    private PublicIdentity publicIdentity;
+//    private PrivateIdentity privateIdentity;
 
     public PublicIdentityPane(Composite composite, Model model, boolean editImage) {
         super(composite, SWT.NONE);
@@ -69,10 +76,10 @@ public class PublicIdentityPane extends Composite {
         try {
             byte[] bs = Files.readAllBytes(path);
             byte[] converted = convertImage(bs);
-            if(privateIdentity != null) {
-                privateIdentity.addImageData(converted);
-                model.getDatabase().commit();
-            }
+//            if(privateIdentity != null) {
+//                privateIdentity.addImageData(converted);
+//                model.getDatabase().commit();
+//            }
             keyImageLabel.setImage(ImageCache.getInstance().createAvatarImage(converted));
         } catch (IOException e) {
             e.printStackTrace();
@@ -119,7 +126,7 @@ public class PublicIdentityPane extends Composite {
     }
 
 
-
+/*
     public void displayIdentity(PublicIdentity publicIdentity, PrivateIdentity privateIdentity) {
         final Image oldImage = keyImageLabel.getImage();
         if(oldImage != defaultImage) {
@@ -138,6 +145,7 @@ public class PublicIdentityPane extends Composite {
         this.privateIdentity = privateIdentity;
         layout(true, true);
     }
+    */
 
     private Label createKeyInformationLabel(Composite parent) {
         final Label label = new Label(parent, SWT.NONE);

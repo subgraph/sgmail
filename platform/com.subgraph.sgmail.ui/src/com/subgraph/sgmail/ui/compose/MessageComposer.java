@@ -1,14 +1,11 @@
 package com.subgraph.sgmail.ui.compose;
 
-import com.google.common.base.Splitter;
-import com.subgraph.sgmail.IEventBus;
-import com.subgraph.sgmail.JavamailUtils;
-import com.subgraph.sgmail.accounts.MailAccount;
-import com.subgraph.sgmail.database.Model;
-import com.subgraph.sgmail.identity.IdentityManager;
-import com.subgraph.sgmail.messages.MessageUser;
-import com.subgraph.sgmail.messages.StoredMessage;
-import com.subgraph.sgmail.openpgp.MessageProcessor;
+import java.io.File;
+import java.text.DateFormat;
+import java.util.Date;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -26,13 +23,14 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-
-import java.io.File;
-import java.text.DateFormat;
-import java.util.Date;
+import com.google.common.base.Splitter;
+import com.subgraph.sgmail.IEventBus;
+import com.subgraph.sgmail.JavamailUtils;
+import com.subgraph.sgmail.accounts.MailAccount;
+import com.subgraph.sgmail.database.Model;
+import com.subgraph.sgmail.messages.MessageUser;
+import com.subgraph.sgmail.messages.StoredMessage;
+import com.subgraph.sgmail.nyms.NymsAgent;
 
 public class MessageComposer extends Composite {
 
@@ -43,13 +41,13 @@ public class MessageComposer extends Composite {
 	private final ComposerHeader headerSection;
 	private StyledText bodyText;
 	
-	MessageComposer(Composite parent, JavamailUtils javamailUtils, IEventBus eventBus, MessageProcessor messageProcessor, IdentityManager identityManager, Model model, ComposeCloseListener closeListener) {
-		this(parent, javamailUtils, eventBus, messageProcessor, identityManager, model, null, false, closeListener);
+	MessageComposer(Composite parent, JavamailUtils javamailUtils, IEventBus eventBus, NymsAgent nymsAgent, Model model, ComposeCloseListener closeListener) {
+		this(parent, javamailUtils, eventBus, nymsAgent, model, null, false, closeListener);
 	}
 	
-	MessageComposer(Composite parent, JavamailUtils javamailUtils, IEventBus eventBus, MessageProcessor messageProcessor, IdentityManager identityManager, Model model, StoredMessage replyMessage, boolean isReplyAll, ComposeCloseListener closeListener) {
+	MessageComposer(Composite parent, JavamailUtils javamailUtils, IEventBus eventBus, NymsAgent nymsAgent, Model model, StoredMessage replyMessage, boolean isReplyAll, ComposeCloseListener closeListener) {
 		super(parent, SWT.NONE);
-        this.state = new MessageCompositionState(eventBus, messageProcessor, identityManager, this, replyMessage);
+        this.state = new MessageCompositionState(eventBus, nymsAgent, model.getContactManager(), this, replyMessage);
 		this.closeListener = closeListener;
 		setLayout(createLayout());
 		

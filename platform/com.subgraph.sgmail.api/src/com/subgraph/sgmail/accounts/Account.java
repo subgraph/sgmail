@@ -3,7 +3,6 @@ package com.subgraph.sgmail.accounts;
 import ca.odell.glazedlists.EventList;
 
 import com.subgraph.sgmail.database.Preferences;
-import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.messages.StoredFolder;
 import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.messages.StoredMessageLabel;
@@ -14,8 +13,8 @@ import java.util.List;
 
 public interface Account {
     String getLabel();
-    void setIdentity(PrivateIdentity identity);
-    PrivateIdentity getIdentity();
+//    void setIdentity(PrivateIdentity identity);
+//    PrivateIdentity getIdentity();
     List<StoredMessageLabel> getMessageLabels();
     StoredMessageLabel getMessageLabelByName(String name);
 

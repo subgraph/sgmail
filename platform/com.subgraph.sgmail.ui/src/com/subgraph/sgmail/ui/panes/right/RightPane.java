@@ -1,6 +1,5 @@
 package com.subgraph.sgmail.ui.panes.right;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,11 +7,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-
-import org.bouncycastle.openpgp.PGPException;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ControlAdapter;
@@ -29,8 +23,6 @@ import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.subgraph.sgmail.IEventBus;
 import com.subgraph.sgmail.JavamailUtils;
-import com.subgraph.sgmail.accounts.Account;
-import com.subgraph.sgmail.accounts.AccountList;
 import com.subgraph.sgmail.database.Model;
 import com.subgraph.sgmail.events.ConversationSelectedEvent;
 import com.subgraph.sgmail.events.DeleteMessageEvent;
@@ -40,22 +32,17 @@ import com.subgraph.sgmail.events.NextMessageEvent;
 import com.subgraph.sgmail.events.PreviousMessageEvent;
 import com.subgraph.sgmail.events.ReplyMessageEvent;
 import com.subgraph.sgmail.events.SearchQueryChangedEvent;
-import com.subgraph.sgmail.identity.IdentityManager;
-import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.messages.StoredMessage;
-import com.subgraph.sgmail.openpgp.MessageProcessor;
-import com.subgraph.sgmail.openpgp.OpenPGPException;
+import com.subgraph.sgmail.nyms.NymsAgent;
 import com.subgraph.sgmail.ui.compose.ComposeWindow;
-import com.subgraph.sgmail.ui.dialogs.PassphraseDialog;
 
 public class RightPane extends Composite {
 	private final static Logger logger = Logger.getLogger(RightPane.class.getName());
 	
-	private final MessageProcessor messageProcessor;
+	private final NymsAgent nymsAgent;
 	private final Model model;
 	private final ListeningExecutorService globalExecutor;
 	private final IEventBus eventBus;
-	private final IdentityManager identityManager;
 	private final JavamailUtils javamailUtils;
 	
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -69,13 +56,12 @@ public class RightPane extends Composite {
 	private int currentIndex = 0;
     private List<String> currentHighlightTerms;
 	
-	public RightPane(Composite parent, MessageProcessor messageProcessor, Model model, ListeningExecutorService executor, IEventBus eventBus, IdentityManager identityManager, JavamailUtils javamailUtils) {
+	public RightPane(Composite parent, NymsAgent nymsAgent, Model model, ListeningExecutorService executor, IEventBus eventBus, JavamailUtils javamailUtils) {
 		super(parent, SWT.NONE);
-		this.messageProcessor = messageProcessor;
+		this.nymsAgent = nymsAgent;
 		this.model = model;
 		this.globalExecutor = executor;
 		this.eventBus = eventBus;
-		this.identityManager = identityManager;
 		this.javamailUtils = javamailUtils;
 		
 		setLayout(new FillLayout());
@@ -224,7 +210,7 @@ public class RightPane extends Composite {
 	public void onReplyMessage(ReplyMessageEvent event) {
 		if(currentIndex < messageViewers.size()) {
 			MessageViewer mv = messageViewers.get(currentIndex);
-			ComposeWindow compose = new ComposeWindow(getDisplay().getActiveShell(), javamailUtils, eventBus, messageProcessor, identityManager, model, mv.getMessage(), event.isReplyAll());
+			ComposeWindow compose = new ComposeWindow(getDisplay().getActiveShell(), javamailUtils, eventBus, nymsAgent, model, mv.getMessage(), event.isReplyAll());
 			compose.open();
 		}
 	}
@@ -289,7 +275,7 @@ public class RightPane extends Composite {
 				}
 				if(!m.isFlagSet(StoredMessage.FLAG_DELETED)) {
 					if(m.isFlagSet(StoredMessage.FLAG_ENCRYPTED)) {
-						maybeDecryptMessage(m);
+//						maybeDecryptMessage(m);
 					}
 					addMessageViewer(m, idx);
 					idx += 1;
@@ -303,6 +289,7 @@ public class RightPane extends Composite {
 				}
 			});
 		}
+		/*
 
 		private PrivateIdentity findDecryptIdentity(List<Long> keyIds) {
 
@@ -376,6 +363,7 @@ public class RightPane extends Composite {
 				e.printStackTrace();
 			}
 		}
+		*/
 
 		private void addMessageViewer(final StoredMessage message, final int idx) {
 			getDisplay().asyncExec(new Runnable() {
@@ -384,7 +372,7 @@ public class RightPane extends Composite {
 						finished = true;
 						return;
 					}
-					final MessageViewer mv = new MessageViewer(composite, RightPane.this, message, model, globalExecutor, eventBus, identityManager, javamailUtils);
+					final MessageViewer mv = new MessageViewer(composite, RightPane.this, message, model, globalExecutor, eventBus, nymsAgent, javamailUtils);
 					mv.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 					// Update size for first three and every 10th after that
 					if(idx < 3 || (idx % 10) == 0) {

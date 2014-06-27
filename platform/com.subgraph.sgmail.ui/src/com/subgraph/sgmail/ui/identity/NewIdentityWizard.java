@@ -4,7 +4,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 
 import com.subgraph.sgmail.accounts.MailAccount;
-import com.subgraph.sgmail.identity.IdentityManager;
+import com.subgraph.sgmail.nyms.NymsAgent;
 
 public class NewIdentityWizard extends Wizard {
 
@@ -12,11 +12,12 @@ public class NewIdentityWizard extends Wizard {
 	
 	//private final KeyGenerationParameters parameters = new KeyGenerationParameters(); 
 	private final IdentityCreationPage page1;
-	private final NewKeysPage newKeysPage = new NewKeysPage(null);
+	private final NewKeysPage newKeysPage = new NewKeysPage();
 	
 	
-	public NewIdentityWizard(IdentityManager identityManager, MailAccount account) {
-		this.page1 = new IdentityCreationPage(identityManager, null, null);
+	
+	public NewIdentityWizard(NymsAgent nymsAgent, MailAccount account) {
+		this.page1 = new IdentityCreationPage(nymsAgent, null, null);
 		//parameters.setEmailAddress(account.getEmailAddress());
 		//parameters.setRealName(account.getRealname());
 	}

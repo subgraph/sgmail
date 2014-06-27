@@ -11,7 +11,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
 import com.subgraph.sgmail.database.Model;
-import com.subgraph.sgmail.identity.PrivateIdentity;
 import com.subgraph.sgmail.ui.Resources;
 import com.subgraph.sgmail.ui.identity.PublicIdentityPane;
 
@@ -19,7 +18,7 @@ public class IdentityPublicationPage extends WizardPage {
 
 	private final Model model;
     private final AccountDetailsPage accountDetailsPage;
-    private PrivateIdentity identity;
+//    private PrivateIdentity identity;
     private PublicIdentityPane publicIdentityPane;
     private Label errorLabel;
     private Button publishButton;
@@ -33,11 +32,13 @@ public class IdentityPublicationPage extends WizardPage {
         this.accountDetailsPage = accountDetailsPage;
 	}
 
+	/*
     public void setIdentity(PrivateIdentity identity) {
         this.identity = identity;
         publicIdentityPane.displayIdentity(identity.getPublicIdentity(), identity);
 
     }
+    */
 
 	@Override
 	public void createControl(Composite parent) {
