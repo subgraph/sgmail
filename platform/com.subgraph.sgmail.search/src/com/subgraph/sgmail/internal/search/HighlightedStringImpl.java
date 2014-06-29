@@ -7,7 +7,7 @@ import com.google.common.collect.TreeRangeSet;
 import com.subgraph.sgmail.search.HighlightedString;
 
 class HighlightedStringImpl implements HighlightedString {
-    final static HighlightedStringImpl EMPTY = new HighlightedStringImpl("", ImmutableRangeSet.of());
+    final static HighlightedStringImpl EMPTY = new HighlightedStringImpl("");
 
     private final static String TAG_START = "<b>";
     private final static String TAG_END = "</b>";
@@ -42,6 +42,10 @@ class HighlightedStringImpl implements HighlightedString {
     private final String string;
     private final RangeSet<Integer> highlightedRanges;
 
+    private HighlightedStringImpl(String string) {
+    	this.string = string;
+    	this.highlightedRanges = ImmutableRangeSet.of();
+    }
     private HighlightedStringImpl(String string, RangeSet<Integer> highlightedRanges) {
         this.string = string;
         this.highlightedRanges = highlightedRanges;
