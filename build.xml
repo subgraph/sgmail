@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <project name="sgmail.build" default="all">
 
-	<property name="buildpack.version" value="04212014" />
+	<property name="buildpack.version" value="06282014" />
 
 	<import file="build/ant/setup-targets.xml" />
 	<import file="build/ant/buildpack-targets.xml" />
