@@ -7,9 +7,16 @@ public interface NymsAgent {
 	
   boolean hasSigningKey(String emailAddress) throws NymsAgentException;
   boolean hasKeyForAddress(String emailAddress) throws NymsAgentException;
-  byte[] getAvatarImage(String emailAddress);
+  NymsKeyInfo getKeyInfo(String emailAddress) throws NymsAgentException;
+  byte[] getAvatarImage(String emailAddress) throws NymsAgentException;
 	
   MimeMessage processIncomingMessage(MimeMessage incomingMessage) throws NymsAgentException;
 
   MimeMessage processOutgoingMessage(MimeMessage outgoingMessage) throws NymsAgentException;
+
+  NymsKeyGenerationParameters createKeyGenerationParameters(String emailAddress);
+  NymsKeyInfo generateKeys(NymsKeyGenerationParameters parameters) throws NymsAgentException;
+  
+  boolean unlockPrivateKey(NymsKeyInfo key, String passphrase) throws NymsAgentException;
+  
 }

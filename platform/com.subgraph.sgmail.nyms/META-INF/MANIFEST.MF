@@ -7,9 +7,11 @@ Bundle-Vendor: SUBGRAPH
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: com.google.common.base;version="15.0.0",
  com.subgraph.sgmail.nyms,
- javax.json;version="1.0.0",
  javax.mail,
  javax.mail.internet,
  org.osgi.framework;version="1.3.0"
 Service-Component: OSGI-INF/nyms.xml
 Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: lib/javax.json-1.0.4.jar,
+ lib/javax.json-api-1.0.jar,
+ .

@@ -3,6 +3,8 @@ package com.subgraph.sgmail.ui.panes.right;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.mail.MessagingException;
 
@@ -26,10 +28,13 @@ import com.google.common.base.Charsets;
 import com.subgraph.sgmail.messages.MessageUser;
 import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.nyms.NymsAgent;
+import com.subgraph.sgmail.nyms.NymsAgentException;
 import com.subgraph.sgmail.ui.ImageCache;
 import com.subgraph.sgmail.ui.Resources;
 
 public class MessageHeaderViewer extends Composite {
+  private final static Logger logger = Logger.getLogger(MessageHeaderViewer.class.getName());
+
 	private final static long TIME_24_HOURS = (24 * 60 * 60 * 1000);
 	
 	private final static SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
@@ -163,11 +168,23 @@ public class MessageHeaderViewer extends Composite {
 		//final InternetAddress address = javamailUtils.getSenderAddress((MimeMessage) decryptedMessage);
 		MessageUser sender = message.getSender();
 		if(sender != null) {
-		  byte[] imageData = nymsAgent.getAvatarImage(sender.getAddress());
-//			List<PublicIdentity> identities = identityManager.findPublicKeysByAddress(sender.getAddress());
-			return ImageCache.getInstance().getAvatarImage(sender.getAddress(), imageData);
+        final byte[] imageData = getImageDataForEmail(sender.getAddress());
+        if(imageData != null) {
+          return ImageCache.getInstance().getAvatarImage(sender.getAddress(), imageData);
+        }
 		}
 		return ImageCache.getInstance().getDisabledImage(ImageCache.USER_IMAGE);
+	}	
+
+	private byte[] getImageDataForEmail(String emailAddress) {
+	  try {
+	    if(emailAddress != null) {
+	      return nymsAgent.getAvatarImage(emailAddress);
+	    }
+    } catch (NymsAgentException e) {
+        logger.log(Level.WARNING, "Nyms agent error "+ e.getMessage(), e);
+    }
+	  return null;
 	}
 	
 	void updateNewMessageIndicator() {

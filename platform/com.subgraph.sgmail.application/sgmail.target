@@ -12,13 +12,13 @@
 <plugin id="com.google.protobuf.java"/>
 <plugin id="db4o_osgi"/>
 <plugin id="gnu.trove"/>
-<plugin id="javax.json-api"/>
 <plugin id="org.eclipse.core.commands"/>
 <plugin id="org.eclipse.core.contenttype"/>
 <plugin id="org.eclipse.core.jobs"/>
 <plugin id="org.eclipse.core.runtime"/>
 <plugin id="org.eclipse.equinox.app"/>
 <plugin id="org.eclipse.equinox.common"/>
+<plugin id="org.eclipse.equinox.console"/>
 <plugin id="org.eclipse.equinox.ds"/>
 <plugin id="org.eclipse.equinox.preferences"/>
 <plugin id="org.eclipse.equinox.registry"/>
@@ -29,6 +29,5 @@
 <plugin id="org.eclipse.swt"/>
 <plugin id="org.eclipse.swt.cocoa.macosx.x86_64"/>
 <plugin id="org.eclipse.swt.gtk.linux.x86_64"/>
-<plugin id="org.glassfish.javax.json"/>
 </includeBundles>
 </target>

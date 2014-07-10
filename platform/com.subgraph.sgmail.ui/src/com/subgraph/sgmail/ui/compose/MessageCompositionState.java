@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -21,6 +22,7 @@ import com.subgraph.sgmail.nyms.NymsAgent;
 import com.subgraph.sgmail.nyms.NymsAgentException;
 
 public class MessageCompositionState {
+  private final static Logger logger = Logger.getLogger(MessageCompositionState.class.getName());
 
   private final NymsAgent nymsAgent;
   private final ContactManager contactManager;
@@ -80,14 +82,11 @@ public class MessageCompositionState {
     MimeMessage msg = new MessageBuilder(this).createMessage();
     msg.setText(bodyText);
     if (isSigningRequested || isEncryptRequested) {
-      throw new RuntimeException("implement openpgp");
-      /*
-      OpenPGPProcessing openpgp = new OpenPGPProcessing(messageProcessor, identityManager, selectedAccount, msg,
-          isEncryptRequested, isSigningRequested);
-      if (openpgp.process()) {
-        return openpgp.getOutputMessage();
+      try {
+        return nymsAgent.processOutgoingMessage(msg);
+      } catch (NymsAgentException e) {
+        logger.warning("Nyms agent processing failed: "+ e.getMessage());
       }
-      */
     }
     return msg;
   }
@@ -120,11 +119,22 @@ public class MessageCompositionState {
   }
 
   private boolean allContactsHaveKeys(List<Contact> contacts) {
+    for(Contact c: contacts) {
+      try {
+        if(!nymsAgent.hasKeyForAddress(c.getEmailAddress())) {
+          return false;
+        }
+      } catch (NymsAgentException e) {
+        logger.warning("Exception making request to nyms agent: "+ e.getMessage());
+        return false;
+      }
+    }
+    return true;
+
     /*
      * for(Contact c: contacts) { if(c.getPublicIdentity() == null &&
      * c.getLocalPublicKeys().isEmpty()) { return false; } } return true;
      */
-    return false;
   }
 
   private void addToContactList(List<Contact> contacts, InternetAddress address) {
@@ -150,6 +160,7 @@ public class MessageCompositionState {
     try {
       return nymsAgent.hasSigningKey(selectedAccount.getEmailAddress());
     } catch (NymsAgentException e) {
+      logger.warning("Exception making request to nyms agent: "+ e.getMessage());
       return false;
     }
   }
