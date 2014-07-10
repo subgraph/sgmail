@@ -2,3 +2,4 @@ build/archives
 build/buildpack
 build/stage
 platform/**/bin
+nyms/nymsd
