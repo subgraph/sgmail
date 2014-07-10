@@ -40,6 +40,8 @@ import com.subgraph.sgmail.ui.panes.right.RightPane;
 
 public class MainWindow extends ApplicationWindow {
 
+  private final static boolean ENABLE_TOOLBAR = true;
+
   private final Model model;
   private final IEventBus eventBus;
   private final JavamailUtils javamailUtils;
@@ -142,10 +144,13 @@ public class MainWindow extends ApplicationWindow {
   @Override
   protected ToolBarManager createToolBarManager(int style) {
     ToolBarManager toolBarManager = new ToolBarManager(style);
-    SearchBarContribution search = new SearchBarContribution(eventBus, messageSearchIndex, globalExecutor);
-    toolBarManager.add(new ComposeMessageAction());
-    toolBarManager.add(new SpacerContribution(30));
-    toolBarManager.add(search);
+    if(ENABLE_TOOLBAR) {
+      final SearchBar sb = new SearchBar(eventBus, messageSearchIndex, globalExecutor);
+      SearchBarContribution search = new SearchBarContribution(sb);
+      toolBarManager.add(new ComposeMessageAction());
+      toolBarManager.add(new SpacerContribution(30));
+      toolBarManager.add(search);
+    }
     return toolBarManager;
   }
 
