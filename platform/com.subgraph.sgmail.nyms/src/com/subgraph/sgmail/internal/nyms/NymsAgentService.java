@@ -1,7 +1,5 @@
 package com.subgraph.sgmail.internal.nyms;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,12 +7,13 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.mail.MessagingException;
-import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
-import com.google.common.base.Charsets;
 import com.subgraph.sgmail.nyms.NymsAgent;
 import com.subgraph.sgmail.nyms.NymsAgentException;
+import com.subgraph.sgmail.nyms.NymsIncomingProcessingResult;
+import com.subgraph.sgmail.nyms.NymsIncomingProcessingResult.DecryptionResult;
+import com.subgraph.sgmail.nyms.NymsIncomingProcessingResult.SignatureVerificationResult;
 import com.subgraph.sgmail.nyms.NymsKeyGenerationParameters;
 import com.subgraph.sgmail.nyms.NymsKeyInfo;
 
@@ -35,13 +34,11 @@ public class NymsAgentService implements NymsAgent {
   }
 
   @Override
-  public MimeMessage processIncomingMessage(MimeMessage incomingMessage) throws NymsAgentException {
+  public NymsIncomingProcessingResult processIncomingMessage(MimeMessage incomingMessage) throws NymsAgentException {
     if (!doesIncomingMessageNeedProcessing(incomingMessage)) {
-      return incomingMessage;
+      return new NymsIncomingProcessingResultImpl(SignatureVerificationResult.NOT_SIGNED, DecryptionResult.NOT_ENCRYPTED);
     }
-    final String messageText = renderMessage(incomingMessage);
-    final String processed = getConnection().processIncoming(messageText);
-    return parseMessage(processed, incomingMessage.getSession());
+    return getConnection().processIncoming(incomingMessage);
   }
 
   @Override
@@ -65,9 +62,7 @@ public class NymsAgentService implements NymsAgent {
     if (!doesOutgoingMessageNeedProcessing(outgoingMessage)) {
       return outgoingMessage;
     }
-    final String messageText = renderMessage(outgoingMessage);
-    final String processed = getConnection().processOutgoing(messageText);
-    return parseMessage(processed, outgoingMessage.getSession());
+    return getConnection().processOutgoing(outgoingMessage);
   }
 
   private synchronized NymsAgentConnection getConnection() throws NymsAgentException {
@@ -83,25 +78,6 @@ public class NymsAgentService implements NymsAgent {
     return connection;
   }
 
-  private String renderMessage(MimeMessage message) throws NymsAgentException {
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    try {
-      message.writeTo(out);
-      return new String(out.toByteArray(), Charsets.ISO_8859_1);
-    } catch (IOException | MessagingException e) {
-      throw new NymsAgentException("Error converting message to string: "+ e.getMessage(), e);
-    }
-  }
-
-  private MimeMessage parseMessage(String messageText, Session session) throws NymsAgentException {
-    final ByteArrayInputStream in = new ByteArrayInputStream(
-        messageText.getBytes(Charsets.ISO_8859_1));
-    try {
-      return new MimeMessage(session, in);
-    } catch (final MessagingException e) {
-      throw new NymsAgentException("Error parsing message received from nyms agent: "+ e.getMessage(), e);
-    }
-  }
   
   private boolean doesIncomingMessageNeedProcessing(MimeMessage message) {
     try {

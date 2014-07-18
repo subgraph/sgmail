@@ -10,7 +10,7 @@ public interface NymsAgent {
   NymsKeyInfo getKeyInfo(String emailAddress) throws NymsAgentException;
   byte[] getAvatarImage(String emailAddress) throws NymsAgentException;
 	
-  MimeMessage processIncomingMessage(MimeMessage incomingMessage) throws NymsAgentException;
+  NymsIncomingProcessingResult processIncomingMessage(MimeMessage incomingMessage) throws NymsAgentException;
 
   MimeMessage processOutgoingMessage(MimeMessage outgoingMessage) throws NymsAgentException;
 

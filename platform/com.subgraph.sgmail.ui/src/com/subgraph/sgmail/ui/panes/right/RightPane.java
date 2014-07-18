@@ -7,6 +7,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ControlAdapter;
@@ -34,6 +37,8 @@ import com.subgraph.sgmail.events.ReplyMessageEvent;
 import com.subgraph.sgmail.events.SearchQueryChangedEvent;
 import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.nyms.NymsAgent;
+import com.subgraph.sgmail.nyms.NymsAgentException;
+import com.subgraph.sgmail.nyms.NymsIncomingProcessingResult;
 import com.subgraph.sgmail.ui.compose.ComposeWindow;
 
 public class RightPane extends Composite {
@@ -289,6 +294,8 @@ public class RightPane extends Composite {
 				}
 			});
 		}
+		
+		
 		/*
 
 		private PrivateIdentity findDecryptIdentity(List<Long> keyIds) {
@@ -364,6 +371,16 @@ public class RightPane extends Composite {
 			}
 		}
 		*/
+		private void maybeDecryptMessage(StoredMessage message) {
+		 try {
+      MimeMessage mimeMessage = message.toMimeMessage(javamailUtils.getSessionInstance());
+      NymsIncomingProcessingResult result = nymsAgent.processIncomingMessage(mimeMessage);
+    } catch (MessagingException | NymsAgentException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+		 
+		}
 
 		private void addMessageViewer(final StoredMessage message, final int idx) {
 			getDisplay().asyncExec(new Runnable() {
