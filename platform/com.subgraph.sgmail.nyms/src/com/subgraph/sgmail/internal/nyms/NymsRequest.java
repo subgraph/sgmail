@@ -1,7 +1,9 @@
 package com.subgraph.sgmail.internal.nyms;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -10,6 +12,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonWriter;
 
+import com.google.common.base.Charsets;
 import com.subgraph.sgmail.nyms.NymsAgentException;
 
 public class NymsRequest {
@@ -60,8 +63,10 @@ public class NymsRequest {
   }
   
   NymsResponse send() throws NymsAgentException {
+    synchronized(process) {
     writeTo(process.getOutputStream());
-    final JsonReader reader = Json.createReader(process.getInputStream());
+    final Reader r = new InputStreamReader(process.getInputStream(), Charsets.UTF_8);
+    final JsonReader reader = Json.createReader(r);
     final JsonObject response = reader.readObject();
     if(debugLogging) {
       System.out.println("response: "+ response);
@@ -69,5 +74,6 @@ public class NymsRequest {
     final NymsResponse nr = new NymsResponse(method, response);
     nr.testErrorResponse();
     return nr;
+    }
   }
 }

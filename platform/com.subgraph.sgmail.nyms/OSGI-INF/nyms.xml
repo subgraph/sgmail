@@ -4,4 +4,5 @@
    <service>
       <provide interface="com.subgraph.sgmail.nyms.NymsAgent"/>
    </service>
+   <reference bind="setJavamailUtils" cardinality="1..1" interface="com.subgraph.sgmail.JavamailUtils" name="JavamailUtils" policy="static"/>
 </scr:component>

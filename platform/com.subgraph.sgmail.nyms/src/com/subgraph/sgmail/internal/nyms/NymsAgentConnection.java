@@ -5,6 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
@@ -13,8 +16,10 @@ import com.google.common.base.Charsets;
 import com.subgraph.sgmail.nyms.NymsAgentException;
 import com.subgraph.sgmail.nyms.NymsIncomingProcessingResult;
 import com.subgraph.sgmail.nyms.NymsKeyInfo;
+import com.subgraph.sgmail.nyms.NymsOutgoingProcessingResult;
 
 public class NymsAgentConnection {
+
   private final static boolean debugLogging = true;
   
   private Process process;
@@ -22,7 +27,7 @@ public class NymsAgentConnection {
 
   void start() throws IOException, NymsAgentException {
     final String agentPath = findNymsAgentPath();
-    final ProcessBuilder pb = new ProcessBuilder(agentPath, "-pipe");
+    final ProcessBuilder pb = new ProcessBuilder(agentPath, "-pipe", "-debug");
     process = pb.start();
   }
 
@@ -72,12 +77,20 @@ public class NymsAgentConnection {
         .send());
   }
   
+  NymsKeyInfo getKeyInfoByKeyId(String keyId) throws NymsAgentException {
+    return getKeyInfoFromResponse(newRequest("Protocol.GetKeyInfo")
+        .addArgument("KeyId", keyId)
+        .addArgument("Lookup", false)
+        .send());
+  }
+  
   private NymsKeyInfo getKeyInfoFromResponse(NymsResponse r) throws NymsAgentException {
     if(!r.getBoolean("HasKey")) {
       return null;
     }
     return new NymsKeyInfoImpl.Builder()
     .fingerprint(r.getString("Fingerprint"))
+    .keyId(r.getString("KeyId"))
     .summary(r.getString("Summary"))
     .uids(r.getStringArray("UserIDs"))
     .hasSecretKey(r.getBoolean("HasSecretKey"))
@@ -92,30 +105,84 @@ public class NymsAgentConnection {
     return Base64.getDecoder().decode(b64ImageData);
   }
   
-  NymsIncomingProcessingResult processIncoming(MimeMessage message) throws NymsAgentException {
+  NymsIncomingProcessingResult processIncoming(MimeMessage message, String passphrase) throws NymsAgentException {
     final String messageText = renderMessage(message);
-    return extractIncomingProcessingResult(newRequest("Protocol.ProcessIncoming")
-        .addArgument("EmailBody", messageText)
-        .send(), message.getSession());
+    NymsRequest request = newRequest("Protocol.ProcessIncoming");
+    request.addArgument("EmailBody", messageText);
+    if(passphrase != null) {
+      request.addArgument("Passphrase", passphrase);
+    }
+    return extractIncomingProcessingResult(request.send(), message.getSession());
   }
   
   private NymsIncomingProcessingResult extractIncomingProcessingResult(NymsResponse r, Session session) throws NymsAgentException {
     final int verifyCode = r.getInt("VerifyResult");
     final int decryptCode = r.getInt("DecryptResult");
     final String emailBody = r.getString("EmailBody");
+    if(decryptCode == NymsIncomingProcessingResultImpl.DECRYPT_PASSPHRASE_NEEDED) {
+      final List<String> encryptedKeyIds = r.getStringArray("EncryptedKeyIds");
+      return NymsIncomingProcessingResultImpl.createPassphraseNeeded(encryptedKeyIds);
+    }
+    if(decryptCode == NymsIncomingProcessingResultImpl.DECRYPT_FAILED || verifyCode == NymsIncomingProcessingResultImpl.VERIFY_FAILED) {
+      final String failureMessage = r.getString("FailureMessage");
+      return NymsIncomingProcessingResultImpl.createFailed(verifyCode, decryptCode, failureMessage);
+    }
+
     if(emailBody != null && !emailBody.isEmpty()) {
-      return NymsIncomingProcessingResultImpl.create(verifyCode, decryptCode, null);
+      final byte[] rawBody = emailBody.getBytes(Charsets.ISO_8859_1);
+      return NymsIncomingProcessingResultImpl.create(verifyCode, decryptCode, rawBody, parseMessage(emailBody, session));
     } else {
-      return NymsIncomingProcessingResultImpl.create(verifyCode, decryptCode, parseMessage(emailBody, session));
+      return NymsIncomingProcessingResultImpl.create(verifyCode, decryptCode, null, null);
     }
   }
-
-  MimeMessage processOutgoing(MimeMessage message) throws NymsAgentException {
+  
+  
+  NymsOutgoingProcessingResult processOutgoing(MimeMessage message, boolean sign, boolean encrypt, String passphrase) throws NymsAgentException {
     final String messageText = renderMessage(message);
-    return parseMessage(newRequest("Protocol.ProcessOutgoing")
+    return extractOutgoingProcessingResult(newRequest("Protocol.ProcessOutgoing")
         .addArgument("EmailBody", messageText)
-        .send()
-        .getString("EmailBody"), message.getSession());
+        .addArgument("Sign", sign)
+        .addArgument("Encrypt", encrypt)
+        .addArgument("Passphrase", passphrase)
+        .send(), message);
+  }
+  
+  private NymsOutgoingProcessingResult extractOutgoingProcessingResult(NymsResponse r, MimeMessage originalMessage) throws NymsAgentException {
+    final int resultCode = r.getInt("ResultCode");
+    final MimeMessage msg = extractOutgoingMessage(r, originalMessage.getSession());
+    switch(resultCode) {
+    case NymsOutgoingProcessingResultImpl.NOT_SIGNED_OR_ENCRYPTED:
+      return NymsOutgoingProcessingResultImpl.create(originalMessage, false, false);
+    case NymsOutgoingProcessingResultImpl.ENCRYPTED_ONLY:
+      return NymsOutgoingProcessingResultImpl.create(msg, false, true);
+    case NymsOutgoingProcessingResultImpl.SIGNED_ONLY:
+      return NymsOutgoingProcessingResultImpl.create(msg, true, false);
+    case NymsOutgoingProcessingResultImpl.SIGNED_AND_ENCRYPTED:
+      return NymsOutgoingProcessingResultImpl.create(msg, true, true);
+    case NymsOutgoingProcessingResultImpl.SIGN_FAILED_NO_KEY:
+      return NymsOutgoingProcessingResultImpl.createNoSigningKey();
+    case NymsOutgoingProcessingResultImpl.SIGN_FAILED_NEED_PASSPHRASE:
+      return NymsOutgoingProcessingResultImpl.createNeedPassphrase();
+    case NymsOutgoingProcessingResultImpl.ENCRYPT_FAILED_MISSING_KEYS:
+      return NymsOutgoingProcessingResultImpl.createMissingPublicKeys(extractMissingKeys(r));
+    case NymsOutgoingProcessingResultImpl.OTHER_FAILURE:
+      return NymsOutgoingProcessingResultImpl.createFailure(r.getString("FailureMessage"));
+    default:
+      return NymsOutgoingProcessingResultImpl.createFailure("Unknown ResultCode value: "+ resultCode);
+    }
+  }
+  
+  private MimeMessage extractOutgoingMessage(NymsResponse r, Session session) throws NymsAgentException {
+    final String emailBody = r.getString("EmailBody");
+    if(emailBody == null || emailBody.isEmpty()) {
+      return null;
+    }
+    return parseMessage(emailBody, session);
+  }
+  
+  private List<String> extractMissingKeys(NymsResponse r) {
+    // XXX implement me
+    return Collections.emptyList();
   }
   
   NymsKeyInfo generateKeys(String emailAddress, String realName, String comment) throws NymsAgentException {

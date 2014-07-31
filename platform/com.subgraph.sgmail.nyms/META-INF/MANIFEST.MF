@@ -6,6 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: SUBGRAPH
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: com.google.common.base;version="15.0.0",
+ com.subgraph.sgmail,
  com.subgraph.sgmail.nyms,
  javax.mail,
  javax.mail.internet,
