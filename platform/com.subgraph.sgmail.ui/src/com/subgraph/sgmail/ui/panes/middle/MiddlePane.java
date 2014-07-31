@@ -8,6 +8,7 @@ import com.google.common.eventbus.Subscribe;
 import com.subgraph.sgmail.IEventBus;
 import com.subgraph.sgmail.events.ConversationSelectedEvent;
 import com.subgraph.sgmail.events.ConversationSourceSelectedEvent;
+import com.subgraph.sgmail.events.MessageStateChangedEvent;
 import com.subgraph.sgmail.events.SearchFilterEvent;
 import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.ui.utils.glazed.ConversationEventTableViewer;
@@ -82,6 +83,11 @@ public class MiddlePane extends Composite {
             conversationRenderer.setSearchResult(event.getSearchResult());
         }
         getDisplay().asyncExec(() -> table.redraw());
+    }
+    
+    @Subscribe
+    public void onMessageStateChanged(MessageStateChangedEvent event) {
+      getDisplay().asyncExec(() -> table.redraw());
     }
 
     private ConversationEventTableViewer<List<StoredMessage>> createEventTableViewer(EventList<List<StoredMessage>> sourceList) {
