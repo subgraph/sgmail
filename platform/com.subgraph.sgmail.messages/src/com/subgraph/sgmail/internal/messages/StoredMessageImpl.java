@@ -182,6 +182,28 @@ public class StoredMessageImpl implements StoredMessage, DecryptableStoredMessag
     }
 
     @Override
+    public boolean needsDecryption() {
+      return isFlagSet(FLAG_ENCRYPTED) && !isFlagSet(FLAG_DECRYPTED);
+    }
+
+    @Override
+    public boolean isSigned() {
+      return isFlagSet(FLAG_SIGNED);
+    }
+
+    @Override
+    public int getSignatureStatus() {
+      activate(ActivationPurpose.READ);
+      return summary.getSignatureStatus();
+    }
+
+    @Override
+    public void setSignatureStatus(int value) {
+      activate(ActivationPurpose.READ);
+      summary.setSignatureStatus(value);
+    }
+
+    @Override
     public boolean isFlagSet(int flag) {
         activate(ActivationPurpose.READ);
         return (flags & flag) == flag;

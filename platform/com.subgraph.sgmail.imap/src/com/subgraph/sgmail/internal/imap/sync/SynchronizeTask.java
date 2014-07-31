@@ -15,6 +15,7 @@ import com.subgraph.sgmail.database.Model;
 import com.subgraph.sgmail.imap.IMAPAccount;
 import com.subgraph.sgmail.imap.LocalIMAPFolder;
 import com.subgraph.sgmail.messages.MessageFactory;
+import com.subgraph.sgmail.nyms.NymsAgent;
 import com.subgraph.sgmail.search.MessageSearchIndex;
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.IMAPStore;
@@ -25,6 +26,7 @@ public class SynchronizeTask implements Runnable {
 
 	private final Model model;
 	private final JavamailUtils javamailUtils;
+	private final NymsAgent nymsAgent;
 	private final MessageFactory basicMessageFactory;
 	private final MessageSearchIndex searchIndex;
 	private final IMAPAccount account;
@@ -33,9 +35,10 @@ public class SynchronizeTask implements Runnable {
 	
 	private IMAPFolder idleFolder;
 	
-	public SynchronizeTask(MessageFactory basicMessageFactory, Model model, JavamailUtils javamailUtils, MessageSearchIndex searchIndex, Store remoteStore, IMAPAccount account) {
+	public SynchronizeTask(MessageFactory basicMessageFactory, Model model, JavamailUtils javamailUtils, NymsAgent nymsAgent, MessageSearchIndex searchIndex, Store remoteStore, IMAPAccount account) {
 		this.model = model;
 		this.javamailUtils = javamailUtils;
+		this.nymsAgent = nymsAgent;
 		this.basicMessageFactory = basicMessageFactory;
 		this.searchIndex = searchIndex;
 		this.account = account;
@@ -135,7 +138,7 @@ public class SynchronizeTask implements Runnable {
 		final ClientToServerSynchronize c2s = new ClientToServerSynchronize(localFolder, remoteFolder);
 		c2s.run();
 		
-		final ServerToClientFolderSynchronize s2c = new ServerToClientFolderSynchronize(basicMessageFactory, model, javamailUtils, searchIndex, account, remoteFolder, localFolder, stopFlag);
+		final ServerToClientFolderSynchronize s2c = new ServerToClientFolderSynchronize(basicMessageFactory, model, javamailUtils, nymsAgent, searchIndex, account, remoteFolder, localFolder, stopFlag);
 		s2c.synchronize();
 		
 		if(remoteFolder.isOpen()) {
@@ -147,7 +150,7 @@ public class SynchronizeTask implements Runnable {
 	private void idleFolder(IMAPFolder remoteFolder) throws MessagingException {
 		final LocalIMAPFolder localFolder = account.getFolderByName(remoteFolder.getFullName());
 		openRemote(remoteFolder);
-		final ServerToClientFolderSynchronize s2c = new ServerToClientFolderSynchronize(basicMessageFactory, model, javamailUtils, searchIndex, account, remoteFolder, localFolder, stopFlag);
+		final ServerToClientFolderSynchronize s2c = new ServerToClientFolderSynchronize(basicMessageFactory, model, javamailUtils, nymsAgent, searchIndex, account, remoteFolder, localFolder, stopFlag);
 		idleFolder = remoteFolder;
 		s2c.runIdle();
 		if(remoteFolder.isOpen()) {

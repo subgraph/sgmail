@@ -22,7 +22,7 @@ public class IMAPAccountListImpl implements IMAPAccountList, Storeable, Activata
 	private transient Database database;
 
     @Override
-    public void addAccount(IMAPAccount account) {
+    public synchronized void addAccount(IMAPAccount account) {
         activate(ActivationPurpose.READ);
         database.store(account);
         accountList.add(account);
@@ -30,7 +30,7 @@ public class IMAPAccountListImpl implements IMAPAccountList, Storeable, Activata
     }
 
     @Override
-    public List<IMAPAccount> getAccounts() {
+    public synchronized List<IMAPAccount> getAccounts() {
         activate(ActivationPurpose.READ);
         return ImmutableList.copyOf(accountList);
     }

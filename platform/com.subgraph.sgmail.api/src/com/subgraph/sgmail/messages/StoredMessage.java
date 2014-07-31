@@ -22,8 +22,17 @@ public interface StoredMessage {
     public final static int FLAG_FLAGGED            = 0x08;
     public final static int FLAG_RECENT             = 0x10;
     public final static int FLAG_SEEN               = 0x20;
+    
     public final static int FLAG_ENCRYPTED          = 0x1000;
     public final static int FLAG_DECRYPTED          = 0x2000;
+
+    public final static int FLAG_SIGNED             = 0x4000;
+    
+    public final static int SIGNATURE_UNSIGNED      = 0;
+    public final static int SIGNATURE_UNVERIFIED    = 1;
+    public final static int SIGNATURE_VALID         = 2;
+    public final static int SIGNATURE_INVALID       = 3;
+    public final static int SIGNATURE_NO_PUBKEY     = 4;
 
     int getMessageId();
 
@@ -52,6 +61,11 @@ public interface StoredMessage {
     MessageUser getSender();
     List<MessageUser> getToRecipients();
     List<MessageUser> getCCRecipients();
+    
+    boolean needsDecryption();
+    boolean isSigned();
+    int getSignatureStatus();
+    void setSignatureStatus(int value);
 
     boolean isFlagSet(int flag);
     int getFlags();
@@ -62,6 +76,8 @@ public interface StoredMessage {
     byte[] getRawMessageBytes(boolean decrypted);
     InputStream getRawMessageStream(boolean decrypted);
     MimeMessage toMimeMessage(Session session) throws MessagingException;
+    void setDecryptedMessageDetails(byte[] decryptedRawBytes, String decryptedBody, List<MessageAttachment> decryptedAttachments);
+
 
     void purgeContent();
     int incrementReferenceCount();
