@@ -2,6 +2,7 @@ package com.subgraph.sgmail.internal.accounts;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.GlazedLists;
 
 import com.db4o.activation.ActivationPurpose;
 import com.db4o.activation.Activator;
@@ -37,17 +38,17 @@ public class BasicMailAccount implements MailAccount, Storeable, Activatable {
     private final String emailAddress;
     private final StoredMessageLabelCollection labelCollection;
 
-    private final List<StoredMessage> allMessages = new ActivatableArrayList<>();
+    //private final List<StoredMessage> allMessages = new ActivatableArrayList<>();
+    private final ArrayList<StoredMessage> allMessages = new ArrayList<>();
     private final List<StoredFolder> folders = new ActivatableArrayList<>();
     private final Preferences preferences;
     private final TIntObjectHashMap<StoredMessage> messagesById = new TIntObjectHashMap<>();
 
-
-//    private PrivateIdentity identity;
     private String realname;
     private String label;
 
     private transient EventList<StoredMessage> messageEventList;
+    private transient EventList<StoredMessage> readOnlyEventList;
     private transient PropertyChangeSupport propertyChangeSupport;
     private transient Activator activator;
     private transient Database database;
@@ -158,29 +159,13 @@ public class BasicMailAccount implements MailAccount, Storeable, Activatable {
         return realname;
     }
 
-
-    /*
-    @Override
-    public void setIdentity(PrivateIdentity identity) {
-        activate(ActivationPurpose.WRITE);
-        final PrivateIdentity oldIdentity = this.identity;
-        this.identity = identity;
-        getPropertyChangeSupport().firePropertyChange("identity", oldIdentity, identity);
-    }
-
-    @Override
-    public PrivateIdentity getIdentity() {
-        activate(ActivationPurpose.READ);
-        return identity;
-    }
-    */
-
     public void addMessages(Collection<StoredMessage> messages) {
         try {
             writeLockMessageEventList().addAll(messages);
             for(StoredMessage sm: messages) {
                 messagesById.put(sm.getMessageId(), sm);
             }
+            database.store(messagesById);
         } finally {
             writeUnlockMessageEventList();
         }
@@ -191,6 +176,7 @@ public class BasicMailAccount implements MailAccount, Storeable, Activatable {
         try {
             writeLockMessageEventList().add(message);
             messagesById.put(message.getMessageId(), message);
+            database.store(messagesById);
         } finally {
             writeUnlockMessageEventList();
             database.commit();
@@ -200,7 +186,7 @@ public class BasicMailAccount implements MailAccount, Storeable, Activatable {
 
     @Override
     public void removeDeletedMessages() {
-        final EventList<StoredMessage> eventList = getMessageEventList();
+        final EventList<StoredMessage> eventList = getWritableMessageEventList();
         eventList.getReadWriteLock().writeLock().lock();
         try {
             final int count = countDeletedMessages(eventList);
@@ -253,25 +239,34 @@ public class BasicMailAccount implements MailAccount, Storeable, Activatable {
 
     private EventList<StoredMessage> writeLockMessageEventList() {
         activate(ActivationPurpose.WRITE);
-        final EventList<StoredMessage> eventList = getMessageEventList();
+        final EventList<StoredMessage> eventList = getWritableMessageEventList();
         eventList.getReadWriteLock().writeLock().lock();
         return eventList;
     }
 
     private void writeUnlockMessageEventList() {
-        getMessageEventList().getReadWriteLock().writeLock().unlock();
+        database.store(allMessages);
+        getWritableMessageEventList().getReadWriteLock().writeLock().unlock();
     }
 
-    @SuppressWarnings("deprecation")
     public EventList<StoredMessage> getMessageEventList() {
-        activate(ActivationPurpose.READ);
-        synchronized (allMessages) {
-            if(messageEventList == null) {
-                // Use deprecated contructor because we don't want to persist the glazed list object
-                messageEventList = new BasicEventList<>(allMessages);
-            }
-            return messageEventList;
+      synchronized(allMessages) {
+        if(readOnlyEventList == null) {
+          readOnlyEventList = GlazedLists.readOnlyList(getWritableMessageEventList());
         }
+        return readOnlyEventList;
+      }
+    }
+    
+    @SuppressWarnings("deprecation")
+    private EventList<StoredMessage> getWritableMessageEventList() {
+      activate(ActivationPurpose.READ);
+      synchronized(allMessages) {
+        if(messageEventList == null) {
+          messageEventList = new BasicEventList<>(allMessages);
+        }
+        return messageEventList;
+      }
     }
 
     @Override
