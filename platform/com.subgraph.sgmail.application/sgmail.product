@@ -7,10 +7,8 @@
    </configIni>
 
    <launcherArgs>
-      <programArgs>-consoleLog -console -application com.subgraph.sgmail.ui.sgmail
+      <programArgs>-application com.subgraph.sgmail.ui.sgmail
       </programArgs>
-      <vmArgs>-Dosgi.console.enable.builtin=true
-      </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>
    </launcherArgs>
@@ -51,7 +49,6 @@
       <plugin id="org.eclipse.core.runtime"/>
       <plugin id="org.eclipse.equinox.app"/>
       <plugin id="org.eclipse.equinox.common"/>
-      <plugin id="org.eclipse.equinox.console"/>
       <plugin id="org.eclipse.equinox.ds"/>
       <plugin id="org.eclipse.equinox.preferences"/>
       <plugin id="org.eclipse.equinox.registry"/>
