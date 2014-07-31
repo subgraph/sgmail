@@ -5,10 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -37,18 +33,16 @@ import com.subgraph.sgmail.events.ReplyMessageEvent;
 import com.subgraph.sgmail.events.SearchQueryChangedEvent;
 import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.nyms.NymsAgent;
-import com.subgraph.sgmail.nyms.NymsAgentException;
-import com.subgraph.sgmail.nyms.NymsIncomingProcessingResult;
 import com.subgraph.sgmail.ui.compose.ComposeWindow;
 
 public class RightPane extends Composite {
-	private final static Logger logger = Logger.getLogger(RightPane.class.getName());
 	
 	private final NymsAgent nymsAgent;
 	private final Model model;
 	private final ListeningExecutorService globalExecutor;
 	private final IEventBus eventBus;
 	private final JavamailUtils javamailUtils;
+	private final MessageDecryptor decryptor;
 	
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
 	private Composite composite;
@@ -59,7 +53,7 @@ public class RightPane extends Composite {
 	
 	private List<MessageViewer> messageViewers = new ArrayList<MessageViewer>();
 	private int currentIndex = 0;
-    private List<String> currentHighlightTerms;
+  private List<String> currentHighlightTerms;
 	
 	public RightPane(Composite parent, NymsAgent nymsAgent, Model model, ListeningExecutorService executor, IEventBus eventBus, JavamailUtils javamailUtils) {
 		super(parent, SWT.NONE);
@@ -68,6 +62,7 @@ public class RightPane extends Composite {
 		this.globalExecutor = executor;
 		this.eventBus = eventBus;
 		this.javamailUtils = javamailUtils;
+		this.decryptor = new MessageDecryptor(getShell(), eventBus, javamailUtils, nymsAgent);
 		
 		setLayout(new FillLayout());
 
@@ -279,8 +274,8 @@ public class RightPane extends Composite {
 					return;
 				}
 				if(!m.isFlagSet(StoredMessage.FLAG_DELETED)) {
-					if(m.isFlagSet(StoredMessage.FLAG_ENCRYPTED)) {
-//						maybeDecryptMessage(m);
+					if(m.isFlagSet(StoredMessage.FLAG_ENCRYPTED) && !m.isFlagSet(StoredMessage.FLAG_DECRYPTED)) {
+						decryptor.maybeDecryptMessage(m);
 					}
 					addMessageViewer(m, idx);
 					idx += 1;
@@ -295,93 +290,6 @@ public class RightPane extends Composite {
 			});
 		}
 		
-		
-		/*
-
-		private PrivateIdentity findDecryptIdentity(List<Long> keyIds) {
-
-            for(PrivateIdentity p: identityManager.getLocalPrivateIdentities()) {
-                if(testPrivateIdentity(p, keyIds)) {
-                    return p;
-                }
-            }
-
-            final AccountList accountList = model.getAccountList();
-            
-            for(Account account: accountList.getAccounts()) {
-                if(account.getIdentity() != null) {
-                    PrivateIdentity privateIdentity = account.getIdentity();
-                    if(testPrivateIdentity(privateIdentity, keyIds)) {
-                        return privateIdentity;
-                    }
-                }
-            }
-			return null;
-		}
-
-        private boolean testPrivateIdentity(PrivateIdentity privateIdentity, List<Long> keyIds) {
-            if(privateIdentity == null) {
-                return false;
-            }
-            for(long id: keyIds) {
-                if(privateIdentity.containsKeyId(id)) {
-                    if(privateIdentity.getPassphrase() != null) {
-                        return true;
-                    } else if(showPassphraseDialog(privateIdentity)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        private boolean showPassphraseDialog(final PrivateIdentity identity) {
-            final int[] result = new int[1];
-            getDisplay().syncExec(new Runnable() {
-                @Override
-                public void run() {
-                    PassphraseDialog dialog = new PassphraseDialog(getShell(), identity);
-                    result[0] = dialog.open();
-                }
-            });
-
-            return result[0] == Window.OK;
-        }
-	
-		private void maybeDecryptMessage(StoredMessage message) {
-			if(!messageProcessor.isEncrypted(message)) {
-				return;
-			}
-			try {
-				final PrivateIdentity decryptIdentity = findDecryptIdentity(messageProcessor.getDecryptionKeyIds(message));
-				if(decryptIdentity == null) {
-					return;
-				} else {
-					messageProcessor.decryptMessage(message, decryptIdentity);
-				}
-			} catch (IOException | MessagingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (PGPException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (OpenPGPException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		*/
-		private void maybeDecryptMessage(StoredMessage message) {
-		 try {
-      MimeMessage mimeMessage = message.toMimeMessage(javamailUtils.getSessionInstance());
-      NymsIncomingProcessingResult result = nymsAgent.processIncomingMessage(mimeMessage);
-    } catch (MessagingException | NymsAgentException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-		 
-		}
-
 		private void addMessageViewer(final StoredMessage message, final int idx) {
 			getDisplay().asyncExec(new Runnable() {
 				public void run() {
