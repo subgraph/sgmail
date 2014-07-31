@@ -20,6 +20,7 @@ import com.subgraph.sgmail.database.Preferences;
 import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.nyms.NymsAgent;
 import com.subgraph.sgmail.nyms.NymsAgentException;
+import com.subgraph.sgmail.nyms.NymsOutgoingProcessingResult;
 
 public class MessageCompositionState {
   private final static Logger logger = Logger.getLogger(MessageCompositionState.class.getName());
@@ -83,7 +84,10 @@ public class MessageCompositionState {
     msg.setText(bodyText);
     if (isSigningRequested || isEncryptRequested) {
       try {
-        return nymsAgent.processOutgoingMessage(msg);
+        NymsOutgoingProcessingResult result = nymsAgent.processOutgoingMessage(msg, isSigningRequested, isEncryptRequested, "");
+        if(result.getProcessedMessage() != null) {
+          return result.getProcessedMessage();
+        }
       } catch (NymsAgentException e) {
         logger.warning("Nyms agent processing failed: "+ e.getMessage());
       }
