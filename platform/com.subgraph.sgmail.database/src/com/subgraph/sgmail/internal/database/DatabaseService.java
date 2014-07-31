@@ -4,6 +4,7 @@ import gnu.trove.impl.hash.THash;
 import gnu.trove.impl.hash.TIntHash;
 import gnu.trove.impl.hash.TLongIntHash;
 import gnu.trove.impl.hash.TPrimitiveHash;
+import gnu.trove.list.array.TLongArrayList;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
 
@@ -41,6 +42,8 @@ public class DatabaseService implements Database {
 	private final static List<Class<?>> CLASSES_WITH_TRANSIENT_FIELDS = Arrays.asList(
 	            THash.class, TPrimitiveHash.class, TLongIntHash.class,
 	            TLongIntHashMap.class, TIntObjectHashMap.class, TIntHash.class);
+	private final static List<Class<?>> CLASSES_TO_CASCADE_ON_UPDATE = Arrays.asList(
+	    TIntObjectHashMap.class, TLongIntHashMap.class, TLongArrayList.class);
 	
 	private final static Set<String> MODEL_BUNDLE_NAMES = ImmutableSet.of(
 			"gnu.trove", "com.subgraph.sgmail.messages", "com.subgraph.sgmail.api",
@@ -88,6 +91,9 @@ public class DatabaseService implements Database {
 		config.common().add(new TransparentPersistenceSupport(new DeactivatingRollbackStrategy()));
 		for(Class<?> clazz: CLASSES_WITH_TRANSIENT_FIELDS) {
 			config.common().objectClass(clazz).storeTransientFields(true);
+		}
+		for(Class<?> clazz: CLASSES_TO_CASCADE_ON_UPDATE) {
+		  config.common().objectClass(clazz).cascadeOnUpdate(true);
 		}
 		config.common().reflectWith(createReflector());
 		if(ENABLE_DIAGNOSTICS) {
