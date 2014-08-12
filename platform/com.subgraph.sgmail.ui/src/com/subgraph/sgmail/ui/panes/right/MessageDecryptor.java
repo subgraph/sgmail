@@ -20,8 +20,8 @@ import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.nyms.NymsAgent;
 import com.subgraph.sgmail.nyms.NymsAgentException;
 import com.subgraph.sgmail.nyms.NymsIncomingProcessingResult;
-import com.subgraph.sgmail.nyms.NymsIncomingProcessingResult.DecryptionResult;
 import com.subgraph.sgmail.nyms.NymsKeyInfo;
+import com.subgraph.sgmail.search.MessageSearchIndex;
 import com.subgraph.sgmail.ui.dialogs.PassphraseDialog;
 
 public class MessageDecryptor {
@@ -29,20 +29,22 @@ public class MessageDecryptor {
   private final Shell shell;
   private final IEventBus eventBus;
   private final JavamailUtils javamailUtils;
+  private final MessageSearchIndex searchIndex;
   private final NymsAgent nymsAgent;
 
-  MessageDecryptor(Shell shell, IEventBus eventBus, JavamailUtils javamailUtils, NymsAgent nymsAgent) {
+  MessageDecryptor(Shell shell, IEventBus eventBus, JavamailUtils javamailUtils, MessageSearchIndex searchIndex, NymsAgent nymsAgent) {
     this.shell = shell;
     this.eventBus = eventBus;
     this.javamailUtils = javamailUtils;
+    this.searchIndex = searchIndex;
     this.nymsAgent = nymsAgent;
   }
 
-  void maybeDecryptMessage(StoredMessage message) {
+  void maybeDecryptMessage(StoredMessage message, boolean promptPassphrase) {
     try {
       MimeMessage mimeMessage = message.toMimeMessage(javamailUtils.getSessionInstance());
       NymsIncomingProcessingResult result = nymsAgent.processIncomingMessage(mimeMessage);
-      processIncomingMessageResult(message, result, true);
+      processIncomingMessageResult(message, result, promptPassphrase);
     } catch (MessagingException e) { 
       logger.log(Level.WARNING, "Error converting message to mime message: "+ e.getMessage(), e);
     } catch(NymsAgentException e) {
@@ -50,29 +52,32 @@ public class MessageDecryptor {
     }
   }
 
-  private NymsIncomingProcessingResult showPassphraseDialog(final List<NymsKeyInfo> keys, StoredMessage message) {
-    final NymsIncomingProcessingResult[] result = new NymsIncomingProcessingResult[1];
+  private boolean showPassphraseDialog(final List<NymsKeyInfo> keys, StoredMessage message) {
+    final boolean[] ok = new boolean[1];
     shell.getDisplay().syncExec(new Runnable() {
       @Override
       public void run() {
-        PassphraseDialog dialog = new PassphraseDialog(shell, nymsAgent, keys, message, javamailUtils
-            .getSessionInstance());
+        PassphraseDialog dialog = new PassphraseDialog(shell, nymsAgent, keys);
         if (dialog.open() == Window.OK) {
-          result[0] = dialog.getProcessingResult();
+          ok[0] = true;
         }
       }
     });
-    return result[0];
+    return ok[0];
   }
 
-  private boolean processPassphrase(List<String> keyIds, StoredMessage message) {
+  private void processPassphrase(List<String> keyIds, StoredMessage message) {
     final List<NymsKeyInfo> keys = getKeyInfoForKeyIds(keyIds);
+    if(showPassphraseDialog(keys, message)) {
+      maybeDecryptMessage(message, false);
+    }
+    /*
     final NymsIncomingProcessingResult result = showPassphraseDialog(keys, message);
     if (result != null) {
       processIncomingMessageResult(message, result, false);
       return result.getDecryptionResult() == DecryptionResult.DECRYPTION_SUCCESS;
     }
-    return false;
+    */
   }
 
   private List<NymsKeyInfo> getKeyInfoForKeyIds(List<String> keyIds) {
@@ -131,18 +136,41 @@ public class MessageDecryptor {
       break;
     case NO_VERIFY_PUBKEY:
       message.setSignatureStatus(StoredMessage.SIGNATURE_NO_PUBKEY);
+      maybeSetSignatureKeyId(message, result);
       break;
     case SIGNATURE_INVALID:
       message.setSignatureStatus(StoredMessage.SIGNATURE_INVALID);
+      maybeSetSignatureKeyId(message, result);
       break;
     case SIGNATURE_VALID:
       message.setSignatureStatus(StoredMessage.SIGNATURE_VALID);
+      maybeSetSignatureKeyId(message, result);
+      break;
+    case SIGNATURE_KEY_EXPIRED:
+      message.setSignatureStatus(StoredMessage.SIGNATURE_KEY_EXPIRED);
+      maybeSetSignatureKeyId(message, result);
       break;
     case VERIFY_FAILED:
       logger.warning("Unexpected failure verifying signature: " + result.getFailureMessage());
       break;
+    default:
+      break;
+    }
+    try {
+      searchIndex.addMessage(message);
+      searchIndex.commit();
+    } catch (IOException e) {
+      logger.warning("I/O error indexing decrypted message: "+ e);
     }
     eventBus.post(new MessageStateChangedEvent(message));
+  }
+  
+  private void maybeSetSignatureKeyId(StoredMessage message, NymsIncomingProcessingResult result) {
+    final String keyid = result.getSignatureKeyId();
+    if(keyid == null || keyid.isEmpty()) {
+      return;
+    }
+    message.setSignatureKeyId(keyid);
   }
 
   private List<MessageAttachment> extractAttachments(MimeMessage decryptedMessage) {

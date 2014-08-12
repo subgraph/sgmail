@@ -108,7 +108,7 @@ public class MainWindow extends ApplicationWindow {
     left.setFocus();
 
     final Composite middle = new MiddlePane(sashForm, eventBus);
-    final Composite right = new RightPane(sashForm, nymsAgent, model, globalExecutor, eventBus, javamailUtils);
+    final Composite right = new RightPane(sashForm, nymsAgent, model, globalExecutor, eventBus, javamailUtils, messageSearchIndex);
 
     sashForm.setWeights(getInitialSashWeights());
 

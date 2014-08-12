@@ -33,6 +33,7 @@ import com.subgraph.sgmail.events.ReplyMessageEvent;
 import com.subgraph.sgmail.events.SearchQueryChangedEvent;
 import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.nyms.NymsAgent;
+import com.subgraph.sgmail.search.MessageSearchIndex;
 import com.subgraph.sgmail.ui.compose.ComposeWindow;
 
 public class RightPane extends Composite {
@@ -55,14 +56,14 @@ public class RightPane extends Composite {
 	private int currentIndex = 0;
   private List<String> currentHighlightTerms;
 	
-	public RightPane(Composite parent, NymsAgent nymsAgent, Model model, ListeningExecutorService executor, IEventBus eventBus, JavamailUtils javamailUtils) {
+	public RightPane(Composite parent, NymsAgent nymsAgent, Model model, ListeningExecutorService executor, IEventBus eventBus, JavamailUtils javamailUtils, MessageSearchIndex searchIndex) {
 		super(parent, SWT.NONE);
 		this.nymsAgent = nymsAgent;
 		this.model = model;
 		this.globalExecutor = executor;
 		this.eventBus = eventBus;
 		this.javamailUtils = javamailUtils;
-		this.decryptor = new MessageDecryptor(getShell(), eventBus, javamailUtils, nymsAgent);
+		this.decryptor = new MessageDecryptor(getShell(), eventBus, javamailUtils, searchIndex, nymsAgent);
 		
 		setLayout(new FillLayout());
 
@@ -275,7 +276,7 @@ public class RightPane extends Composite {
 				}
 				if(!m.isFlagSet(StoredMessage.FLAG_DELETED)) {
 					if(m.isFlagSet(StoredMessage.FLAG_ENCRYPTED) && !m.isFlagSet(StoredMessage.FLAG_DECRYPTED)) {
-						decryptor.maybeDecryptMessage(m);
+						decryptor.maybeDecryptMessage(m, true);
 					}
 					addMessageViewer(m, idx);
 					idx += 1;
