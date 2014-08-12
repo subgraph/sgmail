@@ -160,10 +160,15 @@ public class BasicMailAccount implements MailAccount, Storeable, Activatable {
     }
 
     public void addMessages(Collection<StoredMessage> messages) {
+      System.out.println("addMessages called with "+ messages.size() + " messages");
+
         try {
-            writeLockMessageEventList().addAll(messages);
+            final List<StoredMessage> messageList = writeLockMessageEventList();
             for(StoredMessage sm: messages) {
+              if(!messagesById.contains(sm.getMessageId())) {
+                messageList.add(sm);
                 messagesById.put(sm.getMessageId(), sm);
+              }
             }
             database.store(messagesById);
         } finally {
@@ -174,9 +179,12 @@ public class BasicMailAccount implements MailAccount, Storeable, Activatable {
 
     public void addMessage(StoredMessage message) {
         try {
-            writeLockMessageEventList().add(message);
-            messagesById.put(message.getMessageId(), message);
-            database.store(messagesById);
+            final List<StoredMessage> messageList = writeLockMessageEventList();
+            if(!messagesById.contains(message.getMessageId())) {
+              messageList.add(message);
+              messagesById.put(message.getMessageId(), message);
+              database.store(messagesById);
+            }
         } finally {
             writeUnlockMessageEventList();
             database.commit();

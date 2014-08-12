@@ -16,6 +16,7 @@ Import-Package: ca.odell.glazedlists,
  com.subgraph.sgmail.accounts,
  com.subgraph.sgmail.database,
  com.subgraph.sgmail.messages,
+ gnu.trove.impl.hash;version="3.0.3",
  gnu.trove.map.hash;version="3.0.3",
  javax.mail,
  javax.mail.internet

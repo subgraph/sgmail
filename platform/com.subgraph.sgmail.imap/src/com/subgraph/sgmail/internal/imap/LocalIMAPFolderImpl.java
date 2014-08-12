@@ -115,10 +115,10 @@ public class LocalIMAPFolderImpl implements LocalIMAPFolder, Storeable, Activata
     try {
       storageFolder.addMessage(message);
       uidMap.add(messageUID);
-      account.getMailAccount().addMessage(message);
       database.commit();
     } finally {
       eventList.getReadWriteLock().writeLock().unlock();
+      account.getMailAccount().addMessage(message);
     }
   }
 

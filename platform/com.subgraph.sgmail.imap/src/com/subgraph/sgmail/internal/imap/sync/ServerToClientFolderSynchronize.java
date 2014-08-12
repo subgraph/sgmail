@@ -209,10 +209,14 @@ public class ServerToClientFolderSynchronize {
   private void storeNewMessage(ExecutorService executor, IMAPMessage message)
       throws MessagingException, IOException {
     final long messageUID = remoteFolder.getUID(message);
-    final StoredMessage storedMessage = imapMessageFactory
-        .createFromJavamailMessage(account, message);
+
+    StoredMessage storedMessage = account.getMessageForMimeMessage(message);
+    final boolean alreadyStored = (storedMessage != null);
+    if(storedMessage == null) {
+      storedMessage = imapMessageFactory.createFromJavamailMessage(account, message);
+    }
     executor.submit(new StoreMessageTask(storedMessage, messageUID,
-        localFolder, messageSearchIndex, javamailUtils, nymsAgent));
+        localFolder, messageSearchIndex, javamailUtils, nymsAgent, alreadyStored));
   }
 
   private void fetchDetails(Message[] messages) throws MessagingException {
