@@ -1,12 +1,7 @@
 package com.subgraph.sgmail.ui.dialogs;
 
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
@@ -22,11 +17,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.subgraph.sgmail.messages.StoredMessage;
 import com.subgraph.sgmail.nyms.NymsAgent;
 import com.subgraph.sgmail.nyms.NymsAgentException;
-import com.subgraph.sgmail.nyms.NymsIncomingProcessingResult;
-import com.subgraph.sgmail.nyms.NymsIncomingProcessingResult.DecryptionResult;
 import com.subgraph.sgmail.nyms.NymsKeyInfo;
 import com.subgraph.sgmail.ui.identity.PublicIdentityPane;
 
@@ -35,17 +27,12 @@ public class PassphraseDialog extends TitleAreaDialog {
 
   private final NymsAgent nymsAgent;
   private final List<NymsKeyInfo> keys;
-  private final StoredMessage message;
-  private final Session session;
   private Text passphraseText;
-  private NymsIncomingProcessingResult processingResult;
 
-  public PassphraseDialog(Shell parentShell, NymsAgent nymsAgent, List<NymsKeyInfo> keys, StoredMessage message, Session session) {
+  public PassphraseDialog(Shell parentShell, NymsAgent nymsAgent, List<NymsKeyInfo> keys) {
     super(parentShell);
     this.nymsAgent = nymsAgent;
     this.keys = keys;
-    this.message = message;
-    this.session = session;
   }
 
   protected Control createContents(Composite parent) {
@@ -95,25 +82,24 @@ public class PassphraseDialog extends TitleAreaDialog {
     };
   }
 
-  public NymsIncomingProcessingResult getProcessingResult() {
-    return processingResult;
-  }
-  
   private boolean testPassphrase() {
-    processingResult = processMessage(passphraseText.getText());
-    return processingResult == null || processingResult.getDecryptionResult() != DecryptionResult.PASSPHRASE_NEEDED;
+    final String passphrase = passphraseText.getText();
+    boolean unlocked = false;
+    for(NymsKeyInfo keyInfo: keys) {
+      if(tryUnlockKey(keyInfo, passphrase)) {
+        unlocked = true;
+      }
+    }
+    return unlocked;
   }
   
-  private NymsIncomingProcessingResult processMessage(String passphrase) {
+  private boolean tryUnlockKey(NymsKeyInfo keyInfo, String passphrase) {
     try {
-      final MimeMessage mimeMessage = message.toMimeMessage(session);
-      return nymsAgent.processIncomingMessage(mimeMessage, passphrase);
-    } catch (MessagingException e) {
-      logger.log(Level.WARNING, "Error converting message to mime message: "+ e.getMessage(), e);
+      return nymsAgent.unlockPrivateKey(keyInfo, passphrase);
     } catch (NymsAgentException e) {
-      logger.warning("Error processing message with nyms agent: "+ e.getMessage());
+      logger.warning("Error unlocking key with nyms agent: "+ e.getMessage());
+      return false;
     }
-    return null;
   }
 
   protected void okPressed() {
