@@ -31,8 +31,10 @@ public interface StoredMessage {
     public final static int SIGNATURE_UNSIGNED      = 0;
     public final static int SIGNATURE_UNVERIFIED    = 1;
     public final static int SIGNATURE_VALID         = 2;
+    public final static int SIGNATURE_KEY_EXPIRED   = 3;
     public final static int SIGNATURE_INVALID       = 3;
     public final static int SIGNATURE_NO_PUBKEY     = 4;
+
 
     int getMessageId();
 
@@ -66,6 +68,8 @@ public interface StoredMessage {
     boolean isSigned();
     int getSignatureStatus();
     void setSignatureStatus(int value);
+    void setSignatureKeyId(String keyId);
+    String getSignatureKeyId();
 
     boolean isFlagSet(int flag);
     int getFlags();

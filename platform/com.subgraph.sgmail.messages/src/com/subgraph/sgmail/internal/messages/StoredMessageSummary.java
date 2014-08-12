@@ -25,6 +25,7 @@ public class StoredMessageSummary implements Activatable {
   private final StoredMessageContent content;
   private int referenceCount;
   private int signatureStatus;
+  private String signatureKeyId;
 
   private transient MimeMessage cachedMimeMessage;
   private transient Activator activator;
@@ -134,6 +135,16 @@ public class StoredMessageSummary implements Activatable {
       throw new IllegalArgumentException("Illegal signature status value: "+ value);
     }
     this.signatureStatus = value;
+  }
+  
+  String getSignatureKeyId() {
+    activate(ActivationPurpose.READ);
+    return signatureKeyId;
+  }
+  
+  void setSignatureKeyId(String keyId) {
+    activate(ActivationPurpose.WRITE);
+    this.signatureKeyId = keyId;
   }
 
   @Override

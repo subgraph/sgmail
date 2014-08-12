@@ -204,6 +204,18 @@ public class StoredMessageImpl implements StoredMessage, DecryptableStoredMessag
     }
 
     @Override
+    public void setSignatureKeyId(String keyId) {
+      activate(ActivationPurpose.READ);
+      summary.setSignatureKeyId(keyId);
+    }
+
+    @Override
+    public String getSignatureKeyId() {
+      activate(ActivationPurpose.READ);
+      return summary.getSignatureKeyId();
+    }
+
+    @Override
     public boolean isFlagSet(int flag) {
         activate(ActivationPurpose.READ);
         return (flags & flag) == flag;
