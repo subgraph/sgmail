@@ -13,8 +13,9 @@ public class NymsIncomingProcessingResultImpl implements NymsIncomingProcessingR
   final static int VERIFY_NOT_SIGNED = 0;
   final static int VERIFY_SIGNATURE_VALID = 1;
   final static int VERIFY_SIGNATURE_INVALID = 2;
-  final static int VERIFY_NO_PUBKEY = 3;
-  final static int VERIFY_FAILED = 4;
+  final static int VERIFY_KEY_EXPIRED = 3;
+  final static int VERIFY_NO_PUBKEY = 4;
+  final static int VERIFY_FAILED = 5;
 
   final static int DECRYPT_NOT_ENCRYPTED = 0;
   final static int DECRYPT_SUCCESS = 1;
@@ -22,12 +23,12 @@ public class NymsIncomingProcessingResultImpl implements NymsIncomingProcessingR
   final static int DECRYPT_FAILED_NO_PRIVATE = 3;
   final static int DECRYPT_FAILED = 4;
   
-  static NymsIncomingProcessingResult create(int verifyCode, int decryptCode, byte[] rawMessage, MimeMessage message) throws NymsAgentException {
+  static NymsIncomingProcessingResult create(int verifyCode, int decryptCode, byte[] rawMessage, MimeMessage message, String keyId) throws NymsAgentException {
     return new NymsIncomingProcessingResultImpl(
         getSignatureVerificationResult(verifyCode), 
         getDecryptionResult(decryptCode),
         rawMessage,
-        message, "", Collections.emptyList());
+        message, "", Collections.emptyList(), keyId);
   }
   
   static NymsIncomingProcessingResult createFailed(int verifyCode, int decryptCode, String failureMessage) throws NymsAgentException {
@@ -35,7 +36,7 @@ public class NymsIncomingProcessingResultImpl implements NymsIncomingProcessingR
         getSignatureVerificationResult(verifyCode), 
         getDecryptionResult(decryptCode), 
         null, null, failureMessage, 
-        Collections.emptyList());
+        Collections.emptyList(), "");
   }
   
   static NymsIncomingProcessingResult createPassphraseNeeded(List<String> encryptedKeyIds) {
@@ -43,7 +44,7 @@ public class NymsIncomingProcessingResultImpl implements NymsIncomingProcessingR
         SignatureVerificationResult.NOT_SIGNED, 
         DecryptionResult.PASSPHRASE_NEEDED, 
         null, null, "", 
-        encryptedKeyIds);
+        encryptedKeyIds, "");
   }
   
   private static SignatureVerificationResult getSignatureVerificationResult(int code) throws NymsAgentException {
@@ -54,6 +55,8 @@ public class NymsIncomingProcessingResultImpl implements NymsIncomingProcessingR
       return SignatureVerificationResult.SIGNATURE_VALID;
     case VERIFY_SIGNATURE_INVALID:
       return SignatureVerificationResult.SIGNATURE_INVALID;
+    case VERIFY_KEY_EXPIRED:
+      return SignatureVerificationResult.SIGNATURE_KEY_EXPIRED;
     case VERIFY_NO_PUBKEY:
       return SignatureVerificationResult.NO_VERIFY_PUBKEY;
     case VERIFY_FAILED:
@@ -85,19 +88,21 @@ public class NymsIncomingProcessingResultImpl implements NymsIncomingProcessingR
   private final byte[] rawDecryptedMessage;
   private final String failureMessage;
   private final List<String> encryptedKeyIds;
+  private final String signatureKeyId;
   private final MimeMessage decryptedMessage;
 
   public NymsIncomingProcessingResultImpl(SignatureVerificationResult verificationResult, DecryptionResult decryptionResult) {
-    this(verificationResult, decryptionResult, null, null, "", Collections.emptyList());
+    this(verificationResult, decryptionResult, null, null, "", Collections.emptyList(), "");
   }
 
-  public NymsIncomingProcessingResultImpl(SignatureVerificationResult verificationResult, DecryptionResult decryptionResult, byte[] rawMessage, MimeMessage decryptedMessage, String failureMessage, List<String> encryptedKeyIds) {
+  public NymsIncomingProcessingResultImpl(SignatureVerificationResult verificationResult, DecryptionResult decryptionResult, byte[] rawMessage, MimeMessage decryptedMessage, String failureMessage, List<String> encryptedKeyIds, String signatureKeyId) {
     this.verificationResult = verificationResult;
     this.decryptionResult = decryptionResult;
     this.rawDecryptedMessage = rawMessage;
     this.decryptedMessage = decryptedMessage;
     this.failureMessage = failureMessage;
     this.encryptedKeyIds = encryptedKeyIds;
+    this.signatureKeyId = signatureKeyId;
   }
 
   @Override
@@ -128,5 +133,10 @@ public class NymsIncomingProcessingResultImpl implements NymsIncomingProcessingR
   @Override
   public List<String> getEncryptedKeyIds() {
     return encryptedKeyIds;
+  }
+
+  @Override
+  public String getSignatureKeyId() {
+    return signatureKeyId;
   }
 }

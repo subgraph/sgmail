@@ -127,12 +127,13 @@ public class NymsAgentConnection {
       final String failureMessage = r.getString("FailureMessage");
       return NymsIncomingProcessingResultImpl.createFailed(verifyCode, decryptCode, failureMessage);
     }
+    final String signerKeyId = r.getString("SignerKeyId");
 
     if(emailBody != null && !emailBody.isEmpty()) {
       final byte[] rawBody = emailBody.getBytes(Charsets.ISO_8859_1);
-      return NymsIncomingProcessingResultImpl.create(verifyCode, decryptCode, rawBody, parseMessage(emailBody, session));
+      return NymsIncomingProcessingResultImpl.create(verifyCode, decryptCode, rawBody, parseMessage(emailBody, session), signerKeyId);
     } else {
-      return NymsIncomingProcessingResultImpl.create(verifyCode, decryptCode, null, null);
+      return NymsIncomingProcessingResultImpl.create(verifyCode, decryptCode, null, null, signerKeyId);
     }
   }
   
