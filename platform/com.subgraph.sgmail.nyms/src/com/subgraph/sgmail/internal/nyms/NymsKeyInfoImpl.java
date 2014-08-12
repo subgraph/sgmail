@@ -7,7 +7,7 @@ import com.subgraph.sgmail.nyms.NymsKeyInfo;
 
 public class NymsKeyInfoImpl implements NymsKeyInfo {
   private final boolean hasSecretKey;
-  private final boolean isEncrypted;
+  private boolean isEncrypted;
   private final String fingerprint;
   private final String keyId;
   private final String summary;
@@ -80,6 +80,9 @@ public class NymsKeyInfoImpl implements NymsKeyInfo {
     return keyId;
   }
 
+  void setDecrypted() {
+    isEncrypted = false;
+  }
 
   static class Builder {
     private boolean hasSecretKey;

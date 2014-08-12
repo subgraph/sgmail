@@ -166,7 +166,11 @@ public class NymsAgentService implements NymsAgent {
 
   @Override
   public boolean unlockPrivateKey(NymsKeyInfo key, String passphrase) throws NymsAgentException {
-    return getConnection().unlockPrivateKey(key.getKeyId(), passphrase);
+    if(getConnection().unlockPrivateKey(key.getKeyId(), passphrase)) {
+      ((NymsKeyInfoImpl)key).setDecrypted();
+      return true;
+    }
+    return false;
   }
 
   @Override
