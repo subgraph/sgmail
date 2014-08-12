@@ -24,15 +24,17 @@ public class StoreMessageTask implements Runnable {
     private final MessageSearchIndex searchIndex;
     private final JavamailUtils javamailUtils;
     private final NymsAgent nymsAgent;
+    private final boolean alreadyStored;
     private final LocalIMAPFolder folder;
 
-    StoreMessageTask(StoredMessage message, long messageUID, LocalIMAPFolder folder, MessageSearchIndex searchIndex, JavamailUtils javamailUtils, NymsAgent nymsAgent) {
+    StoreMessageTask(StoredMessage message, long messageUID, LocalIMAPFolder folder, MessageSearchIndex searchIndex, JavamailUtils javamailUtils, NymsAgent nymsAgent, boolean alreadyStored) {
         this.message = message;
         this.messageUID = messageUID;
         this.folder = folder;
         this.searchIndex = searchIndex;
         this.javamailUtils = javamailUtils;
         this.nymsAgent = nymsAgent;
+        this.alreadyStored = alreadyStored;
     }
 
     @Override
@@ -45,16 +47,22 @@ public class StoreMessageTask implements Runnable {
     }
 
     private void storeMessage() {
-      if(message.needsDecryption() && attemptDecrypt()) {
-        message.addFlag(StoredMessage.FLAG_DECRYPTED);
+      if(alreadyStored) {
+        folder.appendMessage(message, messageUID);
+        return;
+      }
+      if(message.needsDecryption() || message.isSigned()) {
+        nymsAgentProcessing();
       }
       folder.appendMessage(message, messageUID);
       indexMessage();
     }
     
-    private boolean attemptDecrypt() {
+
+    
+    private void nymsAgentProcessing() {
       if(!nymsAgent.getStatus().isAvailable()) {
-        return false;
+        return;
       }
       try {
         NymsIncomingProcessingResult result = nymsAgent.processIncomingMessage(message.toMimeMessage(javamailUtils.getSessionInstance()));
@@ -62,13 +70,17 @@ public class StoreMessageTask implements Runnable {
           final String body = javamailUtils.getTextBody(result.getDecryptedMessage());
           final List<MessageAttachment> attachements = javamailUtils.getAttachments(result.getDecryptedMessage());
           message.setDecryptedMessageDetails(result.getRawDecryptedMessage(), body, attachements);
-          return true;
+          message.addFlag(StoredMessage.FLAG_DECRYPTED);
         }
         switch(result.getSignatureVerificationResult()) {
         case NOT_SIGNED:
-          break;
+          message.setSignatureStatus(StoredMessage.SIGNATURE_UNSIGNED);
+          return;
         case NO_VERIFY_PUBKEY:
           message.setSignatureStatus(StoredMessage.SIGNATURE_NO_PUBKEY);
+          break;
+        case SIGNATURE_KEY_EXPIRED:
+          message.setSignatureStatus(StoredMessage.SIGNATURE_KEY_EXPIRED);
           break;
         case SIGNATURE_INVALID:
           message.setSignatureStatus(StoredMessage.SIGNATURE_INVALID);
@@ -76,9 +88,16 @@ public class StoreMessageTask implements Runnable {
         case SIGNATURE_VALID:
           message.setSignatureStatus(StoredMessage.SIGNATURE_VALID);
           break;
+        case VERIFY_FAILED:
+          logger.warning("VERIFY_FAILED processing signature: "+ result.getFailureMessage());
+          return;
         default:
-          break;
-        
+          logger.warning("Unexpected signature verification code: "+ result.getSignatureVerificationResult());
+          return;
+        }
+        final String keyid = result.getSignatureKeyId();
+        if(keyid != null && !keyid.isEmpty()) {
+          message.setSignatureKeyId(keyid);
         }
       } catch (NymsAgentException e) {
         logger.warning("Error from nyms agent while attempting decryption: "+ e.getMessage());
@@ -87,7 +106,6 @@ public class StoreMessageTask implements Runnable {
       } catch (IOException e) {
         logger.warning("I/O Error extracting attachments from decrypted message: "+ e.getMessage());
       }
-      return false;
     }
     
     private void indexMessage() {
